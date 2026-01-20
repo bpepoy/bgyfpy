@@ -1,7 +1,7 @@
 import os
 from fastapi import APIRouter, Request
 from fastapi.responses import RedirectResponse
-from yfpy.auth import YahooOAuth2
+from yfpy.oauth import YahooOAuth2
 
 router = APIRouter()
 
