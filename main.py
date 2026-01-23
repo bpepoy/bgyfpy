@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from oauth import router as oauth_router
 from routes.league import router as league_router
+from routes.yahoo import router as yahoo_router
 
 app = FastAPI()
 
