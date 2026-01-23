@@ -10,6 +10,9 @@ app.include_router(oauth_router)
 # League routes (settings, history, etc.)
 app.include_router(league_router)
 
+# Yahoo route (account login sustainability)
+app.include_router(yahoo_router)
+
 @app.get("/")
 def root():
     return {"message": "bgyfpy-backend is running"}
