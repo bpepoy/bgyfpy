@@ -14,7 +14,8 @@ def get_yahoo_profile():
     # Yahoo user identity endpoint
     url = "https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1?format=json"
 
-    raw = query.make_request(url)
+    # Use yfpy's internal API caller
+    raw = query._call_api(url)
 
     # Navigate Yahoo’s nested structure
     user = raw["fantasy_content"]["users"]["0"]["user"][0]
