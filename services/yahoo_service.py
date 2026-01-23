@@ -1,6 +1,6 @@
 from yfpy.query import YahooFantasySportsQuery
 
-def get_query(league_id: str = None, game_code="nfl", game_id=449):
+def get_query(league_id=None, game_code="nfl", game_id=449):
     return YahooFantasySportsQuery(
         league_id=league_id,
         game_code=game_code,
@@ -9,13 +9,19 @@ def get_query(league_id: str = None, game_code="nfl", game_id=449):
     )
 
 def get_yahoo_profile():
-    # Create a query object without needing a league_id
-    query = YahooFantasySportsQuery(
-        league_id=None,
-        game_code="nfl",
-        game_id=449,
-        env_var_fallback=True
-    )
+    query = get_query()
 
-    # yfpy exposes this method for user identity
-    return query.get_user_info()
+    # Yahoo user identity endpoint
+    url = "https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1?format=json"
+
+    raw = query.get_raw_yahoo_data(url)
+
+    # Navigate Yahoo’s nested structure
+    user = raw["fantasy_content"]["users"]["0"]["user"][0]
+
+    return {
+        "guid": user.get("guid"),
+        "username": user.get("nickname"),
+        "email": user.get("email"),
+        "raw": raw
+    }
