@@ -1,8 +1,12 @@
 from services.yahoo_service import get_query
 
-def get_league_settings(league_id: str):
-    query = get_query(league_id)
-    raw = query.get_league_metadata()
+@router.get("/{league_key}/settings")
+def league_settings(league_key: str):
+    # If the user passes a full key, strip the prefix
+    if "." in league_key:
+        league_key = league_key.split(".")[-1]
+
+    return get_league_settings(league_key)
 
     # Normalize the Yahoo response into clean, frontend-friendly JSON
     settings = {
