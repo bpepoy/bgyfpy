@@ -7,8 +7,14 @@ from yfpy.query import YahooFantasySportsQuery
 # Fantasy API helper (used by league, standings, teams, etc.)
 # -----------------------------
 def get_query(league_id=None, game_code="nfl", game_id=449):
+    # If the league_id already contains a dot, assume it's a full league key
+    if league_id and "." in league_id:
+        full_league_key = league_id
+    else:
+        full_league_key = f"{game_id}.l.{league_id}"
+
     return YahooFantasySportsQuery(
-        league_id=league_id,
+        league_id=full_league_key,
         game_code=game_code,
         game_id=game_id,
         env_var_fallback=True
