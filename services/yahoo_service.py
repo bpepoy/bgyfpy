@@ -1,7 +1,22 @@
 import os
 import json
 import requests
+from yfpy.query import YahooFantasySportsQuery
 
+# -----------------------------
+# Fantasy API helper (used by league, standings, teams, etc.)
+# -----------------------------
+def get_query(league_id=None, game_code="nfl", game_id=449):
+    return YahooFantasySportsQuery(
+        league_id=league_id,
+        game_code=game_code,
+        game_id=game_id,
+        env_var_fallback=True
+    )
+
+# -----------------------------
+# Direct Yahoo OAuth call for /yahoo/me
+# -----------------------------
 def get_yahoo_profile():
     # Load the token JSON from your environment variable
     token_json = os.getenv("YAHOO_ACCESS_TOKEN_JSON")
