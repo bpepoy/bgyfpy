@@ -39,8 +39,8 @@ def get_yahoo_profile():
     response = requests.get(url, headers=headers)
     data = response.json()
 
-    # Parse Yahoo’s nested structure
-    user = data["fantasy_content"]["users"]["0"]["user"][0]
+    # TEMP: return raw Yahoo response so we can see the real error
+    return data
 
     return {
         "guid": user.get("guid"),
