@@ -4,7 +4,7 @@ uvicorn[standard]==0.34.0
 gunicorn==23.0.0
 
 # Yahoo Fantasy Sports API wrapper
-yfpy==13.1.0
+yfpy==17.0.0
 
 # Additional dependencies
 python-dotenv==1.0.1
