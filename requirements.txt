@@ -1,3 +1,13 @@
-fastapi
-uvicorn
-yfpy
+# FastAPI and server
+fastapi[standard]==0.115.6
+uvicorn[standard]==0.34.0
+gunicorn==23.0.0
+
+# Yahoo Fantasy Sports API wrapper
+yfpy==13.1.0
+
+# Additional dependencies
+python-dotenv==1.0.1
+pydantic==2.10.5
+httpx==0.28.1
+requests==2.32.3

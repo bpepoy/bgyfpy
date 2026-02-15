@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: yahoo-fantasy-api
+    runtime: python
+    plan: free  # Change to 'starter' or 'standard' for paid plans
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn main:app --workers 2 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:$PORT --timeout 120
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: YAHOO_CONSUMER_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: YAHOO_CONSUMER_SECRET
+        sync: false  # Set manually in Render dashboard
+      - key: YAHOO_REDIRECT_URI
+        sync: false  # Set to https://your-app.onrender.com/oauth/callback
+      - key: YAHOO_ACCESS_TOKEN_JSON
+        sync: false  # Set after completing OAuth flow
+      - key: FRONTEND_URL
+        sync: false  # Your frontend URL for CORS (optional for now)
+      - key: ENVIRONMENT
+        value: production
+    healthCheckPath: /health
+    autoDeploy: true
