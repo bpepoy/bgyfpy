@@ -23,14 +23,23 @@ def get_query(league_id=None, game_code="nfl", game_id=461):
     
     query_kwargs = {
         "game_code": game_code,
-        "game_id": game_id,
         "env_var_fallback": True,
     }
     
-    # Handle league_id - pass it directly to YFPY without modification
-    # YFPY will handle the format internally
+    # Handle league_id format intelligently
     if league_id:
-        query_kwargs["league_id"] = league_id
+        # Check if it's already a full league key (contains dots)
+        if "." in str(league_id):
+            # It's a full key like "461.l.501623" - use as-is
+            # Don't set game_id - YFPY will parse it from the league key
+            query_kwargs["league_id"] = league_id
+        else:
+            # It's just a numeric ID like "501623" - need to add prefix
+            query_kwargs["league_id"] = league_id
+            query_kwargs["game_id"] = game_id
+    else:
+        # No league_id provided
+        query_kwargs["game_id"] = game_id
     
     # If we have a token JSON, use it directly for authentication
     if token_json_str:
@@ -44,7 +53,6 @@ def get_query(league_id=None, game_code="nfl", game_id=461):
         return YahooFantasySportsQuery(**query_kwargs)
     except Exception as e:
         raise Exception(f"Failed to initialize Yahoo Fantasy API: {str(e)}")
-
 
 # -----------------------------
 # Direct Yahoo OAuth call for /yahoo/me
