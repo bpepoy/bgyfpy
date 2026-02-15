@@ -137,6 +137,120 @@ def get_yahoo_profile():
             "raw_response": data
         }
 
+def get_user_leagues(game_code="nfl"):
+    """
+    Gets all leagues for the authenticated user for a specific sport.
+    
+    Args:
+        game_code: Sport code (nfl, nba, nhl, mlb)
+    
+    Returns:
+        dict: List of leagues with their IDs and names
+    """
+    token_json_str = os.getenv("YAHOO_ACCESS_TOKEN_JSON")
+    if not token_json_str:
+        raise Exception("No Yahoo token found")
+    
+    try:
+        token = json.loads(token_json_str)
+    except json.JSONDecodeError as e:
+        raise Exception(f"Invalid token JSON format: {str(e)}")
+    
+    access_token = token.get("access_token")
+    if not access_token:
+        raise Exception("Access token missing from stored token JSON")
+    
+    # Get user's leagues for the specified game
+    url = f"https://fantasysports.yahooapis.com/fantasy/v2/users;use_login=1/games;game_keys={game_code}/leagues?format=json"
+    
+    headers = {
+        "Authorization": f"Bearer {access_token}"
+    }
+    
+    try:
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        raise Exception(f"Failed to fetch user leagues: {str(e)}")
+    
+    data = response.json()
+    
+    # Parse the response
+    try:
+        fantasy_content = data.get("fantasy_content", {})
+        users = fantasy_content.get("users", {})
+        first_user = users.get("0", {})
+        user_data = first_user.get("user", [])
+        
+        # Find the games array
+        games = None
+        for item in user_data:
+            if isinstance(item, dict) and "games" in item:
+                games = item["games"]
+                break
+        
+        if not games:
+            return {
+                "leagues": [],
+                "message": "No leagues found",
+                "raw_response": data
+            }
+        
+        # Extract leagues from each game
+        all_leagues = []
+        for key, value in games.items():
+            if key == "count":
+                continue
+            
+            if isinstance(value, dict) and "game" in value:
+                game_data = value["game"]
+                
+                # game_data is a list of dicts
+                game_info = {}
+                leagues_data = None
+                
+                for item in game_data:
+                    if isinstance(item, dict):
+                        if "season" in item:
+                            game_info["season"] = item["season"]
+                        if "game_key" in item:
+                            game_info["game_key"] = item["game_key"]
+                        if "leagues" in item:
+                            leagues_data = item["leagues"]
+                
+                # Parse leagues
+                if leagues_data:
+                    for league_key, league_value in leagues_data.items():
+                        if league_key == "count":
+                            continue
+                        
+                        if isinstance(league_value, dict) and "league" in league_value:
+                            league_array = league_value["league"]
+                            league_obj = {}
+                            
+                            for league_item in league_array:
+                                if isinstance(league_item, dict):
+                                    league_obj.update(league_item)
+                            
+                            all_leagues.append({
+                                "league_key": league_obj.get("league_key"),
+                                "league_id": league_obj.get("league_id"),
+                                "name": league_obj.get("name"),
+                                "season": league_obj.get("season"),
+                                "url": league_obj.get("url"),
+                            })
+        
+        return {
+            "game_code": game_code,
+            "leagues": all_leagues,
+            "count": len(all_leagues)
+        }
+        
+    except Exception as e:
+        return {
+            "error": f"Failed to parse leagues: {str(e)}",
+            "raw_response": data
+        }
 
 def refresh_access_token():
     """
