@@ -18,18 +18,6 @@ def get_query(league_id=None, game_code="nfl", game_id=449):
     Returns:
         YahooFantasySportsQuery instance
     """
-    # Handle league_id format
-    if league_id:
-        # If it already contains dots, it's a full league key
-        if "." in league_id:
-            full_league_key = league_id
-        else:
-            # Otherwise, construct the full key
-            full_league_key = f"{game_id}.l.{league_id}"
-    else:
-        # If no league_id provided, YFPY will work but some queries may fail
-        full_league_key = None
-
     # Get token from environment
     token_json_str = os.getenv("YAHOO_ACCESS_TOKEN_JSON")
     
@@ -39,8 +27,10 @@ def get_query(league_id=None, game_code="nfl", game_id=449):
         "env_var_fallback": True,
     }
     
-    if full_league_key:
-        query_kwargs["league_id"] = full_league_key
+    # Handle league_id - pass it directly to YFPY without modification
+    # YFPY will handle the format internally
+    if league_id:
+        query_kwargs["league_id"] = league_id
     
     # If we have a token JSON, use it directly for authentication
     if token_json_str:
