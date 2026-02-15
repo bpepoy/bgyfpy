@@ -7,7 +7,7 @@ gunicorn==23.0.0
 yfpy==17.0.0
 
 # Additional dependencies
-python-dotenv==1.0.1
+python-dotenv==1.1.1
 pydantic==2.10.5
 httpx==0.28.1
 requests==2.32.3
