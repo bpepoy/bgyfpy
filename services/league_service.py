@@ -1,19 +1,18 @@
 from services.yahoo_service import get_query
 
-def get_league_settings(league_id: str, game_id: int = 461):
+def get_league_settings(league_id: str):
     """
     Fetches league settings/metadata from Yahoo Fantasy Sports.
     
     Args:
         league_id: League ID (numeric like "501623" or full key like "461.l.501623")
-        game_id: Yahoo game ID (461 for NFL 2025)
     
     Returns:
         dict: Normalized league settings
     """
     try:
-        # Pass the league_id and game_id to get_query
-        query = get_query(league_id, game_id=game_id)
+        # Pass just the league_id - get_query will handle game_id intelligently
+        query = get_query(league_id)
         raw = query.get_league_metadata()
         
         # YFPY returns objects, not dicts - convert to dict
