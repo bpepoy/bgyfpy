@@ -6,14 +6,14 @@ from yfpy.query import YahooFantasySportsQuery
 # -----------------------------
 # Fantasy API helper (used by league, standings, teams, etc.)
 # -----------------------------
-def get_query(league_id=None, game_code="nfl", game_id=449):
+def get_query(league_id=None, game_code="nfl", game_id=461):
     """
     Creates a YahooFantasySportsQuery instance.
     
     Args:
-        league_id: League ID (can be numeric or full key like "449.l.501623")
+        league_id: League ID (can be numeric or full key like "461.l.501623")
         game_code: Sport code (nfl, nba, nhl, mlb)
-        game_id: Yahoo game ID (449 for NFL 2024)
+        game_id: Yahoo game ID (461 for NFL 2025)
     
     Returns:
         YahooFantasySportsQuery instance
