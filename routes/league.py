@@ -143,3 +143,52 @@ def season_standings(year: str):
         return get_league_standings(league_key)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))    
+    
+@router.get("/season/{year}/standings/raw")
+def season_standings_raw(year: str):
+    """
+    Debug endpoint - see raw standings data from Yahoo API.
+    """
+    try:
+        from services.yahoo_service import get_query
+        
+        # Handle "current" alias
+        if year == "current":
+            year = str(get_current_season())
+        
+        # Get the league key for this season
+        league_key = get_league_key_for_season(year)
+        
+        query = get_query(league_key)
+        standings = query.get_league_standings()
+        
+        # Show what type it is
+        result = {
+            "type": type(standings).__name__,
+            "is_list": isinstance(standings, list),
+            "length": len(standings) if isinstance(standings, (list, tuple)) else "N/A",
+        }
+        
+        # Try to convert to see structure
+        if isinstance(standings, list) and len(standings) > 0:
+            first_item = standings[0]
+            
+            if hasattr(first_item, 'to_json'):
+                result["first_item_json"] = first_item.to_json()
+            elif hasattr(first_item, '__dict__'):
+                result["first_item_dict"] = first_item.__dict__
+            else:
+                result["first_item"] = str(first_item)[:500]
+        else:
+            # Not a list, try to convert the whole thing
+            if hasattr(standings, 'to_json'):
+                result["full_json"] = standings.to_json()
+            elif hasattr(standings, '__dict__'):
+                result["full_dict"] = standings.__dict__
+            else:
+                result["full_str"] = str(standings)[:1000]
+        
+        return result
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
