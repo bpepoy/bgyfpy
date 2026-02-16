@@ -11,12 +11,8 @@ def get_league_settings(league_id: str):
         dict: Normalized league settings
     """
     try:
-        # Pass just the league_id - get_query will handle game_id intelligently
         query = get_query(league_id)
         raw = query.get_league_metadata()
-        
-        # Debug: Check what type raw is
-        raw_type = type(raw).__name__
         
         # YFPY returns objects, not dicts - convert to dict
         if hasattr(raw, 'to_json'):
@@ -31,29 +27,55 @@ def get_league_settings(league_id: str):
             import json
             raw_dict = json.loads(raw_dict)
         
+        # Parse renew field for historical data tracking
+        renew_data = _parse_renew_field(_safe_get(raw_dict, "renew"))
+        
         # Normalize the Yahoo response into clean, frontend-friendly JSON
         settings = {
+            # Basic Info
             "league_id": league_id,
+            "league_key": _safe_get(raw_dict, "league_key"),
             "name": _safe_get(raw_dict, "name"),
             "season": _safe_get(raw_dict, "season"),
+            "game_code": _safe_get(raw_dict, "game_code"),
+            
+            # League Type & Status
+            "league_type": _safe_get(raw_dict, "league_type"),  # public/private
+            "is_cash_league": bool(_safe_get(raw_dict, "is_cash_league", 0)),
+            "is_finished": bool(_safe_get(raw_dict, "is_finished", 0)),
+            "felo_tier": _safe_get(raw_dict, "felo_tier"),  # bronze/silver/gold/platinum
+            
+            # Teams & Roster
             "num_teams": _safe_get(raw_dict, "num_teams"),
-            "scoring_type": _safe_get(raw_dict, "scoring_type"),
-            "draft_status": _safe_get(raw_dict, "draft_status"),
-            "is_keeper": _safe_get(raw_dict, "is_keeper"),
+            "roster_type": _safe_get(raw_dict, "roster_type"),  # week/season
+            
+            # Scoring
+            "scoring_type": _safe_get(raw_dict, "scoring_type"),  # head/point
+            
+            # Schedule
             "start_week": _safe_get(raw_dict, "start_week"),
             "end_week": _safe_get(raw_dict, "end_week"),
             "current_week": _safe_get(raw_dict, "current_week"),
-            "waiver_type": _safe_get(raw_dict, "waiver_type"),
-            "trade_end_date": _safe_get(raw_dict, "trade_end_date"),
-            "game_code": _safe_get(raw_dict, "game_code"),
+            "matchup_week": _safe_get(raw_dict, "matchup_week"),
+            "start_date": _safe_get(raw_dict, "start_date"),
+            "end_date": _safe_get(raw_dict, "end_date"),
+            
+            # Draft
+            "draft_status": _safe_get(raw_dict, "draft_status"),
+            
+            # Links & Media
             "url": _safe_get(raw_dict, "url"),
-            # Debug info
-            "_debug": {
-                "raw_type": raw_type,
-                "raw_dict_type": type(raw_dict).__name__,
-                "raw_dict_keys": list(raw_dict.keys()) if isinstance(raw_dict, dict) else "not a dict",
-                "raw_sample": str(raw_dict)[:500] if raw_dict else "empty"
-            }
+            "logo_url": _safe_get(raw_dict, "logo_url"),
+            
+            # Historical Data Tracking
+            "previous_season": renew_data,  # Link to previous season
+            
+            # Metadata
+            "league_update_timestamp": _safe_get(raw_dict, "league_update_timestamp"),
+            
+            # Optional Features
+            "is_plus_league": bool(_safe_get(raw_dict, "is_plus_league", 0)),
+            "is_pro_league": bool(_safe_get(raw_dict, "is_pro_league", 0)),
         }
         
         return settings
@@ -78,3 +100,31 @@ def _safe_get(data, key, default=None):
         return data.get(key, default)
     else:
         return getattr(data, key, default)
+
+
+def _parse_renew_field(renew_value):
+    """
+    Parse the 'renew' field to extract previous season info.
+    Format is typically "game_id_league_id" (e.g., "449_150305")
+    
+    Args:
+        renew_value: Raw renew field value
+    
+    Returns:
+        dict: Parsed previous season data or None
+    """
+    if not renew_value:
+        return None
+    
+    try:
+        parts = str(renew_value).split("_")
+        if len(parts) == 2:
+            return {
+                "game_id": int(parts[0]),
+                "league_id": parts[1],
+                "league_key": f"{parts[0]}.l.{parts[1]}"
+            }
+    except:
+        pass
+    
+    return {"raw": renew_value}
