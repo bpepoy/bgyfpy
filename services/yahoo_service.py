@@ -21,8 +21,8 @@ def get_query(league_id=None, game_code="nfl", game_id=461):
     # Get token from environment
     token_json_str = os.getenv("YAHOO_ACCESS_TOKEN_JSON")
     
+    # Start with minimal kwargs
     query_kwargs = {
-        "game_code": game_code,
         "env_var_fallback": True,
     }
     
@@ -30,16 +30,30 @@ def get_query(league_id=None, game_code="nfl", game_id=461):
     if league_id:
         # Check if it's already a full league key (contains dots)
         if "." in str(league_id):
-            # It's a full key like "461.l.501623" - use as-is
-            # Don't set game_id - YFPY will parse it from the league key
-            query_kwargs["league_id"] = league_id
+            # It's a full key like "461.l.501623"
+            # Extract just the numeric part for league_id
+            parts = str(league_id).split(".")
+            if len(parts) == 3 and parts[1] == "l":
+                # Format is "461.l.501623"
+                extracted_game_id = int(parts[0])
+                extracted_league_id = parts[2]
+                
+                query_kwargs["league_id"] = extracted_league_id
+                query_kwargs["game_id"] = extracted_game_id
+                query_kwargs["game_code"] = game_code
+            else:
+                # Unexpected format, use as-is
+                query_kwargs["league_id"] = league_id
+                query_kwargs["game_code"] = game_code
         else:
-            # It's just a numeric ID like "501623" - need to add prefix
+            # It's just a numeric ID like "501623"
             query_kwargs["league_id"] = league_id
             query_kwargs["game_id"] = game_id
+            query_kwargs["game_code"] = game_code
     else:
         # No league_id provided
         query_kwargs["game_id"] = game_id
+        query_kwargs["game_code"] = game_code
     
     # If we have a token JSON, use it directly for authentication
     if token_json_str:
