@@ -96,26 +96,81 @@ def get_all_seasons(force_refresh=False):
 def _follow_chain_backwards(seasons, start_year, first_season):
     """
     Follow the renew chain backwards to find older seasons.
+    Falls back to manual mapping if renew chain breaks.
     
     Args:
         seasons: Dict to populate with season data
         start_year: Year to start from
         first_season: Earliest possible season year
     """
+    from config import get_manual_season_mapping
+    
     current_year = start_year - 1
     
     # Get the renew field from the starting season
     if start_year in seasons and seasons[start_year]["renew"]:
         renew_value = seasons[start_year]["renew"]
     else:
-        return
+        renew_value = None
     
-    while current_year >= first_season and renew_value:
+    while current_year >= first_season:
+        # If renew chain is broken, check manual mapping
+        if not renew_value:
+            manual_mapping = get_manual_season_mapping()
+            if current_year in manual_mapping:
+                print(f"✅ Using manual mapping for {current_year}")
+                
+                game_id = manual_mapping[current_year]["game_id"]
+                league_id = manual_mapping[current_year]["league_id"]
+                league_key = f"{game_id}.l.{league_id}"
+                
+                try:
+                    # Fetch this season's data
+                    query = get_query(league_key)
+                    raw = query.get_league_metadata()
+                    raw_dict = _convert_to_dict(raw)
+                    
+                    seasons[current_year] = {
+                        "year": current_year,
+                        "game_id": game_id,
+                        "league_id": league_id,
+                        "league_key": league_key,
+                        "renew": _safe_get(raw_dict, "renew"),
+                        "renewed": _safe_get(raw_dict, "renewed"),
+                    }
+                    
+                    # Normalize the name
+                    seasons[current_year] = _normalize_season_data(seasons[current_year], raw_dict)
+                    
+                    # Continue to next year
+                    current_year -= 1
+                    
+                    # Check if this season has a renew value to continue the chain
+                    if seasons.get(current_year + 1, {}).get("renew"):
+                        renew_value = seasons[current_year + 1]["renew"]
+                    else:
+                        renew_value = None
+                    
+                    continue
+                    
+                except Exception as e:
+                    print(f"❌ Error fetching manually mapped season {current_year}: {str(e)}")
+                    current_year -= 1
+                    continue
+            else:
+                # No manual mapping and no renew - stop here
+                print(f"⛔ Renew chain broken at {current_year + 1}, no manual mapping available for {current_year}")
+                break
+        
+        # Normal renew chain processing
         try:
             # Parse renew field (format: "game_id_league_id")
             parts = str(renew_value).split("_")
             if len(parts) != 2:
-                break
+                # Try manual mapping if parse fails
+                print(f"⚠️ Failed to parse renew value: {renew_value}")
+                renew_value = None
+                continue
             
             game_id = int(parts[0])
             league_id = parts[1]
@@ -143,8 +198,9 @@ def _follow_chain_backwards(seasons, start_year, first_season):
             current_year -= 1
             
         except Exception as e:
-            print(f"Error fetching season {current_year}: {str(e)}")
-            break
+            print(f"❌ Error fetching season {current_year}: {str(e)}")
+            # Try manual mapping on error
+            renew_value = None
 
 
 def _follow_chain_forwards(seasons, start_year):
