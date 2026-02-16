@@ -522,7 +522,30 @@ def get_league_standings(league_id: str):
             teams.append(team_info)
         
         # Sort by rank
-        teams.sort(key=lambda x: int(x.get("rank", 999)) if x.get("rank") else 999)
+        # Sort teams with proper logic:
+        # 1. Teams with playoff_seed 1-4: sort by rank (playoff results)
+        # 2. Teams with playoff_seed 5+: sort by playoff_seed (regular season)
+        # 3. Teams with no playoff_seed: sort by rank
+        def sort_key(team):
+            seed = team.get("playoff_seed")
+            rank = team.get("rank")
+            
+            if seed is not None:
+                if seed <= 4:
+                    # Top 4 playoff teams - sort by rank (championship results)
+                    return (0, rank if rank else 999, 0)
+                else:
+                    # Seeds 5+ - sort by playoff_seed (regular season)
+                    return (1, seed, 0)
+            else:
+                # No playoff seed - sort by rank (non-playoff teams)
+                return (2, rank if rank else 999, 0)
+        
+        teams.sort(key=sort_key)
+        
+        # Add a "display_rank" field based on the corrected sort order
+        for idx, team in enumerate(teams, start=1):
+            team["display_rank"] = idx
         
         # Get league metadata for context
         league_metadata = query.get_league_metadata()
