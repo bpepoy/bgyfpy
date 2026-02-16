@@ -485,40 +485,56 @@ def get_league_standings(league_id: str):
             
             # Build clean team info
             team_info = {
-                "team_id": team_dict.get("team_id"),
-                "team_key": team_dict.get("team_key"),
-                "name": team_dict.get("name"),
-                "rank": team_standings.get("rank"),
-                "playoff_seed": team_standings.get("playoff_seed"),
-                
-                # Record
-                "wins": outcome_totals.get("wins"),
-                "losses": outcome_totals.get("losses"),
-                "ties": outcome_totals.get("ties"),
-                "percentage": outcome_totals.get("percentage"),
-                
-                # Points
-                "points_for": team_standings.get("points_for"),
-                "points_against": team_standings.get("points_against"),
-                
-                # Manager
-                "manager_nickname": manager_dict.get("nickname"),
-                "manager_guid": manager_dict.get("guid"),
-                "manager_felo_score": manager_dict.get("felo_score"),
-                "manager_felo_tier": manager_dict.get("felo_tier"),
-                
-                # Additional info
-                "clinched_playoffs": bool(team_dict.get("clinched_playoffs", 0)),
-                "number_of_moves": team_dict.get("number_of_moves"),
-                "number_of_trades": team_dict.get("number_of_trades"),
-                "team_logo_url": team_logo.get("url"),
-                "url": team_dict.get("url"),
-                
-                # Streak
-                "streak_type": team_standings.get("streak", {}).get("type"),
-                "streak_value": team_standings.get("streak", {}).get("value"),
+            "team_id": team_dict.get("team_id"),
+            "team_key": team_dict.get("team_key"),
+            "name": team_dict.get("name"),
+            "rank": team_standings.get("rank"),
+            "playoff_seed": team_standings.get("playoff_seed"),
+
+            # Record
+            "wins": outcome_totals.get("wins"),
+            "losses": outcome_totals.get("losses"),
+            "ties": outcome_totals.get("ties"),
+            "percentage": outcome_totals.get("percentage"),
+
+            # Points
+            "points_for": team_standings.get("points_for"),
+            "points_against": team_standings.get("points_against"),
+
+            # Manager
+            "manager_nickname": manager_dict.get("nickname"),
+            "manager_guid": manager_dict.get("guid"),
+            "manager_felo_score": manager_dict.get("felo_score"),
+            "manager_felo_tier": manager_dict.get("felo_tier"),
+
+            # Additional info
+            "clinched_playoffs": bool(team_dict.get("clinched_playoffs", 0)),
+            "number_of_moves": team_dict.get("number_of_moves"),
+            "number_of_trades": team_dict.get("number_of_trades"),
+            "team_logo_url": team_logo.get("url"),
+            "url": team_dict.get("url"),
+
+            # Streak
+            "streak_type": team_standings.get("streak", {}).get("type"),
+            "streak_value": team_standings.get("streak", {}).get("value"),
             }
-            
+
+            # Add consistent manager identity
+            from config import get_manager_identity
+
+            manager_identity = get_manager_identity(
+            team_key=team_info["team_key"],
+            manager_guid=team_info.get("manager_guid")
+            )
+
+            if manager_identity:
+            team_info["manager_id"] = manager_identity["manager_id"]
+            team_info["manager_display_name"] = manager_identity["display_name"]
+            else:
+            # Fallback if not in map (unknown manager)
+            team_info["manager_id"] = None
+            team_info["manager_display_name"] = manager_dict.get("nickname")
+
             teams.append(team_info)
         
         # Sort by rank
