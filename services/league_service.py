@@ -460,61 +460,66 @@ def get_league_standings(league_id: str):
         standings_data = query.get_league_standings()
         
         # Convert to dict
-        if hasattr(standings_data, 'to_json'):
-            raw_dict = standings_data.to_json()
-        elif hasattr(standings_data, '__dict__'):
-            raw_dict = standings_data.__dict__
-        else:
-            raw_dict = standings_data
+        standings_dict = _convert_to_dict(standings_data)
         
-        if isinstance(raw_dict, str):
-            import json
-            raw_dict = json.loads(raw_dict)
+        # Extract teams array
+        teams_array = standings_dict.get("teams", [])
         
-        # Extract teams from standings
         teams = []
         
-        # YFPY returns standings as a list of Team objects
-        if isinstance(standings_data, list):
-            for team in standings_data:
-                team_dict = _convert_to_dict(team)
+        for team_wrapper in teams_array:
+            # Each item is {"team": {...}}
+            team_dict = team_wrapper.get("team", {})
+            
+            # Extract manager info
+            managers_data = team_dict.get("managers", {})
+            manager_dict = managers_data.get("manager", {})
+            
+            # Extract team standings
+            team_standings = team_dict.get("team_standings", {})
+            outcome_totals = team_standings.get("outcome_totals", {})
+            
+            # Extract team logo
+            team_logos = team_dict.get("team_logos", {})
+            team_logo = team_logos.get("team_logo", {})
+            
+            # Build clean team info
+            team_info = {
+                "team_id": team_dict.get("team_id"),
+                "team_key": team_dict.get("team_key"),
+                "name": team_dict.get("name"),
+                "rank": team_standings.get("rank"),
+                "playoff_seed": team_standings.get("playoff_seed"),
                 
-                # Extract team standings data
-                team_info = {
-                    "team_id": _safe_get(team_dict, "team_id"),
-                    "team_key": _safe_get(team_dict, "team_key"),
-                    "name": _safe_get(team_dict, "name"),
-                    "rank": _safe_get(team_dict, "team_standings", {}).get("rank") if isinstance(_safe_get(team_dict, "team_standings"), dict) else _safe_get(team_dict, "team_standings.rank"),
-                }
+                # Record
+                "wins": outcome_totals.get("wins"),
+                "losses": outcome_totals.get("losses"),
+                "ties": outcome_totals.get("ties"),
+                "percentage": outcome_totals.get("percentage"),
                 
-                # Get team standings info (wins, losses, ties, etc.)
-                team_standings = _safe_get(team_dict, "team_standings")
-                if team_standings:
-                    if isinstance(team_standings, dict):
-                        team_info["wins"] = _safe_get(team_standings, "outcome_totals", {}).get("wins") if isinstance(_safe_get(team_standings, "outcome_totals"), dict) else None
-                        team_info["losses"] = _safe_get(team_standings, "outcome_totals", {}).get("losses") if isinstance(_safe_get(team_standings, "outcome_totals"), dict) else None
-                        team_info["ties"] = _safe_get(team_standings, "outcome_totals", {}).get("ties") if isinstance(_safe_get(team_standings, "outcome_totals"), dict) else None
-                        team_info["percentage"] = _safe_get(team_standings, "outcome_totals", {}).get("percentage") if isinstance(_safe_get(team_standings, "outcome_totals"), dict) else None
-                        team_info["points_for"] = _safe_get(team_standings, "points_for")
-                        team_info["points_against"] = _safe_get(team_standings, "points_against")
-                    else:
-                        # Alternate structure - try direct attributes
-                        team_info["wins"] = _safe_get(team_standings, "wins")
-                        team_info["losses"] = _safe_get(team_standings, "losses")
-                        team_info["ties"] = _safe_get(team_standings, "ties")
-                        team_info["percentage"] = _safe_get(team_standings, "percentage")
-                        team_info["points_for"] = _safe_get(team_standings, "points_for")
-                        team_info["points_against"] = _safe_get(team_standings, "points_against")
+                # Points
+                "points_for": team_standings.get("points_for"),
+                "points_against": team_standings.get("points_against"),
                 
-                # Get manager info
-                managers = _safe_get(team_dict, "managers")
-                if managers and isinstance(managers, list) and len(managers) > 0:
-                    manager = managers[0]
-                    if isinstance(manager, dict):
-                        team_info["manager_nickname"] = _safe_get(manager, "nickname")
-                        team_info["manager_guid"] = _safe_get(manager, "guid")
+                # Manager
+                "manager_nickname": manager_dict.get("nickname"),
+                "manager_guid": manager_dict.get("guid"),
+                "manager_felo_score": manager_dict.get("felo_score"),
+                "manager_felo_tier": manager_dict.get("felo_tier"),
                 
-                teams.append(team_info)
+                # Additional info
+                "clinched_playoffs": bool(team_dict.get("clinched_playoffs", 0)),
+                "number_of_moves": team_dict.get("number_of_moves"),
+                "number_of_trades": team_dict.get("number_of_trades"),
+                "team_logo_url": team_logo.get("url"),
+                "url": team_dict.get("url"),
+                
+                # Streak
+                "streak_type": team_standings.get("streak", {}).get("type"),
+                "streak_value": team_standings.get("streak", {}).get("value"),
+            }
+            
+            teams.append(team_info)
         
         # Sort by rank
         teams.sort(key=lambda x: int(x.get("rank", 999)) if x.get("rank") else 999)
