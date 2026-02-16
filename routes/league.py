@@ -3,7 +3,8 @@ from services.league_service import (
     get_league_settings, 
     get_all_seasons, 
     get_league_key_for_season,
-    get_current_season
+    get_current_season,
+    get_league_standings
 )
 
 router = APIRouter(prefix="/league", tags=["League"])
@@ -115,3 +116,30 @@ def league_raw_data(league_key: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/season/{year}/standings")
+def season_standings(year: str):
+    """
+    Get league standings for a specific season.
+    Returns team rankings, records, points for/against.
+    
+    Args:
+        year: Season year (e.g., "2024", "2025") or "current" for latest
+    
+    Examples:
+        /league/season/2024/standings
+        /league/season/current/standings
+    """
+    try:
+        from services.league_service import get_league_standings
+        
+        # Handle "current" alias
+        if year == "current":
+            year = str(get_current_season())
+        
+        # Get the league key for this season
+        league_key = get_league_key_for_season(year)
+        
+        return get_league_standings(league_key)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))    

@@ -443,6 +443,99 @@ def get_league_settings(league_id: str):
     except Exception as e:
         raise Exception(f"Failed to fetch league settings: {str(e)}")
 
+def get_league_standings(league_id: str):
+    """
+    Fetches league standings from Yahoo Fantasy Sports.
+    
+    Args:
+        league_id: League ID (numeric like "501623" or full key like "461.l.501623")
+    
+    Returns:
+        dict: Standings with team records and rankings
+    """
+    try:
+        from config import get_league_name
+        
+        query = get_query(league_id)
+        standings_data = query.get_league_standings()
+        
+        # Convert to dict
+        if hasattr(standings_data, 'to_json'):
+            raw_dict = standings_data.to_json()
+        elif hasattr(standings_data, '__dict__'):
+            raw_dict = standings_data.__dict__
+        else:
+            raw_dict = standings_data
+        
+        if isinstance(raw_dict, str):
+            import json
+            raw_dict = json.loads(raw_dict)
+        
+        # Extract teams from standings
+        teams = []
+        
+        # YFPY returns standings as a list of Team objects
+        if isinstance(standings_data, list):
+            for team in standings_data:
+                team_dict = _convert_to_dict(team)
+                
+                # Extract team standings data
+                team_info = {
+                    "team_id": _safe_get(team_dict, "team_id"),
+                    "team_key": _safe_get(team_dict, "team_key"),
+                    "name": _safe_get(team_dict, "name"),
+                    "rank": _safe_get(team_dict, "team_standings", {}).get("rank") if isinstance(_safe_get(team_dict, "team_standings"), dict) else _safe_get(team_dict, "team_standings.rank"),
+                }
+                
+                # Get team standings info (wins, losses, ties, etc.)
+                team_standings = _safe_get(team_dict, "team_standings")
+                if team_standings:
+                    if isinstance(team_standings, dict):
+                        team_info["wins"] = _safe_get(team_standings, "outcome_totals", {}).get("wins") if isinstance(_safe_get(team_standings, "outcome_totals"), dict) else None
+                        team_info["losses"] = _safe_get(team_standings, "outcome_totals", {}).get("losses") if isinstance(_safe_get(team_standings, "outcome_totals"), dict) else None
+                        team_info["ties"] = _safe_get(team_standings, "outcome_totals", {}).get("ties") if isinstance(_safe_get(team_standings, "outcome_totals"), dict) else None
+                        team_info["percentage"] = _safe_get(team_standings, "outcome_totals", {}).get("percentage") if isinstance(_safe_get(team_standings, "outcome_totals"), dict) else None
+                        team_info["points_for"] = _safe_get(team_standings, "points_for")
+                        team_info["points_against"] = _safe_get(team_standings, "points_against")
+                    else:
+                        # Alternate structure - try direct attributes
+                        team_info["wins"] = _safe_get(team_standings, "wins")
+                        team_info["losses"] = _safe_get(team_standings, "losses")
+                        team_info["ties"] = _safe_get(team_standings, "ties")
+                        team_info["percentage"] = _safe_get(team_standings, "percentage")
+                        team_info["points_for"] = _safe_get(team_standings, "points_for")
+                        team_info["points_against"] = _safe_get(team_standings, "points_against")
+                
+                # Get manager info
+                managers = _safe_get(team_dict, "managers")
+                if managers and isinstance(managers, list) and len(managers) > 0:
+                    manager = managers[0]
+                    if isinstance(manager, dict):
+                        team_info["manager_nickname"] = _safe_get(manager, "nickname")
+                        team_info["manager_guid"] = _safe_get(manager, "guid")
+                
+                teams.append(team_info)
+        
+        # Sort by rank
+        teams.sort(key=lambda x: int(x.get("rank", 999)) if x.get("rank") else 999)
+        
+        # Get league metadata for context
+        league_metadata = query.get_league_metadata()
+        league_dict = _convert_to_dict(league_metadata)
+        
+        result = {
+            "league_id": league_id,
+            "league_key": _safe_get(league_dict, "league_key"),
+            "league_name": get_league_name(),
+            "season": _safe_get(league_dict, "season"),
+            "num_teams": _safe_get(league_dict, "num_teams"),
+            "standings": teams
+        }
+        
+        return result
+        
+    except Exception as e:
+        raise Exception(f"Failed to fetch league standings: {str(e)}")
 
 def _safe_get(data, key, default=None):
     """
