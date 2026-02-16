@@ -517,7 +517,7 @@ def get_league_standings(league_id: str):
             # Streak
             "streak_type": team_standings.get("streak", {}).get("type"),
             "streak_value": team_standings.get("streak", {}).get("value"),
-            }
+        }
 
             # Add consistent manager identity
             from config import get_manager_identity
@@ -528,12 +528,12 @@ def get_league_standings(league_id: str):
             )
 
             if manager_identity:
-            team_info["manager_id"] = manager_identity["manager_id"]
-            team_info["manager_display_name"] = manager_identity["display_name"]
+                team_info["manager_id"] = manager_identity["manager_id"]
+                team_info["manager_display_name"] = manager_identity["display_name"]
             else:
-            # Fallback if not in map (unknown manager)
-            team_info["manager_id"] = None
-            team_info["manager_display_name"] = manager_dict.get("nickname")
+                # Fallback if not in map (unknown manager)
+                team_info["manager_id"] = None
+                team_info["manager_display_name"] = manager_dict.get("nickname")
 
             teams.append(team_info)
         
