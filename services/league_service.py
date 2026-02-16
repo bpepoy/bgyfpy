@@ -15,6 +15,9 @@ def get_league_settings(league_id: str):
         query = get_query(league_id)
         raw = query.get_league_metadata()
         
+        # Debug: Check what type raw is
+        raw_type = type(raw).__name__
+        
         # YFPY returns objects, not dicts - convert to dict
         if hasattr(raw, 'to_json'):
             raw_dict = raw.to_json()
@@ -22,6 +25,11 @@ def get_league_settings(league_id: str):
             raw_dict = raw.__dict__
         else:
             raw_dict = raw
+        
+        # If raw_dict is a string (JSON), parse it
+        if isinstance(raw_dict, str):
+            import json
+            raw_dict = json.loads(raw_dict)
         
         # Normalize the Yahoo response into clean, frontend-friendly JSON
         settings = {
@@ -39,6 +47,13 @@ def get_league_settings(league_id: str):
             "trade_end_date": _safe_get(raw_dict, "trade_end_date"),
             "game_code": _safe_get(raw_dict, "game_code"),
             "url": _safe_get(raw_dict, "url"),
+            # Debug info
+            "_debug": {
+                "raw_type": raw_type,
+                "raw_dict_type": type(raw_dict).__name__,
+                "raw_dict_keys": list(raw_dict.keys()) if isinstance(raw_dict, dict) else "not a dict",
+                "raw_sample": str(raw_dict)[:500] if raw_dict else "empty"
+            }
         }
         
         return settings
