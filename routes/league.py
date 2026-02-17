@@ -232,3 +232,19 @@ def season_settings_raw(year: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/rules")
+def get_rules():
+    """
+    Get all league rules in one endpoint.
+    Includes scoring rules, roster settings, league settings, and payment structure.
+    
+    Returns rules from the current season.
+    
+    Example: GET /league/rules
+    """
+    try:
+        from services.league_service import get_league_rules
+        return get_league_rules()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -356,3 +356,74 @@ def get_manager_identity(team_key: str = None, manager_guid: str = None):
     
     # Not found
     return None
+
+# League rules and payment information
+LEAGUE_RULES = {
+    "payment": {
+        "entry_fee": 200,
+        "total_pot": 2000,
+        "num_teams": 10,
+        "currency": "USD",
+        
+        "playoff_payouts": {
+            "1st_place": {
+                "amount": 700,
+                "description": "Champion"
+            },
+            "2nd_place": {
+                "amount": 200,
+                "description": "Runner-up"
+            },
+            "3rd_place": {
+                "amount": 100,
+                "description": "Third place"
+            }
+        },
+        
+        "season_awards": {
+            "best_record": {
+                "amount": 200,
+                "description": "Best regular season record"
+            },
+            "most_points": {
+                "amount": 200,
+                "description": "Highest total points scored in regular season"
+            }
+        },
+        
+        "weekly_prizes": {
+            "high_score": {
+                "amount": 20,
+                "frequency": "weekly",
+                "weeks": 15,
+                "total": 300,
+                "description": "Highest scoring team each week (Weeks 1-15)"
+            },
+            "position_leader": {
+                "amount": 20,
+                "frequency": "weekly",
+                "weeks": 15,
+                "total": 300,
+                "description": "Team with highest-scoring player in randomly selected position each week",
+                "positions": ["QB", "WR", "RB", "TE", "DEF"],
+                "note": "Position randomly selected at start of season, repeats 3 times over 15 weeks"
+            }
+        },
+        
+        "payout_summary": {
+            "playoff_total": 1000,
+            "season_awards_total": 400,
+            "weekly_prizes_total": 600,
+            "grand_total": 2000
+        },
+        
+        "payment_methods": ["Venmo", "Zelle", "Cash"],
+        "payment_deadline": "Before draft begins",
+        "notes": "Multiple ways to win throughout the season!"
+    }
+}
+
+
+def get_payment_rules():
+    """Get payment/prize structure"""
+    return LEAGUE_RULES["payment"]

@@ -625,3 +625,223 @@ def _parse_renew_field(renew_value):
         pass
     
     return {"raw": renew_value}
+
+def get_league_rules():
+    """
+    Get all league rules: scoring, roster, league settings, and payment.
+    Uses current season for scoring/roster rules.
+    
+    Returns:
+        dict: Combined league rules
+    """
+    try:
+        from config import get_known_league_key, get_payment_rules, get_league_name
+        
+        # Get current season league key
+        league_key = get_known_league_key()
+        
+        query = get_query(league_key)
+        
+        # Get league settings (includes scoring and roster)
+        settings = query.get_league_settings()
+        settings_dict = _convert_to_dict(settings)
+        
+        # Get league metadata for context
+        metadata = query.get_league_metadata()
+        metadata_dict = _convert_to_dict(metadata)
+        
+        # Parse each section
+        scoring_rules = _parse_scoring_rules(settings_dict)
+        roster_settings = _parse_roster_settings(settings_dict)
+        league_settings = _parse_league_settings(settings_dict)
+        payment_rules = get_payment_rules()
+        
+        return {
+            "season": _safe_get(metadata_dict, "season"),
+            "league_name": get_league_name(),
+            "scoring": scoring_rules,
+            "roster": roster_settings,
+            "league_settings": league_settings,
+            "payment": payment_rules
+        }
+        
+    except Exception as e:
+        raise Exception(f"Failed to fetch league rules: {str(e)}")
+
+
+def _parse_scoring_rules(settings_dict):
+    """
+    Parse scoring rules from Yahoo settings.
+    Combines stat_categories (definitions) with stat_modifiers (point values).
+    """
+    stat_categories = settings_dict.get("stat_categories", {})
+    stat_modifiers = settings_dict.get("stat_modifiers", {})
+    
+    # Build a lookup of stat_id to stat info
+    stat_lookup = {}
+    if stat_categories and "stats" in stat_categories:
+        for stat_wrapper in stat_categories["stats"]:
+            stat = stat_wrapper.get("stat", {})
+            stat_id = stat.get("stat_id")
+            if stat_id:
+                stat_lookup[stat_id] = {
+                    "name": stat.get("name"),
+                    "display_name": stat.get("display_name"),
+                    "abbr": stat.get("abbr"),
+                    "group": stat.get("group")
+                }
+    
+    # Build a lookup of stat_id to point value
+    points_lookup = {}
+    if stat_modifiers and "stats" in stat_modifiers:
+        for stat_wrapper in stat_modifiers["stats"]:
+            stat = stat_wrapper.get("stat", {})
+            stat_id = stat.get("stat_id")
+            value = stat.get("value")
+            if stat_id is not None and value is not None:
+                points_lookup[stat_id] = value
+    
+    # Combine them into organized scoring rules
+    scoring = {
+        "passing": {},
+        "rushing": {},
+        "receiving": {},
+        "misc": {},
+        "defense": {}
+    }
+    
+    # Map stat_ids to readable keys
+    stat_mapping = {
+        # Passing
+        4: ("passing", "yards", "Passing Yards"),
+        5: ("passing", "touchdowns", "Passing Touchdowns"),
+        6: ("passing", "interceptions", "Interceptions"),
+        
+        # Rushing
+        9: ("rushing", "yards", "Rushing Yards"),
+        10: ("rushing", "touchdowns", "Rushing Touchdowns"),
+        
+        # Receiving
+        11: ("receiving", "receptions", "Receptions"),
+        12: ("receiving", "yards", "Receiving Yards"),
+        13: ("receiving", "touchdowns", "Receiving Touchdowns"),
+        
+        # Misc
+        15: ("misc", "return_touchdowns", "Return Touchdowns"),
+        16: ("misc", "two_point_conversions", "2-Point Conversions"),
+        18: ("misc", "fumbles_lost", "Fumbles Lost"),
+        57: ("misc", "fumble_return_td", "Offensive Fumble Return TD"),
+        
+        # Defense
+        32: ("defense", "sack", "Sack"),
+        33: ("defense", "interception", "Interception"),
+        34: ("defense", "fumble_recovery", "Fumble Recovery"),
+        35: ("defense", "touchdown", "Touchdown"),
+        36: ("defense", "safety", "Safety"),
+        37: ("defense", "blocked_kick", "Blocked Kick"),
+        49: ("defense", "return_touchdown", "Return TD"),
+        67: ("defense", "fourth_down_stop", "4th Down Stop"),
+        50: ("defense", "points_allowed_0", "Points Allowed 0"),
+        51: ("defense", "points_allowed_1_6", "Points Allowed 1-6"),
+        52: ("defense", "points_allowed_7_13", "Points Allowed 7-13"),
+        53: ("defense", "points_allowed_14_20", "Points Allowed 14-20"),
+        54: ("defense", "points_allowed_21_27", "Points Allowed 21-27"),
+        55: ("defense", "points_allowed_28_34", "Points Allowed 28-34"),
+        56: ("defense", "points_allowed_35_plus", "Points Allowed 35+"),
+        82: ("defense", "extra_point_returned", "Extra Point Returned"),
+    }
+    
+    # Build the scoring structure
+    for stat_id, (category, key, display) in stat_mapping.items():
+        if stat_id in points_lookup:
+            points = points_lookup[stat_id]
+            scoring[category][key] = {
+                "points": points,
+                "display": display
+            }
+    
+    return scoring
+
+
+def _parse_roster_settings(settings_dict):
+    """
+    Parse roster settings from Yahoo settings.
+    """
+    roster_positions = settings_dict.get("roster_positions", [])
+    
+    starting_positions = []
+    bench_spots = 0
+    ir_spots = 0
+    
+    for pos_wrapper in roster_positions:
+        pos = pos_wrapper.get("roster_position", {})
+        position = pos.get("position")
+        count = pos.get("count", 0)
+        is_starting = pos.get("is_starting_position", 0)
+        
+        if is_starting == 1:
+            # Starting position
+            display_name = position
+            if position == "W/R/T":
+                display_name = "FLEX (W/R/T)"
+            
+            starting_positions.append({
+                "position": position,
+                "display": display_name,
+                "count": count
+            })
+        elif position == "BN":
+            bench_spots = count
+        elif position == "IR":
+            ir_spots = count
+    
+    total_roster = sum(p["count"] for p in starting_positions) + bench_spots + ir_spots
+    
+    return {
+        "starting_positions": starting_positions,
+        "bench_spots": bench_spots,
+        "ir_spots": ir_spots,
+        "total_roster_size": total_roster
+    }
+
+
+def _parse_league_settings(settings_dict):
+    """
+    Parse general league settings from Yahoo settings.
+    """
+    # Draft type
+    draft_type = "Standard"
+    if settings_dict.get("is_auction_draft") == 1:
+        draft_type = "Auction"
+    elif settings_dict.get("draft_type") == "live":
+        draft_type = "Live Snake"
+    
+    # Waiver system
+    waiver_system = "Standard Waivers"
+    if settings_dict.get("uses_faab") == 1:
+        waiver_system = "FAAB (Free Agent Acquisition Budget)"
+    
+    waiver_type = settings_dict.get("waiver_type", "")
+    if waiver_type == "FWR":
+        waiver_system += " - Inverse Order of Standings"
+    
+    # Trade settings
+    trade_approval = "League Vote"
+    if settings_dict.get("trade_ratify_type") == "commish":
+        trade_approval = "Commissioner Review"
+    elif settings_dict.get("trade_ratify_type") == "none":
+        trade_approval = "No Review (Instant)"
+    
+    trade_review_days = settings_dict.get("trade_reject_time", 0)
+    
+    return {
+        "draft_type": draft_type,
+        "waiver_system": waiver_system,
+        "trade_approval": trade_approval,
+        "trade_review_period_days": trade_review_days,
+        "playoff_teams": settings_dict.get("num_playoff_teams"),
+        "playoff_start_week": settings_dict.get("playoff_start_week"),
+        "fractional_points": bool(settings_dict.get("uses_fractional_points", 0)),
+        "negative_points": bool(settings_dict.get("uses_negative_points", 0)),
+        "trade_deadline": settings_dict.get("trade_end_date")
+    }
