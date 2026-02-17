@@ -192,3 +192,43 @@ def season_standings_raw(year: str):
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+@router.get("/season/{year}/settings/raw")
+def season_settings_raw(year: str):
+    """
+    Debug endpoint - see ALL raw settings data including scoring rules.
+    """
+    try:
+        from services.yahoo_service import get_query
+        
+        # Handle "current" alias
+        if year == "current":
+            year = str(get_current_season())
+        
+        # Get the league key for this season
+        league_key = get_league_key_for_season(year)
+        
+        query = get_query(league_key)
+        
+        # Get league settings (includes scoring rules)
+        settings = query.get_league_settings()
+        
+        # Convert to dict
+        if hasattr(settings, 'to_json'):
+            settings_dict = settings.to_json()
+        elif hasattr(settings, '__dict__'):
+            settings_dict = settings.__dict__
+        else:
+            settings_dict = settings
+        
+        if isinstance(settings_dict, str):
+            import json
+            settings_dict = json.loads(settings_dict)
+        
+        return {
+            "type": type(settings).__name__,
+            "data": settings_dict
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
