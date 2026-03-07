@@ -455,3 +455,58 @@ def check_data_availability():
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/explore/historical-depth")
+def test_historical_depth():
+    """Tests how far back detailed data goes"""
+    test_years = [2007, 2010, 2015, 2020, 2025]
+    results = {}
+    
+    for year in test_years:
+        try:
+            league_key = get_league_key_for_season(str(year))
+            query = get_query(league_key)
+            
+            year_data = {"year": year}
+            
+            # Test roster
+            try:
+                teams = query.get_league_teams()
+                teams_dict = _convert_to_dict(teams)
+                first_team_key = teams_dict["teams"][0]["team"]["team_key"]
+                roster = query.get_team_roster_by_week(first_team_key, 1)
+                year_data["roster_week_1"] = "✅ Available"
+            except Exception as e:
+                year_data["roster_week_1"] = f"❌ {str(e)[:50]}"
+            
+            # Test scoreboard
+            try:
+                scoreboard = query.get_league_scoreboard_by_week(1)
+                year_data["scoreboard"] = "✅ Available"
+            except Exception as e:
+                year_data["scoreboard"] = f"❌ {str(e)[:50]}"
+            
+            # Test transactions
+            try:
+                trans = query.get_league_transactions()
+                year_data["transactions"] = "✅ Available"
+            except Exception as e:
+                year_data["transactions"] = f"❌ {str(e)[:50]}"
+            
+            # Test draft
+            try:
+                draft = query.get_league_draft_results()
+                year_data["draft"] = "✅ Available"
+            except Exception as e:
+                year_data["draft"] = f"❌ {str(e)[:50]}"
+            
+            results[str(year)] = year_data
+            
+        except Exception as e:
+            results[str(year)] = {"error": str(e)}
+    
+    return {
+        "test_years": test_years,
+        "results": results,
+        "note": "This shows how far back detailed data is available"
+    }
