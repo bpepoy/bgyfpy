@@ -1,24 +1,32 @@
 """
 Teams Router
 ============
-Handles all team-specific endpoints for the BlackGold fantasy app.
+All endpoints use display_name (e.g. "Brian", "Zef") as the manager identifier.
+Names are case-insensitive.
 
-Endpoints covered:
-  /teams/{guid}/overview        – Career summary across all seasons
-  /teams/{guid}/record          – W-L-T per season
-  /teams/{guid}/points          – Points for/against per season
-  /teams/{guid}/matchups        – Matchup list + H2H summary for a season
-  /teams/{guid}/trades          – All trades in a season
+Call GET /teams/managers first to see all valid names.
 
-  /teams/all/records            – All teams' records for a season
-  /teams/all/points             – All teams' points leaderboard
-  /teams/{guid1}/vs/{guid2}     – H2H between two managers (single season or all-time)
+Individual team endpoints:
+  GET /teams/{name}/overview          Career summary across all seasons
+  GET /teams/{name}/record            W-L-T per season
+  GET /teams/{name}/points            Points for/against per season
+  GET /teams/{name}/matchups          Matchups + H2H for a season
+  GET /teams/{name}/trades            Trades for a season
 
-All endpoints that accept a `year` query parameter also accept "current" or "all" where noted.
+League-wide endpoints:
+  GET /teams/managers                 List all managers (use for dropdowns)
+  GET /teams/all/records              All teams records for a season
+  GET /teams/all/points               Points leaderboard for a season
+
+Head-to-head:
+  GET /teams/{name1}/vs/{name2}       H2H between two managers
+
+All year params accept: "current" (default), specific year e.g. "2022", or "all" (H2H only).
 """
 
 from fastapi import APIRouter, HTTPException, Query
 from services.team_service import (
+    get_all_managers,
     get_team_overview,
     get_team_record,
     get_team_points,
@@ -33,132 +41,28 @@ router = APIRouter(prefix="/teams", tags=["Teams"])
 
 
 # ---------------------------------------------------------------------------
-# Individual team endpoints  (/teams/{guid}/...)
+# Utility
 # ---------------------------------------------------------------------------
 
-@router.get("/{guid}/overview")
-def team_overview(guid: str):
+@router.get("/managers")
+def list_managers():
     """
-    Career summary for a manager across ALL seasons.
+    List all managers from config.py with their display_name, seasons played,
+    and whether they are active in the current season.
 
-    Returns:
-      - Seasons played, championships, last-place finishes, playoff appearances
-      - Career totals: wins, losses, ties, points for/against
-      - Season-by-season history list
-
-    Args:
-        guid: Manager's Yahoo GUID (from standings data)
+    Use this to get valid display_name values for all other /teams endpoints.
 
     Example:
-        GET /teams/5652MIZAVSIETJMML3FZ22DB2I/overview
+        GET /teams/managers
     """
     try:
-        return get_team_overview(guid)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/{guid}/record")
-def team_record(guid: str):
-    """
-    Season-by-season W-L-T record for a manager.
-
-    Returns each season's:
-      - Wins, losses, ties, win percentage
-      - Final rank and playoff seed
-      - Points for/against
-      - Clinched playoffs flag
-      - End-of-season streak, number of moves/trades
-
-    Args:
-        guid: Manager's Yahoo GUID
-
-    Example:
-        GET /teams/5652MIZAVSIETJMML3FZ22DB2I/record
-    """
-    try:
-        return get_team_record(guid)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/{guid}/points")
-def team_points(guid: str):
-    """
-    Season-by-season points breakdown for a manager.
-
-    Returns each season's:
-      - Points for, points against, differential
-      - Points rank (1 = top scorer in league that season)
-      - Overall finish rank
-
-    Args:
-        guid: Manager's Yahoo GUID
-
-    Example:
-        GET /teams/5652MIZAVSIETJMML3FZ22DB2I/points
-    """
-    try:
-        return get_team_points(guid)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/{guid}/matchups")
-def team_matchups(
-    guid: str,
-    year: str = Query(default="current", description="Season year or 'current'"),
-):
-    """
-    All matchups for a manager in a given season, plus H2H summary vs each opponent.
-
-    Returns:
-      - Week-by-week matchup results (W/L/T, scores, margin)
-      - H2H summary against each opponent (wins/losses/ties)
-
-    Args:
-        guid: Manager's Yahoo GUID
-        year: Season year (e.g. "2024") or "current" (default)
-
-    Examples:
-        GET /teams/5652MIZAVSIETJMML3FZ22DB2I/matchups
-        GET /teams/5652MIZAVSIETJMML3FZ22DB2I/matchups?year=2022
-    """
-    try:
-        return get_team_matchups(guid, year)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/{guid}/trades")
-def team_trades(
-    guid: str,
-    year: str = Query(default="current", description="Season year or 'current'"),
-):
-    """
-    All trades involving a manager in a given season.
-
-    Returns each trade with:
-      - Trade date, opponent name
-      - Players received (name, position)
-      - Players sent (name, position)
-
-    Args:
-        guid: Manager's Yahoo GUID
-        year: Season year (e.g. "2024") or "current" (default)
-
-    Examples:
-        GET /teams/5652MIZAVSIETJMML3FZ22DB2I/trades
-        GET /teams/5652MIZAVSIETJMML3FZ22DB2I/trades?year=2021
-    """
-    try:
-        return get_team_trades(guid, year)
+        return get_all_managers()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # ---------------------------------------------------------------------------
-# All-teams comparison endpoints  (/teams/all/...)
+# League-wide comparison  (must be defined before /{name} routes)
 # ---------------------------------------------------------------------------
 
 @router.get("/all/records")
@@ -168,14 +72,8 @@ def all_teams_records(
     """
     W-L-T records for every team in a season, sorted by final rank.
 
-    Returns each team's:
-      - Wins, losses, ties, win percentage
-      - Points for/against
-      - Rank, playoff seed, clinched status
-      - Manager display name and GUID
-
-    Args:
-        year: Season year (e.g. "2024") or "current" (default)
+    Returns each team's wins, losses, ties, points for/against,
+    rank, playoff seed, and display_name.
 
     Examples:
         GET /teams/all/records
@@ -192,15 +90,7 @@ def all_teams_points(
     year: str = Query(default="current", description="Season year or 'current'"),
 ):
     """
-    Points leaderboard for all teams in a season, sorted by points scored (high to low).
-
-    Returns each team's:
-      - Points for/against, differential
-      - Points rank (1 = highest scorer)
-      - Overall finish rank
-
-    Args:
-        year: Season year (e.g. "2024") or "current" (default)
+    Points leaderboard for all teams in a season, sorted by points scored.
 
     Examples:
         GET /teams/all/points
@@ -213,13 +103,131 @@ def all_teams_points(
 
 
 # ---------------------------------------------------------------------------
-# H2H between two managers  (/teams/{guid1}/vs/{guid2})
+# Individual team endpoints
 # ---------------------------------------------------------------------------
 
-@router.get("/{guid1}/vs/{guid2}")
+@router.get("/{name}/overview")
+def team_overview(name: str):
+    """
+    Career summary for a manager across ALL seasons they've played.
+
+    Returns:
+      - Seasons played, championships, last-place finishes, playoff appearances
+      - Career totals: wins, losses, ties, points for/against
+      - Season-by-season history
+
+    Args:
+        name: Manager display name (e.g. "Brian", "Zef") — case-insensitive
+
+    Examples:
+        GET /teams/brian/overview
+        GET /teams/Zef/overview
+    """
+    try:
+        return get_team_overview(name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{name}/record")
+def team_record(name: str):
+    """
+    Season-by-season W-L-T record for a manager.
+
+    Returns each season's rank, playoff seed, wins, losses, ties,
+    win percentage, points for/against, clinched status, and streak.
+
+    Args:
+        name: Manager display name — case-insensitive
+
+    Examples:
+        GET /teams/brian/record
+        GET /teams/frank/record
+    """
+    try:
+        return get_team_record(name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{name}/points")
+def team_points(name: str):
+    """
+    Season-by-season points breakdown for a manager.
+
+    Returns points for, points against, differential, points rank
+    (1 = top scorer in league), and overall finish rank per season.
+
+    Args:
+        name: Manager display name — case-insensitive
+
+    Examples:
+        GET /teams/brian/points
+        GET /teams/joey/points
+    """
+    try:
+        return get_team_points(name)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{name}/matchups")
+def team_matchups(
+    name: str,
+    year: str = Query(default="current", description="Season year or 'current'"),
+):
+    """
+    All matchups for a manager in a given season, plus H2H summary vs each opponent.
+
+    Returns week-by-week results (W/L/T, scores, margin) and a per-opponent
+    win/loss/tie summary.
+
+    Args:
+        name: Manager display name — case-insensitive
+        year: Season year (e.g. "2024") or "current" (default)
+
+    Examples:
+        GET /teams/brian/matchups
+        GET /teams/brian/matchups?year=2022
+    """
+    try:
+        return get_team_matchups(name, year)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{name}/trades")
+def team_trades(
+    name: str,
+    year: str = Query(default="current", description="Season year or 'current'"),
+):
+    """
+    All trades a manager made in a given season.
+
+    Returns each trade with date, opponent name, players received, and players sent.
+
+    Args:
+        name: Manager display name — case-insensitive
+        year: Season year (e.g. "2024") or "current" (default)
+
+    Examples:
+        GET /teams/brian/trades
+        GET /teams/brian/trades?year=2021
+    """
+    try:
+        return get_team_trades(name, year)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Head-to-head
+# ---------------------------------------------------------------------------
+
+@router.get("/{name1}/vs/{name2}")
 def h2h_matchups(
-    guid1: str,
-    guid2: str,
+    name1: str,
+    name2: str,
     year: str = Query(
         default="current",
         description="Season year, 'current', or 'all' for all-time H2H",
@@ -228,24 +236,23 @@ def h2h_matchups(
     """
     Head-to-head matchup record between two managers.
 
-    Pass year='all' to get the all-time H2H across every season both managers shared.
-    Pass a specific year (e.g. '2022') or 'current' for a single season.
+    Use year='all' for the all-time record across every shared season.
+    Use a specific year (e.g. '2022') or 'current' for a single season.
 
-    Returns:
-      - Summary: team1 wins, team2 wins, ties
-      - Full list of matchups with week, scores, margin, playoff flag
+    Returns a summary (wins/losses/ties) and full matchup list with
+    scores, margins, and playoff flags.
 
     Args:
-        guid1: First manager's Yahoo GUID
-        guid2: Second manager's Yahoo GUID
+        name1: First manager's display name — case-insensitive
+        name2: Second manager's display name — case-insensitive
         year: "current" (default), specific year, or "all"
 
     Examples:
-        GET /teams/GUID1/vs/GUID2
-        GET /teams/GUID1/vs/GUID2?year=2020
-        GET /teams/GUID1/vs/GUID2?year=all
+        GET /teams/brian/vs/zef
+        GET /teams/brian/vs/zef?year=2020
+        GET /teams/brian/vs/zef?year=all
     """
     try:
-        return get_h2h_matchups(guid1, guid2, year)
+        return get_h2h_matchups(name1, name2, year)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
