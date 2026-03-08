@@ -234,3 +234,119 @@ def h2h_matchups(
         return get_h2h_matchups(name1, name2, year)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Debug endpoints
+# ---------------------------------------------------------------------------
+
+@router.get("/debug/{name}/matchups-raw")
+def debug_matchups_raw(
+    name: str,
+    year: str = Query(default="current", description="Season year or 'current'"),
+):
+    """
+    Debug: shows raw YFPY matchup response structure for a manager in a season.
+    Use this to diagnose why /matchups returns empty opponents.
+    """
+    try:
+        from services.team_service import (
+            _get_manager_data, _get_team_key, _team_id_from_key,
+            _get_all_team_map, _resolve_year, _convert_to_dict
+        )
+        from services.league_service import get_league_key_for_season
+        from services.yahoo_service import get_query
+
+        year = _resolve_year(year)
+        league_key = get_league_key_for_season(year)
+        manager_data = _get_manager_data(name)
+        team_key = _get_team_key(name, league_key)
+        team_id = _team_id_from_key(team_key) if team_key else None
+
+        if not team_key:
+            return {"error": f"Manager {name} not found in {year}"}
+
+        query = get_query(league_key)
+        raw = query.get_team_matchups(team_id)
+        raw_dict = _convert_to_dict(raw)
+
+        # Show the top-level structure without full depth
+        def _summarize(obj, depth=0):
+            if depth > 3:
+                return f"<{type(obj).__name__}>"
+            if isinstance(obj, dict):
+                return {k: _summarize(v, depth+1) for k, v in list(obj.items())[:5]}
+            if isinstance(obj, list):
+                summary = [_summarize(obj[0], depth+1)] if obj else []
+                return {"_list_len": len(obj), "_first_item": summary[0] if summary else None}
+            return obj
+
+        return {
+            "year": year,
+            "league_key": league_key,
+            "team_key": team_key,
+            "team_id_passed_to_yfpy": team_id,
+            "raw_type": type(raw).__name__,
+            "raw_dict_type": type(raw_dict).__name__,
+            "top_level_keys": list(raw_dict.keys()) if isinstance(raw_dict, dict) else f"list of {len(raw_dict)}",
+            "structure_preview": _summarize(raw_dict),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/debug/{name}/transactions-raw")
+def debug_transactions_raw(
+    name: str,
+    year: str = Query(default="current", description="Season year or 'current'"),
+):
+    """
+    Debug: shows raw YFPY team standings data to inspect FAAB fields.
+    Use this to diagnose why /transactions shows no FAAB seasons.
+    """
+    try:
+        from services.team_service import (
+            _get_manager_data, _get_team_key, _resolve_year,
+            _extract_teams_list, _find_team_in_standings, _convert_to_dict
+        )
+        from services.league_service import get_league_key_for_season
+        from services.yahoo_service import get_query
+
+        year = _resolve_year(year)
+        league_key = get_league_key_for_season(year)
+        team_key = _get_team_key(name, league_key)
+
+        if not team_key:
+            return {"error": f"Manager {name} not found in {year}"}
+
+        query = get_query(league_key)
+
+        # Check league settings for uses_faab flag
+        settings_raw = query.get_league_settings()
+        settings_dict = _convert_to_dict(settings_raw)
+        uses_faab = settings_dict.get("uses_faab")
+        waiver_type = settings_dict.get("waiver_type")
+
+        # Check team object for FAAB fields
+        standings_raw = query.get_league_standings()
+        standings_dict = _convert_to_dict(standings_raw)
+        teams_list = _extract_teams_list(standings_dict)
+        t = _find_team_in_standings(teams_list, team_key)
+
+        # Show all keys on the team object
+        team_keys = list(t.keys()) if t else []
+        faab_fields = {k: t.get(k) for k in team_keys if "faab" in k.lower() or "auction" in k.lower() or "budget" in k.lower() or "waiver" in k.lower()}
+
+        return {
+            "year": year,
+            "league_key": league_key,
+            "team_key": team_key,
+            "league_uses_faab": uses_faab,
+            "league_waiver_type": waiver_type,
+            "team_all_keys": team_keys,
+            "team_faab_related_fields": faab_fields,
+            "number_of_moves": t.get("number_of_moves") if t else None,
+            "number_of_trades": t.get("number_of_trades") if t else None,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
