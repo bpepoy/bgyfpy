@@ -9,8 +9,8 @@ Call GET /teams/managers first to see all valid names.
 Individual team endpoints:
   GET /teams/{name}/overview          Career summary across all seasons
   GET /teams/{name}/results           Combined record + points (all-time, last 5, per season)
-  GET /teams/{name}/matchups          Matchups + H2H for a season
-  GET /teams/{name}/trades            Trades for a season
+  GET /teams/{name}/matchups          All-time H2H table vs every opponent
+  GET /teams/{name}/transactions      Career trades, moves, and FAAB summary
 
 League-wide endpoints:
   GET /teams/managers                 List all managers (use for dropdowns)
@@ -29,7 +29,7 @@ from services.team_service import (
     get_team_overview,
     get_team_results,
     get_team_matchups,
-    get_team_trades,
+    get_team_transactions,
     get_all_teams_records,
     get_all_teams_points,
     get_h2h_matchups,
@@ -153,50 +153,47 @@ def team_results(name: str):
 
 
 @router.get("/{name}/matchups")
-def team_matchups(
-    name: str,
-    year: str = Query(default="current", description="Season year or 'current'"),
-):
+def team_matchups(name: str):
     """
-    All matchups for a manager in a given season, plus H2H summary vs each opponent.
+    All-time H2H matchup table vs every opponent across all BlackGold seasons.
 
-    Returns week-by-week results (W/L/T, scores, margin) and a per-opponent
-    win/loss/tie summary.
+    For each opponent returns:
+      - Overall W-L-T record and games played
+      - Average points for/against per game and point differential
+      - Last 5 results as a list e.g. ["W","L","W","W","L"]
 
     Args:
         name: Manager display name — case-insensitive
-        year: Season year (e.g. "2024") or "current" (default)
 
     Examples:
         GET /teams/brian/matchups
-        GET /teams/brian/matchups?year=2022
+        GET /teams/zef/matchups
     """
     try:
-        return get_team_matchups(name, year)
+        return get_team_matchups(name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{name}/trades")
-def team_trades(
-    name: str,
-    year: str = Query(default="current", description="Season year or 'current'"),
-):
+@router.get("/{name}/transactions")
+def team_transactions(name: str):
     """
-    All trades a manager made in a given season.
+    Career transaction summary across all BlackGold seasons.
 
-    Returns each trade with date, opponent name, players received, and players sent.
+    Returns all-time and last-5 summaries for trades, moves, and FAAB spending,
+    plus a per-season table with year, team_name, trades, moves, faab_spent.
+
+    FAAB stats only appear for seasons where FAAB was active.
 
     Args:
         name: Manager display name — case-insensitive
-        year: Season year (e.g. "2024") or "current" (default)
 
     Examples:
-        GET /teams/brian/trades
-        GET /teams/brian/trades?year=2021
+        GET /teams/brian/transactions
+        GET /teams/joey/transactions
     """
     try:
-        return get_team_trades(name, year)
+        return get_team_transactions(name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

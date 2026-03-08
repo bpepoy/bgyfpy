@@ -529,6 +529,7 @@ def get_team_results(display_name: str) -> dict:
                 "avg_points_per_game": avg_ppg,
                 "avg_points_against_per_game": avg_pa_ppg,
                 "points_rank": points_rank,
+                "logo_url": _extract_logo_url(t),
             })
 
         except Exception as e:
@@ -576,179 +577,257 @@ def get_team_results(display_name: str) -> dict:
 
 
 # ---------------------------------------------------------------------------
-# /teams/{name}/matchups  — Matchups + H2H summary for a season
+# /teams/{name}/matchups  — All-time H2H table vs every opponent
 # ---------------------------------------------------------------------------
 
-def get_team_matchups(display_name: str, year: str = "current") -> dict:
-    year = _resolve_year(year)
-    from services.league_service import get_league_key_for_season
-    league_key = get_league_key_for_season(year)
+def get_team_matchups(display_name: str) -> dict:
+    """
+    Returns a per-opponent H2H table across ALL BlackGold seasons.
 
-    team_key = _get_team_key(display_name, league_key)
-    if not team_key:
-        raise Exception(f"Manager '{display_name}' not found in {year} season.")
+    For each opponent:
+      - overall W-L-T record
+      - average points for per game (all-time)
+      - average points against per game (all-time)
+      - point differential (avg_pf - avg_pa)
+      - last-5 results (chronological, most recent last)
+    """
+    from config import LEAGUE_CONFIG
 
-    query = get_query(league_key)
-    team_map = _get_all_team_map(query)
+    manager_data = _get_manager_data(display_name)
+    if not manager_data:
+        raise Exception(f"Manager '{display_name}' not found.")
 
-    raw_matchups = query.get_team_matchups(_team_id_from_key(team_key))
-    matchups_dict = _convert_to_dict(raw_matchups)
+    seasons_data = get_all_seasons()
+    blackgold_league_keys = {s["league_key"] for s in seasons_data.get("seasons", [])}
 
-    if isinstance(matchups_dict, dict):
-        matchups_raw = matchups_dict.get("matchups", [])
-    elif isinstance(matchups_dict, list):
-        matchups_raw = matchups_dict
-    else:
-        matchups_raw = []
+    # opponent_name -> accumulator dict
+    opponents: dict[str, dict] = {}
 
-    matchup_list = []
-    h2h = {}
+    for season in _get_seasons_for_manager(display_name):
+        year = season["year"]
+        league_key = season["league_key"]
+        team_key = season["team_key"]
 
-    for m in matchups_raw:
-        matchup = m.get("matchup", m) if isinstance(m, dict) else {}
-        teams = matchup.get("teams", [])
-        if isinstance(teams, dict):
-            teams = list(teams.values())
-
-        my_points = None
-        opp_points = None
-        opp_team_key = None
-
-        for tw in teams:
-            t = tw.get("team", tw) if isinstance(tw, dict) else {}
-            tk = t.get("team_key")
-            pts = _extract_points(t)
-            if tk == team_key:
-                my_points = pts
-            else:
-                opp_points = pts
-                opp_team_key = tk
-
-        if not opp_team_key:
+        if league_key not in blackgold_league_keys:
             continue
 
-        opp_name = _resolve_opponent_name(opp_team_key, team_map)
-        winner_key = matchup.get("winner_team_key")
-        is_tied = bool(int(matchup.get("is_tied", 0) or 0))
+        try:
+            query = get_query(league_key)
+            team_map = _get_all_team_map(query)
 
-        if opp_team_key not in h2h:
-            h2h[opp_team_key] = {
-                "opponent_name": opp_name,
-                "wins": 0, "losses": 0, "ties": 0,
-            }
+            raw = query.get_team_matchups(_team_id_from_key(team_key))
+            matchups_dict = _convert_to_dict(raw)
 
-        if is_tied:
-            h2h[opp_team_key]["ties"] += 1
-            result = "T"
-        elif winner_key == team_key:
-            h2h[opp_team_key]["wins"] += 1
-            result = "W"
-        else:
-            h2h[opp_team_key]["losses"] += 1
-            result = "L"
+            if isinstance(matchups_dict, dict):
+                matchups_raw = matchups_dict.get("matchups", [])
+            elif isinstance(matchups_dict, list):
+                matchups_raw = matchups_dict
+            else:
+                matchups_raw = []
 
-        matchup_list.append({
-            "week": matchup.get("week"),
-            "is_playoffs": bool(int(matchup.get("is_playoffs", 0) or 0)),
-            "is_consolation": bool(int(matchup.get("is_consolation", 0) or 0)),
-            "result": result,
-            "my_points": my_points,
+            for m in matchups_raw:
+                matchup = m.get("matchup", m) if isinstance(m, dict) else {}
+                teams = matchup.get("teams", [])
+                if isinstance(teams, dict):
+                    teams = list(teams.values())
+
+                my_pts = None
+                opp_pts = None
+                opp_team_key = None
+
+                for tw in teams:
+                    t = tw.get("team", tw) if isinstance(tw, dict) else {}
+                    tk = t.get("team_key")
+                    pts = _extract_points(t)
+                    if tk == team_key:
+                        my_pts = pts
+                    else:
+                        opp_pts = pts
+                        opp_team_key = tk
+
+                if not opp_team_key:
+                    continue
+
+                winner_key = matchup.get("winner_team_key")
+                is_tied = bool(int(matchup.get("is_tied", 0) or 0))
+                opp_name = _resolve_opponent_name(opp_team_key, team_map)
+
+                if is_tied:
+                    result = "T"
+                elif winner_key == team_key:
+                    result = "W"
+                else:
+                    result = "L"
+
+                if opp_name not in opponents:
+                    opponents[opp_name] = {
+                        "wins": 0, "losses": 0, "ties": 0,
+                        "total_pf": 0.0, "total_pa": 0.0,
+                        "games": 0,
+                        # Store (year, week, result) tuples for last-5 logic
+                        "_history": [],
+                    }
+
+                acc = opponents[opp_name]
+                if result == "W":
+                    acc["wins"] += 1
+                elif result == "L":
+                    acc["losses"] += 1
+                else:
+                    acc["ties"] += 1
+
+                acc["games"] += 1
+                acc["total_pf"] += my_pts or 0
+                acc["total_pa"] += opp_pts or 0
+                acc["_history"].append({
+                    "year": year,
+                    "week": int(matchup.get("week") or 0),
+                    "result": result,
+                    "my_points": my_pts,
+                    "opponent_points": opp_pts,
+                })
+
+        except Exception:
+            continue  # skip broken seasons silently
+
+    # Build final per-opponent rows
+    rows = []
+    for opp_name, acc in opponents.items():
+        g = acc["games"]
+        wins = acc["wins"]
+        losses = acc["losses"]
+        ties = acc["ties"]
+        avg_pf = round(acc["total_pf"] / g, 2) if g else 0.0
+        avg_pa = round(acc["total_pa"] / g, 2) if g else 0.0
+        record_str = f"{wins}-{losses}-{ties}" if ties else f"{wins}-{losses}"
+
+        # Sort history chronologically and take last 5
+        history_sorted = sorted(acc["_history"], key=lambda x: (x["year"], x["week"]))
+        last_5 = [h["result"] for h in history_sorted[-5:]]
+
+        rows.append({
             "opponent_name": opp_name,
-            "opponent_points": opp_points,
-            "margin": round((my_points or 0) - (opp_points or 0), 2),
+            "record": record_str,
+            "wins": wins,
+            "losses": losses,
+            "ties": ties,
+            "games_played": g,
+            "avg_points_for": avg_pf,
+            "avg_points_against": avg_pa,
+            "point_differential": round(avg_pf - avg_pa, 2),
+            "last_5": last_5,  # e.g. ["W","L","W","W","L"]
         })
 
-    matchup_list.sort(key=lambda m: int(m.get("week") or 0))
+    # Sort by games played desc, then opponent name alpha
+    rows.sort(key=lambda r: (-r["games_played"], r["opponent_name"]))
 
     return {
-        "display_name": display_name,
-        "year": year,
-        "matchups": matchup_list,
-        "h2h_summary": list(h2h.values()),
-        "total_matchups": len(matchup_list),
+        "display_name": manager_data["display_name"],
+        "league": LEAGUE_CONFIG["name"],
+        "opponents": rows,
+        "total_opponents": len(rows),
     }
 
 
 # ---------------------------------------------------------------------------
-# /teams/{name}/trades  — All trades in a season
+# /teams/{name}/transactions  — Career transaction summary (replaces /trades)
 # ---------------------------------------------------------------------------
 
-def get_team_trades(display_name: str, year: str = "current") -> dict:
-    year = _resolve_year(year)
-    from services.league_service import get_league_key_for_season
-    league_key = get_league_key_for_season(year)
+def get_team_transactions(display_name: str) -> dict:
+    """
+    Career transaction summary across all BlackGold seasons.
 
-    team_key = _get_team_key(display_name, league_key)
-    if not team_key:
-        raise Exception(f"Manager '{display_name}' not found in {year} season.")
+    All-time and last-5 summaries for:
+      - total trades, avg trades per season
+      - total moves (adds/drops), avg moves per season
+      - total FAAB spent, avg FAAB per season (FAAB seasons only)
 
-    query = get_query(league_key)
-    team_map = _get_all_team_map(query)
-
-    raw_transactions = query.get_league_transactions()
-    transactions_dict = _convert_to_dict(raw_transactions)
-
-    if isinstance(transactions_dict, dict):
-        transactions = transactions_dict.get("transactions", [])
-    elif isinstance(transactions_dict, list):
-        transactions = transactions_dict
-    else:
-        transactions = []
-
+    Per-season table: year, team_name, trades, moves, faab_spent, faab_available.
+    """
     import datetime
-    trades = []
+    from config import LEAGUE_CONFIG
 
-    for wrapper in transactions:
-        tx = wrapper.get("transaction", wrapper) if isinstance(wrapper, dict) else {}
-        if tx.get("type") != "trade" or tx.get("status") != "successful":
+    manager_data = _get_manager_data(display_name)
+    if not manager_data:
+        raise Exception(f"Manager '{display_name}' not found.")
+
+    seasons_data = get_all_seasons()
+    blackgold_league_keys = {s["league_key"] for s in seasons_data.get("seasons", [])}
+
+    rows = []
+
+    for season in _get_seasons_for_manager(display_name):
+        year = season["year"]
+        league_key = season["league_key"]
+        team_key = season["team_key"]
+
+        if league_key not in blackgold_league_keys:
             continue
 
-        trader_key = tx.get("trader_team_key")
-        tradee_key = tx.get("tradee_team_key")
-        if team_key not in (trader_key, tradee_key):
-            continue
+        try:
+            query = get_query(league_key)
 
-        opp_key = tradee_key if trader_key == team_key else trader_key
-        opp_name = _resolve_opponent_name(opp_key, team_map)
+            # FAAB balance lives in team data
+            standings_raw = query.get_league_standings()
+            standings_dict = _convert_to_dict(standings_raw)
+            teams_list = _extract_teams_list(standings_dict)
+            t = _find_team_in_standings(teams_list, team_key)
 
-        ts = tx.get("timestamp")
-        trade_date = (
-            datetime.datetime.fromtimestamp(int(ts)).strftime("%Y-%m-%d") if ts else None
-        )
+            # number_of_moves and number_of_trades come from the team object
+            num_moves = int(t.get("number_of_moves") or 0) if t else 0
+            num_trades = int(t.get("number_of_trades") or 0) if t else 0
 
-        players_raw = tx.get("players", [])
-        if isinstance(players_raw, dict):
-            players_raw = list(players_raw.values())
+            # FAAB: auction_budget_total and auction_budget_spent on team object
+            faab_total = t.get("auction_budget_total") if t else None
+            faab_spent = t.get("auction_budget_spent") if t else None
+            uses_faab = faab_total is not None and int(faab_total) > 0
 
-        received, sent = [], []
-        for p_wrapper in players_raw:
-            p = p_wrapper.get("player", p_wrapper) if isinstance(p_wrapper, dict) else {}
-            name_raw = p.get("name", {})
-            p_name = name_raw.get("full") if isinstance(name_raw, dict) else str(name_raw)
-            p_pos = p.get("display_position") or p.get("position_type")
-            td = p.get("transaction_data", {})
-            if isinstance(td, list):
-                td = td[0] if td else {}
+            rows.append({
+                "year": year,
+                "team_name": t.get("name") if t else None,
+                "trades": num_trades,
+                "moves": num_moves,
+                "uses_faab": uses_faab,
+                "faab_budget": int(faab_total) if uses_faab else None,
+                "faab_spent": int(faab_spent) if uses_faab and faab_spent is not None else None,
+                "logo_url": _extract_logo_url(t) if t else None,
+            })
 
-            player_info = {"player_key": p.get("player_key"), "name": p_name, "position": p_pos}
-            if td.get("destination_team_key") == team_key:
-                received.append(player_info)
-            elif td.get("source_team_key") == team_key:
-                sent.append(player_info)
+        except Exception as e:
+            rows.append({"year": year, "error": str(e)})
 
-        trades.append({
-            "transaction_key": tx.get("transaction_key"),
-            "trade_date": trade_date,
-            "opponent_name": opp_name,
-            "players_received": received,
-            "players_sent": sent,
-        })
+    # Newest first
+    rows.sort(key=lambda r: r.get("year", 0), reverse=True)
+
+    def _summarize_tx(subset):
+        valid = [r for r in subset if "error" not in r]
+        if not valid:
+            return {}
+        n = len(valid)
+        total_trades = sum(r["trades"] for r in valid)
+        total_moves = sum(r["moves"] for r in valid)
+        faab_rows = [r for r in valid if r.get("uses_faab") and r.get("faab_spent") is not None]
+        total_faab = sum(r["faab_spent"] for r in faab_rows)
+        return {
+            "seasons": n,
+            "total_trades": total_trades,
+            "avg_trades_per_season": round(total_trades / n, 2),
+            "total_moves": total_moves,
+            "avg_moves_per_season": round(total_moves / n, 2),
+            "faab_seasons": len(faab_rows),
+            "total_faab_spent": total_faab if faab_rows else None,
+            "avg_faab_per_season": round(total_faab / len(faab_rows), 2) if faab_rows else None,
+        }
+
+    valid_rows = [r for r in rows if "error" not in r]
+    last_5 = valid_rows[:5]
 
     return {
-        "display_name": display_name,
-        "year": year,
-        "trades": trades,
-        "total_trades": len(trades),
+        "display_name": manager_data["display_name"],
+        "league": LEAGUE_CONFIG["name"],
+        "all_time": _summarize_tx(valid_rows),
+        "last_5_seasons": _summarize_tx(last_5),
+        "seasons": rows,
     }
 
 
