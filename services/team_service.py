@@ -626,6 +626,8 @@ def get_team_matchups(display_name: str) -> dict:
                 matchups_raw = []
 
             for m in matchups_raw:
+                # YFPY returns matchup objects directly in the list (no "matchup" wrapper)
+                # but defensively handle both shapes
                 matchup = m.get("matchup", m) if isinstance(m, dict) else {}
                 teams = matchup.get("teams", [])
                 if isinstance(teams, dict):
@@ -638,7 +640,15 @@ def get_team_matchups(display_name: str) -> dict:
                 for tw in teams:
                     t = tw.get("team", tw) if isinstance(tw, dict) else {}
                     tk = t.get("team_key")
-                    pts = _extract_points(t)
+
+                    # YFPY flattens points to t["points"] in the matchup response.
+                    # Fall back to team_points.total for older seasons.
+                    pts = t.get("points")
+                    if pts is None:
+                        pts = _extract_points(t)
+                    else:
+                        pts = float(pts)
+
                     if tk == team_key:
                         my_pts = pts
                     else:
@@ -687,12 +697,22 @@ def get_team_matchups(display_name: str) -> dict:
                     "opponent_points": opp_pts,
                 })
 
-        except Exception:
-            continue  # skip broken seasons silently
+        except Exception as e:
+            # Surface the error in the response for easier debugging
+            opponents[f"__error_{year}__"] = {
+                "wins": 0, "losses": 0, "ties": 0,
+                "total_pf": 0.0, "total_pa": 0.0,
+                "games": 0, "_history": [], "_error": str(e),
+            }
+            continue
 
     # Build final per-opponent rows
     rows = []
+    season_errors = {}
     for opp_name, acc in opponents.items():
+        if opp_name.startswith("__error_"):
+            season_errors[opp_name] = acc.get("_error")
+            continue
         g = acc["games"]
         wins = acc["wins"]
         losses = acc["losses"]
@@ -726,6 +746,7 @@ def get_team_matchups(display_name: str) -> dict:
         "league": LEAGUE_CONFIG["name"],
         "opponents": rows,
         "total_opponents": len(rows),
+        "season_errors": season_errors if season_errors else None,
     }
 
 
@@ -767,20 +788,38 @@ def get_team_transactions(display_name: str) -> dict:
         try:
             query = get_query(league_key)
 
-            # FAAB balance lives in team data
+            # Check league settings for FAAB flag
+            settings_raw = query.get_league_settings()
+            settings_dict = _convert_to_dict(settings_raw)
+            uses_faab = bool(int(settings_dict.get("uses_faab") or 0))
+
+            # Team object has faab_balance (remaining), not spent
             standings_raw = query.get_league_standings()
             standings_dict = _convert_to_dict(standings_raw)
             teams_list = _extract_teams_list(standings_dict)
             t = _find_team_in_standings(teams_list, team_key)
 
-            # number_of_moves and number_of_trades come from the team object
             num_moves = int(t.get("number_of_moves") or 0) if t else 0
             num_trades = int(t.get("number_of_trades") or 0) if t else 0
 
-            # FAAB: auction_budget_total and auction_budget_spent on team object
-            faab_total = t.get("auction_budget_total") if t else None
-            faab_spent = t.get("auction_budget_spent") if t else None
-            uses_faab = faab_total is not None and int(faab_total) > 0
+            faab_balance = None
+            faab_spent = None
+            faab_budget = None
+            if uses_faab and t:
+                # Prefer auction_budget fields if present on team object
+                raw_total = t.get("auction_budget_total")
+                raw_spent = t.get("auction_budget_spent")
+                raw_balance = t.get("faab_balance")
+
+                if raw_total is not None and int(raw_total) > 0:
+                    faab_budget = int(raw_total)
+                    faab_spent = int(raw_spent) if raw_spent is not None else None
+                    faab_balance = (faab_budget - faab_spent) if faab_spent is not None else (int(raw_balance) if raw_balance is not None else None)
+                elif raw_balance is not None:
+                    # Older seasons: only balance available, use settings budget
+                    faab_balance = int(raw_balance)
+                    faab_budget = int(settings_dict.get("faab_budget") or 0) or None
+                    faab_spent = (faab_budget - faab_balance) if faab_budget else None
 
             rows.append({
                 "year": year,
@@ -788,8 +827,9 @@ def get_team_transactions(display_name: str) -> dict:
                 "trades": num_trades,
                 "moves": num_moves,
                 "uses_faab": uses_faab,
-                "faab_budget": int(faab_total) if uses_faab else None,
-                "faab_spent": int(faab_spent) if uses_faab and faab_spent is not None else None,
+                "faab_budget": faab_budget,
+                "faab_balance": faab_balance,
+                "faab_spent": faab_spent,
                 "logo_url": _extract_logo_url(t) if t else None,
             })
 
