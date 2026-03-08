@@ -80,6 +80,22 @@ def _resolve_year(year: str) -> str:
     return year
 
 
+def _team_id_from_key(team_key: str) -> str:
+    """
+    Extract the short numeric team ID from a full team key.
+
+    YFPY's query object is already scoped to a league, so passing the full
+    team key (e.g. "461.l.501623.t.6") causes it to double up the league
+    prefix. Pass just the numeric ID ("6") instead.
+
+    "461.l.501623.t.6"  →  "6"
+    "175.l.492325.t.10" →  "10"
+    """
+    if ".t." in team_key:
+        return team_key.split(".t.")[-1]
+    return team_key
+
+
 # ---------------------------------------------------------------------------
 # YFPY structure helpers — defensive parsing for list/dict inconsistencies
 # ---------------------------------------------------------------------------
@@ -207,7 +223,39 @@ def get_all_managers() -> dict:
 # /teams/{name}/overview  — Career summary across all seasons
 # ---------------------------------------------------------------------------
 
+def _effective_finish(rank, seed) -> int | None:
+    """
+    Calculate the effective finishing position for average place calculation.
+
+    Rules:
+      - rank 1, 2, 3, 4  → use rank   (playoff finishers 1st–4th)
+      - rank 9, 10        → use rank   (consolation bottom finishers)
+      - playoff_seed 5–8  → use seed   (non-playoff teams; rank is unreliable)
+      - fallback          → use rank
+    """
+    try:
+        rank = int(rank) if rank is not None else None
+        seed = int(seed) if seed is not None else None
+    except (ValueError, TypeError):
+        return None
+
+    if rank is None:
+        return None
+
+    if rank in (1, 2, 3, 4, 9, 10):
+        return rank
+
+    # Seeds 5–8: use playoff_seed as the finishing position
+    if seed is not None and 5 <= seed <= 8:
+        return seed
+
+    # Fallback
+    return rank
+
+
 def get_team_overview(display_name: str) -> dict:
+    from config import LEAGUE_CONFIG
+
     manager_data = _get_manager_data(display_name)
     if not manager_data:
         raise Exception(
@@ -215,36 +263,61 @@ def get_team_overview(display_name: str) -> dict:
             f"Call /teams/managers to see valid names."
         )
 
+    # Only include seasons that belong to the BlackGold league chain.
+    # get_all_seasons() follows the renew chain from the known BlackGold key,
+    # so this set is already scoped correctly — this guard makes it explicit.
+    seasons_data = get_all_seasons()
+    blackgold_league_keys = {s["league_key"] for s in seasons_data.get("seasons", [])}
+
     num_teams = 10
-    career = {
-        "display_name": manager_data["display_name"],
-        "manager_id": manager_data["manager_id"],
-        "seasons_played": 0,
-        "championships": 0,
-        "last_place_finishes": 0,
-        "playoff_appearances": 0,
-        "total_wins": 0,
-        "total_losses": 0,
-        "total_ties": 0,
-        "total_points_for": 0.0,
-        "total_points_against": 0.0,
-        "season_history": [],
-    }
+
+    # Accumulators
+    total_wins = 0
+    total_losses = 0
+    total_ties = 0
+    total_points_for = 0.0
+    total_points_against = 0.0
+    total_games = 0          # wins + losses + ties across all seasons
+    championships = 0
+    last_place_finishes = 0
+    playoff_appearances = 0
+    seasons_played = 0
+
+    points_ranks = []       # for avg_points_rank
+    finish_positions = []   # for avg_finish (effective)
+    best_record_season = None
+
+    season_history = []
 
     for season in _get_seasons_for_manager(display_name):
         year = season["year"]
         league_key = season["league_key"]
         team_key = season["team_key"]
 
+        # Skip any season not in the BlackGold league chain
+        if league_key not in blackgold_league_keys:
+            continue
+
         try:
             query = get_query(league_key)
+
             standings_raw = query.get_league_standings()
             standings_dict = _convert_to_dict(standings_raw)
             teams_list = _extract_teams_list(standings_dict)
-            t = _find_team_in_standings(teams_list, team_key)
 
+            # Points rank: compare this manager's PF against all teams
+            all_pf = [
+                (t.get("team_key"), float(_extract_team_standings(t).get("points_for") or 0))
+                for t in teams_list if isinstance(t, dict)
+            ]
+            sorted_pf = sorted(all_pf, key=lambda x: x[1], reverse=True)
+            points_rank = next(
+                (i + 1 for i, (tk, _) in enumerate(sorted_pf) if tk == team_key), None
+            )
+
+            t = _find_team_in_standings(teams_list, team_key)
             if not t:
-                career["season_history"].append({"year": year, "error": "Team not found in standings"})
+                season_history.append({"year": year, "error": "Team not found in standings"})
                 continue
 
             ts = _extract_team_standings(t)
@@ -255,45 +328,109 @@ def get_team_overview(display_name: str) -> dict:
             wins = int(ot.get("wins") or 0)
             losses = int(ot.get("losses") or 0)
             ties = int(ot.get("ties") or 0)
+            games = wins + losses + ties
             pf = float(ts.get("points_for") or 0)
             pa = float(ts.get("points_against") or 0)
+            win_pct = float(ot.get("percentage") or 0)
+            avg_ppg = round(pf / games, 2) if games else 0.0
 
-            career["seasons_played"] += 1
-            career["total_wins"] += wins
-            career["total_losses"] += losses
-            career["total_ties"] += ties
-            career["total_points_for"] += pf
-            career["total_points_against"] += pa
+            # Accumulate
+            seasons_played += 1
+            total_wins += wins
+            total_losses += losses
+            total_ties += ties
+            total_games += games
+            total_points_for += pf
+            total_points_against += pa
 
             if rank == 1:
-                career["championships"] += 1
+                championships += 1
             if rank == num_teams:
-                career["last_place_finishes"] += 1
+                last_place_finishes += 1
             try:
                 if seed is not None and int(seed) <= 4:
-                    career["playoff_appearances"] += 1
+                    playoff_appearances += 1
             except (ValueError, TypeError):
                 pass
 
-            career["season_history"].append({
+            # Best record season (highest win_pct)
+            if best_record_season is None or win_pct > best_record_season["win_pct"]:
+                best_record_season = {
+                    "year": year,
+                    "wins": wins,
+                    "losses": losses,
+                    "ties": ties,
+                    "win_pct": win_pct,
+                    "record_str": f"{wins}-{losses}-{ties}" if ties else f"{wins}-{losses}",
+                }
+
+            if points_rank is not None:
+                points_ranks.append(points_rank)
+
+            effective = _effective_finish(rank, seed)
+            if effective is not None:
+                finish_positions.append(effective)
+
+            season_history.append({
                 "year": year,
                 "team_name": t.get("name"),
                 "rank": rank,
                 "playoff_seed": seed,
+                "effective_finish": effective,
                 "wins": wins,
                 "losses": losses,
                 "ties": ties,
+                "games_played": games,
+                "win_pct": round(win_pct, 4),
                 "points_for": round(pf, 2),
                 "points_against": round(pa, 2),
+                "avg_points_per_game": avg_ppg,
+                "points_rank": points_rank,
                 "logo_url": _extract_logo_url(t),
             })
 
         except Exception as e:
-            career["season_history"].append({"year": year, "error": str(e)})
+            season_history.append({"year": year, "error": str(e)})
 
-    career["total_points_for"] = round(career["total_points_for"], 2)
-    career["total_points_against"] = round(career["total_points_against"], 2)
-    return career
+    # --- Derived career stats ---
+    avg_points_per_season = round(total_points_for / seasons_played, 2) if seasons_played else 0.0
+    avg_points_per_game = round(total_points_for / total_games, 2) if total_games else 0.0
+    avg_points_rank = round(sum(points_ranks) / len(points_ranks), 2) if points_ranks else None
+    avg_finish = round(sum(finish_positions) / len(finish_positions), 2) if finish_positions else None
+    record_str = f"{total_wins}-{total_losses}-{total_ties}" if total_ties else f"{total_wins}-{total_losses}"
+
+    return {
+        "display_name": manager_data["display_name"],
+        "manager_id": manager_data["manager_id"],
+        "league": LEAGUE_CONFIG["name"],
+
+        # Core career stats
+        "seasons_played": seasons_played,
+        "championships": championships,
+        "last_place_finishes": last_place_finishes,
+        "playoff_appearances": playoff_appearances,
+
+        # Record
+        "total_wins": total_wins,
+        "total_losses": total_losses,
+        "total_ties": total_ties,
+        "total_games": total_games,
+        "total_record": record_str,
+        "best_record_season": best_record_season,
+
+        # Points
+        "total_points_for": round(total_points_for, 2),
+        "total_points_against": round(total_points_against, 2),
+        "avg_points_per_season": avg_points_per_season,
+        "avg_points_per_game": avg_points_per_game,
+
+        # Rankings
+        "avg_points_rank": avg_points_rank,
+        "avg_finish": avg_finish,
+
+        # Full season-by-season breakdown
+        "season_history": season_history,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -433,7 +570,7 @@ def get_team_matchups(display_name: str, year: str = "current") -> dict:
     query = get_query(league_key)
     team_map = _get_all_team_map(query)
 
-    raw_matchups = query.get_team_matchups(team_key)
+    raw_matchups = query.get_team_matchups(_team_id_from_key(team_key))
     matchups_dict = _convert_to_dict(raw_matchups)
 
     if isinstance(matchups_dict, dict):
@@ -671,7 +808,7 @@ def get_h2h_matchups(name1: str, name2: str, year: str = "current") -> dict:
         raise Exception(f"Manager '{name2}' not found in {year} season.")
 
     query = get_query(league_key)
-    raw_matchups = query.get_team_matchups(team_key1)
+    raw_matchups = query.get_team_matchups(_team_id_from_key(team_key1))
     matchups_dict = _convert_to_dict(raw_matchups)
 
     if isinstance(matchups_dict, dict):
