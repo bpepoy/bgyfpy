@@ -8,8 +8,7 @@ Call GET /teams/managers first to see all valid names.
 
 Individual team endpoints:
   GET /teams/{name}/overview          Career summary across all seasons
-  GET /teams/{name}/record            W-L-T per season
-  GET /teams/{name}/points            Points for/against per season
+  GET /teams/{name}/results           Combined record + points (all-time, last 5, per season)
   GET /teams/{name}/matchups          Matchups + H2H for a season
   GET /teams/{name}/trades            Trades for a season
 
@@ -28,8 +27,7 @@ from fastapi import APIRouter, HTTPException, Query
 from services.team_service import (
     get_all_managers,
     get_team_overview,
-    get_team_record,
-    get_team_points,
+    get_team_results,
     get_team_matchups,
     get_team_trades,
     get_all_teams_records,
@@ -129,44 +127,27 @@ def team_overview(name: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{name}/record")
-def team_record(name: str):
+@router.get("/{name}/results")
+def team_results(name: str):
     """
-    Season-by-season W-L-T record for a manager.
+    Combined record + points summary for a manager across all BlackGold seasons.
 
-    Returns each season's rank, playoff seed, wins, losses, ties,
-    win percentage, points for/against, clinched status, and streak.
+    Returns two summary blocks (all-time and last 5 seasons) each containing:
+      - record, win_pct, avg_finish
+      - avg_points_per_game, avg_points_against_per_game, avg_points_rank
+
+    Plus a per-season table with: year, team_name, effective_finish, record,
+    win_pct, points_for, avg_points_per_game, avg_points_against_per_game, points_rank.
 
     Args:
         name: Manager display name — case-insensitive
 
     Examples:
-        GET /teams/brian/record
-        GET /teams/frank/record
+        GET /teams/brian/results
+        GET /teams/zef/results
     """
     try:
-        return get_team_record(name)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/{name}/points")
-def team_points(name: str):
-    """
-    Season-by-season points breakdown for a manager.
-
-    Returns points for, points against, differential, points rank
-    (1 = top scorer in league), and overall finish rank per season.
-
-    Args:
-        name: Manager display name — case-insensitive
-
-    Examples:
-        GET /teams/brian/points
-        GET /teams/joey/points
-    """
-    try:
-        return get_team_points(name)
+        return get_team_results(name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
