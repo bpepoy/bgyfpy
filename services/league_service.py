@@ -626,6 +626,130 @@ def _parse_renew_field(renew_value):
     
     return {"raw": renew_value}
 
+
+def _parse_scoring_rules(settings_dict):
+    """
+    Parse scoring rules from Yahoo settings.
+    Combines stat_categories (definitions) with stat_modifiers (point values).
+    """
+    stat_categories = settings_dict.get("stat_categories", {})
+    stat_modifiers = settings_dict.get("stat_modifiers", {})
+
+    # Build a lookup of stat_id to stat info
+    stat_lookup = {}
+    if stat_categories and "stats" in stat_categories:
+        for stat_wrapper in stat_categories["stats"]:
+            stat = stat_wrapper.get("stat", {})
+            stat_id = stat.get("stat_id")
+            if stat_id:
+                stat_lookup[stat_id] = {
+                    "name": stat.get("name"),
+                    "display_name": stat.get("display_name"),
+                    "abbr": stat.get("abbr"),
+                    "group": stat.get("group")
+                }
+
+    # Build a lookup of stat_id to point value
+    points_lookup = {}
+    if stat_modifiers and "stats" in stat_modifiers:
+        for stat_wrapper in stat_modifiers["stats"]:
+            stat = stat_wrapper.get("stat", {})
+            stat_id = stat.get("stat_id")
+            value = stat.get("value")
+            if stat_id is not None and value is not None:
+                points_lookup[stat_id] = value
+
+    # Combine into organized scoring rules
+    scoring = {
+        "passing": {},
+        "rushing": {},
+        "receiving": {},
+        "misc": {},
+        "defense": {}
+    }
+
+    stat_mapping = {
+        # Passing
+        4:  ("passing",   "yards",               "Passing Yards"),
+        5:  ("passing",   "touchdowns",           "Passing Touchdowns"),
+        6:  ("passing",   "interceptions",        "Interceptions"),
+        # Rushing
+        9:  ("rushing",   "yards",               "Rushing Yards"),
+        10: ("rushing",   "touchdowns",           "Rushing Touchdowns"),
+        # Receiving
+        11: ("receiving", "receptions",           "Receptions"),
+        12: ("receiving", "yards",               "Receiving Yards"),
+        13: ("receiving", "touchdowns",           "Receiving Touchdowns"),
+        # Misc
+        15: ("misc",      "return_touchdowns",    "Return Touchdowns"),
+        16: ("misc",      "two_point_conversions","2-Point Conversions"),
+        18: ("misc",      "fumbles_lost",         "Fumbles Lost"),
+        57: ("misc",      "fumble_return_td",     "Offensive Fumble Return TD"),
+        # Defense
+        32: ("defense",   "sack",                "Sack"),
+        33: ("defense",   "interception",        "Interception"),
+        34: ("defense",   "fumble_recovery",     "Fumble Recovery"),
+        35: ("defense",   "touchdown",           "Touchdown"),
+        36: ("defense",   "safety",              "Safety"),
+        37: ("defense",   "blocked_kick",        "Blocked Kick"),
+        49: ("defense",   "return_touchdown",    "Return TD"),
+        67: ("defense",   "fourth_down_stop",    "4th Down Stop"),
+        50: ("defense",   "points_allowed_0",    "Points Allowed 0"),
+        51: ("defense",   "points_allowed_1_6",  "Points Allowed 1-6"),
+        52: ("defense",   "points_allowed_7_13", "Points Allowed 7-13"),
+        53: ("defense",   "points_allowed_14_20","Points Allowed 14-20"),
+        54: ("defense",   "points_allowed_21_27","Points Allowed 21-27"),
+        55: ("defense",   "points_allowed_28_34","Points Allowed 28-34"),
+        56: ("defense",   "points_allowed_35_plus","Points Allowed 35+"),
+        82: ("defense",   "extra_point_returned","Extra Point Returned"),
+    }
+
+    for stat_id, (category, key, display) in stat_mapping.items():
+        if stat_id in points_lookup:
+            scoring[category][key] = {
+                "points": points_lookup[stat_id],
+                "display": display,
+            }
+
+    return scoring
+
+
+def _parse_roster_settings(settings_dict):
+    """Parse roster settings from Yahoo settings."""
+    roster_positions = settings_dict.get("roster_positions", [])
+
+    starting_positions = []
+    bench_spots = 0
+    ir_spots = 0
+
+    for pos_wrapper in roster_positions:
+        pos = pos_wrapper.get("roster_position", {})
+        position = pos.get("position")
+        count = pos.get("count", 0)
+        is_starting = pos.get("is_starting_position", 0)
+
+        if is_starting == 1:
+            display_name = "FLEX (W/R/T)" if position == "W/R/T" else position
+            starting_positions.append({
+                "position": position,
+                "display": display_name,
+                "count": count,
+            })
+        elif position == "BN":
+            bench_spots = count
+        elif position == "IR":
+            ir_spots = count
+
+    total_roster = sum(p["count"] for p in starting_positions) + bench_spots + ir_spots
+
+    return {
+        "starting_positions": starting_positions,
+        "bench_spots": bench_spots,
+        "ir_spots": ir_spots,
+        "total_roster_size": total_roster,
+    }
+
+
 def get_league_rules():
     """
     Get current season league ruleset: identity, draft, waivers, schedule,
@@ -853,45 +977,3 @@ def _parse_schedule_settings(settings_dict):
             }
     
     return scoring
-
-
-def _parse_roster_settings(settings_dict):
-    """
-    Parse roster settings from Yahoo settings.
-    """
-    roster_positions = settings_dict.get("roster_positions", [])
-    
-    starting_positions = []
-    bench_spots = 0
-    ir_spots = 0
-    
-    for pos_wrapper in roster_positions:
-        pos = pos_wrapper.get("roster_position", {})
-        position = pos.get("position")
-        count = pos.get("count", 0)
-        is_starting = pos.get("is_starting_position", 0)
-        
-        if is_starting == 1:
-            # Starting position
-            display_name = position
-            if position == "W/R/T":
-                display_name = "FLEX (W/R/T)"
-            
-            starting_positions.append({
-                "position": position,
-                "display": display_name,
-                "count": count
-            })
-        elif position == "BN":
-            bench_spots = count
-        elif position == "IR":
-            ir_spots = count
-    
-    total_roster = sum(p["count"] for p in starting_positions) + bench_spots + ir_spots
-    
-    return {
-        "starting_positions": starting_positions,
-        "bench_spots": bench_spots,
-        "ir_spots": ir_spots,
-        "total_roster_size": total_roster
-    }

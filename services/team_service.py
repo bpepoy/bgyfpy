@@ -219,6 +219,68 @@ def get_all_managers() -> dict:
     return {"managers": managers, "total": len(managers)}
 
 
+
+# ---------------------------------------------------------------------------
+# Shared era / stats helpers
+# ---------------------------------------------------------------------------
+
+def _summarize_rows(rows: list) -> dict:
+    """
+    Aggregate season rows into a stats summary block.
+    Rows must already be pre-filtered (valid, no error keys).
+    """
+    if not rows:
+        return {}
+    total_wins   = sum(r["wins"]        for r in rows)
+    total_losses = sum(r["losses"]      for r in rows)
+    total_ties   = sum(r["ties"]        for r in rows)
+    total_games  = sum(r["games_played"]for r in rows)
+    total_pf     = sum(r["points_for"]  for r in rows)
+    total_pa     = sum(r["points_against"] for r in rows)
+    finish_vals  = [r["effective_finish"] for r in rows if r.get("effective_finish") is not None]
+    rank_vals    = [r["points_rank"]      for r in rows if r.get("points_rank")      is not None]
+    record_str   = (
+        f"{total_wins}-{total_losses}-{total_ties}"
+        if total_ties else f"{total_wins}-{total_losses}"
+    )
+    return {
+        "seasons":                    len(rows),
+        "record":                     record_str,
+        "win_pct":                    round(total_wins / total_games, 4) if total_games else None,
+        "avg_finish":                 round(sum(finish_vals) / len(finish_vals), 2) if finish_vals else None,
+        "avg_points_per_game":        round(total_pf / total_games, 2)  if total_games else None,
+        "avg_points_against_per_game":round(total_pa / total_games, 2)  if total_games else None,
+        "avg_points_rank":            round(sum(rank_vals) / len(rank_vals), 2) if rank_vals else None,
+    }
+
+
+def _build_era_summaries(valid_rows: list) -> dict:
+    """
+    Build a summary block for every defined era, keyed by era slug.
+    Skips eras where the manager played 0 seasons.
+    valid_rows must already exclude error rows; each row must have a "year" key.
+    """
+    from config import get_league_eras
+    eras = get_league_eras()
+    result = {}
+    for slug, era in eras.items():
+        if slug == "overall":
+            continue  # overall is already surfaced as all_time
+        start = era["start_year"]
+        end   = era["end_year"]   # None = present
+        subset = [
+            r for r in valid_rows
+            if r["year"] >= start and (end is None or r["year"] <= end)
+        ]
+        if not subset:
+            continue  # manager didn't play in this era — omit key entirely
+        summary = _summarize_rows(subset)
+        summary["era_name"]    = era["display_name"]
+        summary["description"] = era["description"]
+        result[slug] = summary
+    return result
+
+
 # ---------------------------------------------------------------------------
 # /teams/{name}/overview  — Career summary across all seasons
 # ---------------------------------------------------------------------------
@@ -411,6 +473,10 @@ def get_team_overview(display_name: str) -> dict:
     avg_finish = round(sum(finish_positions) / len(finish_positions), 2) if finish_positions else None
     record_str = f"{total_wins}-{total_losses}-{total_ties}" if total_ties else f"{total_wins}-{total_losses}"
 
+    # Build era summaries from season_history (already fetched — no extra API calls)
+    valid_history = [h for h in season_history if "error" not in h]
+    era_summaries = _build_era_summaries(valid_history)
+
     return {
         "display_name": manager_data["display_name"],
         "manager_id": manager_data["manager_id"],
@@ -444,6 +510,7 @@ def get_team_overview(display_name: str) -> dict:
         "avg_finish": avg_finish,
 
         # Full season-by-season breakdown
+        "eras": era_summaries,
         "season_history": season_history,
     }
 
@@ -538,40 +605,15 @@ def get_team_results(display_name: str) -> dict:
     # Newest first
     rows.sort(key=lambda r: r.get("year", 0), reverse=True)
 
-    def _summarize(subset):
-        valid = [r for r in subset if "error" not in r]
-        if not valid:
-            return {}
-        total_wins = sum(r["wins"] for r in valid)
-        total_losses = sum(r["losses"] for r in valid)
-        total_ties = sum(r["ties"] for r in valid)
-        total_games = sum(r["games_played"] for r in valid)
-        total_pf = sum(r["points_for"] for r in valid)
-        total_pa = sum(r["points_against"] for r in valid)
-        finish_vals = [r["effective_finish"] for r in valid if r.get("effective_finish") is not None]
-        rank_vals = [r["points_rank"] for r in valid if r.get("points_rank") is not None]
-        record_str = (
-            f"{total_wins}-{total_losses}-{total_ties}"
-            if total_ties else f"{total_wins}-{total_losses}"
-        )
-        return {
-            "seasons": len(valid),
-            "record": record_str,
-            "win_pct": round(total_wins / total_games, 4) if total_games else None,
-            "avg_finish": round(sum(finish_vals) / len(finish_vals), 2) if finish_vals else None,
-            "avg_points_per_game": round(total_pf / total_games, 2) if total_games else None,
-            "avg_points_against_per_game": round(total_pa / total_games, 2) if total_games else None,
-            "avg_points_rank": round(sum(rank_vals) / len(rank_vals), 2) if rank_vals else None,
-        }
-
     valid_rows = [r for r in rows if "error" not in r]
     last_5 = valid_rows[:5]  # newest-first, so first 5 = last 5 seasons
 
     return {
         "display_name": manager_data["display_name"],
         "league": LEAGUE_CONFIG["name"],
-        "all_time": _summarize(valid_rows),
-        "last_5_seasons": _summarize(last_5),
+        "all_time": _summarize_rows(valid_rows),
+        "last_5_seasons": _summarize_rows(last_5),
+        "eras": _build_era_summaries(valid_rows),
         "seasons": rows,
     }
 
