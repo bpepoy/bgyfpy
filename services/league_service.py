@@ -628,52 +628,144 @@ def _parse_renew_field(renew_value):
 
 def get_league_rules():
     """
-    Get all league rules: scoring, roster, league settings, and payment.
-    Uses current season for scoring/roster rules.
-    
+    Get current season league ruleset: identity, draft, waivers, schedule,
+    scoring, roster, and payment structure.
+
+    Always uses the CURRENT season's data — never a previous season.
+    The current season is auto-discovered via the renew/renewed chain.
+
     Returns:
-        dict: Combined league rules
+        dict: Structured league ruleset for the current season
     """
     try:
-        from config import get_known_league_key, get_payment_rules, get_league_name
-        
-        # Get current season league key
-        league_key = get_known_league_key()
-        
+        from config import get_payment_rules, get_league_name, get_founded_year
+        import datetime
+
+        # Always resolve the current season dynamically
+        current_year = get_current_season()
+        league_key = get_league_key_for_season(str(current_year))
+
         query = get_query(league_key)
-        
-        # Get league settings (includes scoring and roster)
+
+        # Two API calls: metadata (identity/schedule) + settings (rules)
         settings = query.get_league_settings()
         settings_dict = _convert_to_dict(settings)
-        
-        # Get league metadata for context
+
         metadata = query.get_league_metadata()
         metadata_dict = _convert_to_dict(metadata)
-        
-        # Parse each section
-        scoring_rules = _parse_scoring_rules(settings_dict)
-        roster_settings = _parse_roster_settings(settings_dict)
-        league_settings = _parse_league_settings(settings_dict)
-        payment_rules = get_payment_rules()
-        
+
+        founded = get_founded_year()
+        current_calendar_year = datetime.datetime.now().year
+        years_active = current_calendar_year - founded + 1
+
         return {
-            "season": _safe_get(metadata_dict, "season"),
-            "league_name": get_league_name(),
-            "scoring": scoring_rules,
-            "roster": roster_settings,
-            "league_settings": league_settings,
-            "payment": payment_rules
+            "league": _parse_league_identity(metadata_dict, settings_dict, founded, years_active),
+            "draft": _parse_draft_settings(settings_dict),
+            "waivers": _parse_waiver_settings(settings_dict),
+            "schedule": _parse_schedule_settings(settings_dict),
+            "scoring": _parse_scoring_rules(settings_dict),
+            "roster": _parse_roster_settings(settings_dict),
+            "payment": get_payment_rules(),
         }
-        
+
     except Exception as e:
         raise Exception(f"Failed to fetch league rules: {str(e)}")
 
 
-def _parse_scoring_rules(settings_dict):
-    """
-    Parse scoring rules from Yahoo settings.
-    Combines stat_categories (definitions) with stat_modifiers (point values).
-    """
+def _parse_league_identity(metadata_dict, settings_dict, founded, years_active):
+    """League identity block — combines metadata + settings top-level fields."""
+    return {
+        "name": _safe_get(metadata_dict, "name") or _safe_get(settings_dict, "name"),
+        "season": _safe_get(metadata_dict, "season"),
+        "founded": founded,
+        "years_active": years_active,
+        "num_teams": _safe_get(metadata_dict, "num_teams"),
+        "scoring_type": _safe_get(metadata_dict, "scoring_type"),
+        "league_type": _safe_get(metadata_dict, "league_type"),
+        "felo_tier": _safe_get(metadata_dict, "felo_tier"),
+        "is_finished": bool(_safe_get(metadata_dict, "is_finished", 0)),
+        "current_week": _safe_get(metadata_dict, "current_week"),
+        "start_date": _safe_get(metadata_dict, "start_date"),
+        "end_date": _safe_get(metadata_dict, "end_date"),
+        "url": _safe_get(metadata_dict, "url"),
+        "logo_url": _safe_get(metadata_dict, "logo_url"),
+    }
+
+
+def _parse_draft_settings(settings_dict):
+    """Draft configuration block."""
+    is_auction = settings_dict.get("is_auction_draft") == 1
+    draft_type_raw = settings_dict.get("draft_type", "")
+
+    if is_auction:
+        draft_type = "Auction"
+    elif draft_type_raw == "live":
+        draft_type = "Live Snake"
+    else:
+        draft_type = "Snake"
+
+    # Auction budget lives in settings as auction_budget_total
+    auction_budget = None
+    raw_budget = settings_dict.get("auction_budget_total") or settings_dict.get("auction_budget")
+    if raw_budget is not None:
+        try:
+            auction_budget = int(raw_budget)
+        except (ValueError, TypeError):
+            pass
+
+    return {
+        "type": draft_type,
+        "auction_budget": auction_budget if is_auction else None,
+    }
+
+
+def _parse_waiver_settings(settings_dict):
+    """Waiver / FAAB configuration block."""
+    uses_faab = bool(int(settings_dict.get("uses_faab") or 0))
+    waiver_type = settings_dict.get("waiver_type", "")
+
+    if uses_faab:
+        system = "FAAB"
+        order = "Inverse Order of Standings" if waiver_type == "FWR" else waiver_type
+    else:
+        system = "Standard Waivers"
+        order = "Inverse Order of Standings" if waiver_type == "R" else waiver_type
+
+    # FAAB budget from settings
+    faab_budget = None
+    raw_faab = settings_dict.get("faab_budget")
+    if uses_faab and raw_faab is not None:
+        try:
+            faab_budget = int(raw_faab)
+        except (ValueError, TypeError):
+            pass
+
+    return {
+        "system": system,
+        "order": order,
+        "faab_budget": faab_budget,
+    }
+
+
+def _parse_schedule_settings(settings_dict):
+    """Playoffs, trade, and schedule configuration block."""
+    trade_ratify = settings_dict.get("trade_ratify_type", "")
+    if trade_ratify == "commish":
+        trade_approval = "Commissioner Review"
+    elif trade_ratify == "none":
+        trade_approval = "No Review (Instant)"
+    else:
+        trade_approval = "League Vote"
+
+    return {
+        "playoff_teams": settings_dict.get("num_playoff_teams"),
+        "playoff_start_week": settings_dict.get("playoff_start_week"),
+        "trade_deadline": settings_dict.get("trade_end_date"),
+        "trade_approval": trade_approval,
+        "trade_review_days": settings_dict.get("trade_reject_time", 0),
+        "fractional_points": bool(settings_dict.get("uses_fractional_points", 0)),
+        "negative_points": bool(settings_dict.get("uses_negative_points", 0)),
+    }
     stat_categories = settings_dict.get("stat_categories", {})
     stat_modifiers = settings_dict.get("stat_modifiers", {})
     
@@ -802,46 +894,4 @@ def _parse_roster_settings(settings_dict):
         "bench_spots": bench_spots,
         "ir_spots": ir_spots,
         "total_roster_size": total_roster
-    }
-
-
-def _parse_league_settings(settings_dict):
-    """
-    Parse general league settings from Yahoo settings.
-    """
-    # Draft type
-    draft_type = "Standard"
-    if settings_dict.get("is_auction_draft") == 1:
-        draft_type = "Auction"
-    elif settings_dict.get("draft_type") == "live":
-        draft_type = "Live Snake"
-    
-    # Waiver system
-    waiver_system = "Standard Waivers"
-    if settings_dict.get("uses_faab") == 1:
-        waiver_system = "FAAB (Free Agent Acquisition Budget)"
-    
-    waiver_type = settings_dict.get("waiver_type", "")
-    if waiver_type == "FWR":
-        waiver_system += " - Inverse Order of Standings"
-    
-    # Trade settings
-    trade_approval = "League Vote"
-    if settings_dict.get("trade_ratify_type") == "commish":
-        trade_approval = "Commissioner Review"
-    elif settings_dict.get("trade_ratify_type") == "none":
-        trade_approval = "No Review (Instant)"
-    
-    trade_review_days = settings_dict.get("trade_reject_time", 0)
-    
-    return {
-        "draft_type": draft_type,
-        "waiver_system": waiver_system,
-        "trade_approval": trade_approval,
-        "trade_review_period_days": trade_review_days,
-        "playoff_teams": settings_dict.get("num_playoff_teams"),
-        "playoff_start_week": settings_dict.get("playoff_start_week"),
-        "fractional_points": bool(settings_dict.get("uses_fractional_points", 0)),
-        "negative_points": bool(settings_dict.get("uses_negative_points", 0)),
-        "trade_deadline": settings_dict.get("trade_end_date")
     }

@@ -9,6 +9,7 @@ LEAGUE_CONFIG = {
     "known_league_key": "461.l.501623",
     "known_season_year": 2025,
     "first_season": 2007,
+    "founded": 2007,
     "cache_duration_hours": 24,
 }
 
@@ -314,6 +315,9 @@ def get_first_season():
 
 def get_league_name():
     return LEAGUE_CONFIG["name"]
+
+def get_founded_year():
+    return LEAGUE_CONFIG["founded"]
 
 def get_manual_season_mapping():
     return MANUAL_SEASON_MAPPING
