@@ -510,3 +510,75 @@ def test_historical_depth():
         "results": results,
         "note": "This shows how far back detailed data is available"
     }
+
+@router.get("/history")
+def league_history():
+    """
+    Season-by-season notable data for all BlackGold seasons (2007–present).
+
+    Returns for each season:
+      - Champion (display name, team name, record)
+      - Best win-loss record (may differ from champion in a given year)
+      - Team with most points scored
+      - Last place team
+      - First overall draft pick
+      - Top fantasy scorer per position: QB, WR, RB, TE
+        (rostered players only; live fetch for recent seasons, hardcoded for older ones)
+      - Punishment (hardcoded in config.py until voting system is built)
+
+    All 19 seasons returned newest-first.
+    """
+    try:
+        from services.league_service import get_league_history
+        return get_league_history()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/history/seed-players")
+def seed_top_players(year: str):
+    """
+    Admin/utility endpoint — run this ONCE after each season ends.
+
+    Fetches the top fantasy scorer per position (QB, WR, RB, TE)
+    from all rostered players in the given season, then returns a
+    ready-to-paste config block for SEASON_HISTORY_MANUAL in config.py.
+
+    Usage: GET /league/history/seed-players?year=2024
+    """
+    try:
+        from services.league_service import (
+            get_league_key_for_season,
+            _fetch_top_players,
+            _fetch_first_pick,
+        )
+        import json
+
+        league_key = get_league_key_for_season(year)
+
+        top_players = _fetch_top_players(league_key)
+        first_pick  = _fetch_first_pick(league_key)
+
+        config_block = {
+            int(year): {
+                "punishment": None,  # TODO: fill in after vote
+                "first_pick": first_pick,
+                "top_players": top_players,
+            }
+        }
+
+        return {
+            "year": year,
+            "league_key": league_key,
+            "top_players": top_players,
+            "first_overall_pick": first_pick,
+            "paste_into_config": (
+                f"    {year}: " + json.dumps(config_block[int(year)], indent=8)
+            ),
+            "instructions": (
+                "Copy the 'paste_into_config' value into SEASON_HISTORY_MANUAL "
+                "in config.py, then set punishment once it's been voted on."
+            ),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

@@ -499,3 +499,161 @@ def year_in_era(year: int, era_slug: str) -> bool:
     if era["end_year"] is not None and year > era["end_year"]:
         return False
     return True
+
+
+# ---------------------------------------------------------------------------
+# Draft / Waiver hardcoded fallbacks
+# ---------------------------------------------------------------------------
+# Yahoo's settings API does not reliably expose auction_budget or faab_budget
+# in older seasons. These are hardcoded here as a fallback.
+# UPDATE THIS if the league ever changes the budget amount.
+AUCTION_BUDGET_DEFAULT = 200   # dollars — used for both draft auction and FAAB
+FAAB_BUDGET_DEFAULT    = 200   # dollars — waivers; same amount since 2016-ish
+
+
+def get_auction_budget_default() -> int:
+    return AUCTION_BUDGET_DEFAULT
+
+
+def get_faab_budget_default() -> int:
+    return FAAB_BUDGET_DEFAULT
+
+
+# ---------------------------------------------------------------------------
+# Season History — Manual / Hardcoded Data
+# ---------------------------------------------------------------------------
+# This dict stores data that cannot be reliably fetched from the Yahoo API:
+#   - punishment: voted on each year by league members
+#   - first_pick:  first overall draft pick (fallback if API fails)
+#   - top_players: top fantasy scorer per position for that season
+#                  (keyed by position: QB, WR, RB, TE)
+#                  Populate this ONCE after each season ends using the
+#                  /league/history/seed-players?year=YYYY admin endpoint,
+#                  then paste the result here.
+#
+# For seasons pre-2012, top_players must be fully hardcoded (API unreliable).
+# For 2012+, the live fetch is attempted first; this data is the fallback.
+#
+# top_players shape per position:
+#   {
+#       "name":   "Josh Allen",        # player name
+#       "team":   "Blake",             # BlackGold display_name of the manager
+#       "points": 412.50               # total fantasy points that season
+#   }
+#
+# first_pick shape:
+#   {
+#       "player": "Christian McCaffrey",
+#       "team":   "Zef",               # BlackGold display_name
+#       "position": "RB"
+#   }
+# ---------------------------------------------------------------------------
+
+SEASON_HISTORY_MANUAL = {
+    2025: {
+        "punishment": "Loser Wears a Caleb Williams Jersey Downtown before a Lions Game",  # TODO: update after punishment is voted on
+        "first_pick": None,  # TODO: populate or will be fetched live from API
+        "top_players": None, # TODO: run seed-players endpoint after season ends
+    },
+    2024: {
+        "punishment": "Loser Gets a Broccoli Dangle and Goes out to the Club Dressed like Gen Z",  # TODO: update after punishment is voted on
+        "first_pick": None,
+        "top_players": None,
+    },
+    2023: {
+        "punishment": "Loser Wears a Diaper at Next Year's Draft and Can't Take it Off Until Next Day or He Shits",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2022: {
+        "punishment": "Loser Wears a Diaper at Next Year's Draft and Can't Take it Off Until Next Day or He Shits",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2021: {
+        "punishment": "Loser Eats Surströmming",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2020: {
+        "punishment": "Loser Takes Blow Up Doll on a Date to Twin Peaks",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2019: {
+        "punishment": "Loser Gets Shot at with Paintballs",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2018: {
+        "punishment": "Loser Wears a Dress and Fake Nails at Next Draft",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2017: {
+        "punishment": "Loser Wears a Dress and Fake Nails at Next Draft",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2016: {
+        "punishment": "Loser Recreates ESPN The Body Issue",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2015: {
+        "punishment": "Loser Skates Around Campius Martius in a Tutu with an 'I Suck At Fantasy Football Sign'",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2014: {
+        "punishment": "Loser Wears a Dress and Stands at the Corner of Big Beave with an 'I Suck At Fantasy Football Sign'",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2013: {
+        "punishment": "Loser Goes Out to the Bars with Frosted Tips",
+        "first_pick": None,
+        "top_players": None,
+    },
+    2012: {
+        "punishment": "Loser Gets the Darkest Spray Tan",
+        "first_pick": None,
+        "top_players": None,
+    },
+    # Pre-2012: Yahoo stats API unreliable — top_players must be fully hardcoded
+    2011: {
+        "punishment": "Shot Out of Nick's Belly Button",
+        "first_pick": None,
+        "top_players": None,  # TODO: hardcode manually
+    },
+    2010: {
+        "punishment": None,
+        "first_pick": None,
+        "top_players": None,
+    },
+    2009: {
+        "punishment": None,
+        "first_pick": None,
+        "top_players": None,
+    },
+    2008: {
+        "punishment": None,
+        "first_pick": None,
+        "top_players": None,
+    },
+    2007: {
+        "punishment": None,
+        "first_pick": None,
+        "top_players": None,
+    },
+}
+
+
+def get_season_manual_data(year: int) -> dict:
+    """Return manual history data for a given season year, or empty dict."""
+    return SEASON_HISTORY_MANUAL.get(year, {})
+
+
+def get_all_manual_history() -> dict:
+    """Return the full manual history dict."""
+    return SEASON_HISTORY_MANUAL

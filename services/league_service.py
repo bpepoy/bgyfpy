@@ -818,6 +818,8 @@ def _parse_league_identity(metadata_dict, settings_dict, founded, years_active):
 
 def _parse_draft_settings(settings_dict):
     """Draft configuration block."""
+    from config import get_auction_budget_default
+
     is_auction = settings_dict.get("is_auction_draft") == 1
     draft_type_raw = settings_dict.get("draft_type", "")
 
@@ -828,23 +830,33 @@ def _parse_draft_settings(settings_dict):
     else:
         draft_type = "Snake"
 
-    # Auction budget lives in settings as auction_budget_total
+    # Auction budget: try several field names Yahoo uses, fall back to hardcoded default.
+    # NOTE: Yahoo's API does not consistently expose this field — default is $200.
+    #       Update AUCTION_BUDGET_DEFAULT in config.py if the league changes its budget.
     auction_budget = None
-    raw_budget = settings_dict.get("auction_budget_total") or settings_dict.get("auction_budget")
-    if raw_budget is not None:
-        try:
-            auction_budget = int(raw_budget)
-        except (ValueError, TypeError):
-            pass
+    if is_auction:
+        for field in ("auction_budget_total", "auction_budget", "draft_budget"):
+            raw = settings_dict.get(field)
+            if raw is not None:
+                try:
+                    auction_budget = int(raw)
+                    break
+                except (ValueError, TypeError):
+                    pass
+        if auction_budget is None:
+            auction_budget = get_auction_budget_default()  # hardcoded fallback
 
     return {
         "type": draft_type,
-        "auction_budget": auction_budget if is_auction else None,
+        "auction_budget": auction_budget,
+        "auction_budget_source": "api" if (is_auction and auction_budget != get_auction_budget_default()) else ("hardcoded_default" if is_auction else None),
     }
 
 
 def _parse_waiver_settings(settings_dict):
     """Waiver / FAAB configuration block."""
+    from config import get_faab_budget_default
+
     uses_faab = bool(int(settings_dict.get("uses_faab") or 0))
     waiver_type = settings_dict.get("waiver_type", "")
 
@@ -855,19 +867,28 @@ def _parse_waiver_settings(settings_dict):
         system = "Standard Waivers"
         order = "Inverse Order of Standings" if waiver_type == "R" else waiver_type
 
-    # FAAB budget from settings
+    # FAAB budget: try API first, fall back to hardcoded default.
+    # NOTE: Yahoo's API does not consistently expose this field — default is $200.
+    #       Update FAAB_BUDGET_DEFAULT in config.py if the league changes its budget.
     faab_budget = None
-    raw_faab = settings_dict.get("faab_budget")
-    if uses_faab and raw_faab is not None:
-        try:
-            faab_budget = int(raw_faab)
-        except (ValueError, TypeError):
-            pass
+    faab_source = None
+    if uses_faab:
+        raw_faab = settings_dict.get("faab_budget")
+        if raw_faab is not None:
+            try:
+                faab_budget = int(raw_faab)
+                faab_source = "api"
+            except (ValueError, TypeError):
+                pass
+        if faab_budget is None:
+            faab_budget = get_faab_budget_default()  # hardcoded fallback
+            faab_source = "hardcoded_default"
 
     return {
         "system": system,
         "order": order,
         "faab_budget": faab_budget,
+        "faab_budget_source": faab_source,
     }
 
 
@@ -977,3 +998,351 @@ def _parse_schedule_settings(settings_dict):
             }
     
     return scoring
+
+
+
+
+
+
+# ---------------------------------------------------------------------------
+# /league/history  — Season-by-season notable data for all BlackGold seasons
+# ---------------------------------------------------------------------------
+
+def get_league_history() -> dict:
+    """
+    Returns notable data for every BlackGold season:
+      - Champion, best record, most points, last place (from standings API)
+      - First overall draft pick (draft API, falls back to manual config)
+      - Top scorer per position: QB, WR, RB, TE (manual config, or live fetch fallback)
+      - Punishment (manual config only)
+
+    All 19 seasons are returned in a single response, newest first.
+    """
+    from config import get_league_name, get_all_manual_history
+
+    seasons_data = get_all_seasons()
+    blackgold_seasons = [
+        s for s in seasons_data.get("seasons", [])
+    ]
+    # Oldest → newest for processing; we'll reverse at the end
+    blackgold_seasons.sort(key=lambda s: s["year"])
+
+    manual_history = get_all_manual_history()
+    results = []
+
+    for season in blackgold_seasons:
+        year = season["year"]
+        league_key = season["league_key"]
+        manual = manual_history.get(year, {})
+
+        season_entry = {
+            "year": year,
+            "league_key": league_key,
+        }
+
+        # --- Standings-derived data ---
+        try:
+            standings_block = _history_from_standings(league_key, year)
+            season_entry.update(standings_block)
+        except Exception as e:
+            season_entry["standings_error"] = str(e)
+
+        # --- First overall draft pick ---
+        first_pick = None
+        if manual.get("first_pick"):
+            first_pick = manual["first_pick"]
+            first_pick["source"] = "manual"
+        else:
+            try:
+                first_pick = _fetch_first_pick(league_key)
+                if first_pick:
+                    first_pick["source"] = "api"
+            except Exception:
+                pass
+        season_entry["first_overall_pick"] = first_pick
+
+        # --- Top players per position ---
+        top_players = None
+        if manual.get("top_players"):
+            top_players = manual["top_players"]
+            season_entry["top_players_source"] = "manual"
+        else:
+            try:
+                top_players = _fetch_top_players(league_key)
+                season_entry["top_players_source"] = "api" if top_players else None
+            except Exception:
+                top_players = None
+                season_entry["top_players_source"] = None
+        season_entry["top_players"] = top_players
+
+        # --- Punishment (manual only) ---
+        season_entry["punishment"] = manual.get("punishment")
+
+        results.append(season_entry)
+
+    # Newest first
+    results.sort(key=lambda r: r["year"], reverse=True)
+
+    return {
+        "league": get_league_name(),
+        "total_seasons": len(results),
+        "seasons": results,
+    }
+
+
+def _history_from_standings(league_key: str, year: int) -> dict:
+    """
+    Derive champion, best record, most points, and last place
+    from the standings for a given season.
+    Uses the same _extract_* helpers as the rest of the service.
+    """
+    from config import get_manager_identity
+
+    query = get_query(league_key)
+    standings_raw = query.get_league_standings()
+    standings_dict = _convert_to_dict(standings_raw)
+    teams_list = _extract_teams_list(standings_dict)
+
+    valid_teams = [t for t in teams_list if isinstance(t, dict)]
+    num_teams = len(valid_teams)
+
+    champion       = None
+    best_record    = None
+    most_points    = None
+    last_place     = None
+
+    best_win_pct   = -1.0
+    highest_pf     = -1.0
+
+    for t in valid_teams:
+        ts   = _extract_team_standings(t)
+        ot   = _extract_outcome_totals(ts)
+        rank = _safe_int(ts.get("rank"))
+        team_key = t.get("team_key", "")
+
+        wins   = _safe_int(ot.get("wins"))
+        losses = _safe_int(ot.get("losses"))
+        ties   = _safe_int(ot.get("ties"))
+        games  = wins + losses + ties
+        pf     = _safe_float(ts.get("points_for"))
+        win_pct = _safe_float(ot.get("percentage"))
+
+        record_str = f"{wins}-{losses}-{ties}" if ties else f"{wins}-{losses}"
+        avg_ppg = round(pf / games, 2) if games else 0.0
+
+        # Resolve display name from config
+        identity = get_manager_identity(team_key=team_key)
+        display_name = identity["display_name"] if identity else t.get("name", "Unknown")
+        team_name    = t.get("name", "Unknown")
+
+        entry = {
+            "display_name": display_name,
+            "team_name":    team_name,
+            "record":       record_str,
+            "wins":         wins,
+            "losses":       losses,
+            "ties":         ties,
+            "win_pct":      round(win_pct, 4),
+            "points_for":   round(pf, 2),
+            "avg_points_per_game": avg_ppg,
+        }
+
+        if rank == 1:
+            champion = entry.copy()
+
+        if rank == num_teams:
+            last_place = entry.copy()
+
+        if win_pct > best_win_pct:
+            best_win_pct  = win_pct
+            best_record   = entry.copy()
+
+        if pf > highest_pf:
+            highest_pf  = pf
+            most_points = {
+                "display_name":       display_name,
+                "team_name":          team_name,
+                "points_for":         round(pf, 2),
+                "avg_points_per_game": avg_ppg,
+            }
+
+    return {
+        "champion":         champion,
+        "best_record":      best_record,
+        "most_points":      most_points,
+        "last_place":       last_place,
+    }
+
+
+def _fetch_first_pick(league_key: str) -> dict | None:
+    """
+    Fetch the first overall draft pick for a season from the Yahoo API.
+    Returns None if unavailable or if the draft hasn't occurred.
+    """
+    from config import get_manager_identity
+
+    query = get_query(league_key)
+    try:
+        draft_raw = query.get_league_draft_results()
+        draft_dict = _convert_to_dict(draft_raw)
+
+        # YFPY returns draft results as a list of pick dicts
+        picks = draft_dict if isinstance(draft_dict, list) else draft_dict.get("draft_results", [])
+        if not picks:
+            return None
+
+        # Find pick number 1
+        pick1 = None
+        for p in picks:
+            pick = p.get("draft_result", p) if isinstance(p, dict) else {}
+            if _safe_int(pick.get("pick")) == 1:
+                pick1 = pick
+                break
+
+        if not pick1:
+            # Fallback: first item in list
+            raw = picks[0]
+            pick1 = raw.get("draft_result", raw) if isinstance(raw, dict) else {}
+
+        player_name = pick1.get("player_name") or pick1.get("name")
+        team_key    = pick1.get("team_key", "")
+        position    = pick1.get("display_position") or pick1.get("position")
+
+        identity = get_manager_identity(team_key=team_key)
+        display_name = identity["display_name"] if identity else None
+
+        if not player_name:
+            return None
+
+        return {
+            "player":   player_name,
+            "position": position,
+            "team":     display_name,
+        }
+
+    except Exception:
+        return None
+
+
+def _fetch_top_players(league_key: str) -> dict | None:
+    """
+    Attempt to fetch the top fantasy scorer per position (QB, WR, RB, TE)
+    from rostered players in this league season.
+
+    Returns a dict keyed by position, or None if the fetch fails entirely.
+    Only called for seasons not already hardcoded in SEASON_HISTORY_MANUAL.
+    """
+    from config import get_manager_identity
+
+    POSITIONS = ["QB", "WR", "RB", "TE"]
+
+    try:
+        query = get_query(league_key)
+
+        # Fetch all rosters across all teams — one call per team is unavoidable
+        # but this is only triggered for non-hardcoded seasons
+        standings_raw = query.get_league_standings()
+        standings_dict = _convert_to_dict(standings_raw)
+        teams_list = _extract_teams_list(standings_dict)
+
+        # player_key -> {name, position, points, team_display_name}
+        player_scores: dict[str, dict] = {}
+
+        for t in teams_list:
+            if not isinstance(t, dict):
+                continue
+            team_key = t.get("team_key", "")
+            identity = get_manager_identity(team_key=team_key)
+            manager_name = identity["display_name"] if identity else t.get("name", "Unknown")
+            team_id = _team_id_from_key(team_key)
+
+            try:
+                roster_raw = query.get_team_roster_player_stats_by_season(team_id)
+                roster_dict = _convert_to_dict(roster_raw)
+
+                players = _extract_players_from_roster(roster_dict)
+                for player in players:
+                    pid      = player.get("player_key") or player.get("player_id")
+                    name     = player.get("full_name") or player.get("name")
+                    pos      = player.get("display_position") or player.get("position", "")
+                    pts_raw  = (
+                        player.get("player_points_total")
+                        or player.get("points_total")
+                        or player.get("total_points")
+                        or 0
+                    )
+                    pts = _safe_float(pts_raw)
+
+                    # Only track primary positions we care about
+                    primary_pos = str(pos).split(",")[0].strip()
+                    if primary_pos not in POSITIONS:
+                        continue
+
+                    if pid and (pid not in player_scores or pts > player_scores[pid]["points"]):
+                        player_scores[pid] = {
+                            "name":     name,
+                            "position": primary_pos,
+                            "points":   pts,
+                            "team":     manager_name,
+                        }
+            except Exception:
+                continue  # skip teams where roster fetch fails
+
+        if not player_scores:
+            return None
+
+        # Find top scorer per position
+        top: dict[str, dict] = {}
+        for pid, data in player_scores.items():
+            pos = data["position"]
+            if pos not in top or data["points"] > top[pos]["points"]:
+                top[pos] = {
+                    "name":   data["name"],
+                    "team":   data["team"],
+                    "points": data["points"],
+                }
+
+        return top if top else None
+
+    except Exception:
+        return None
+
+
+def _extract_players_from_roster(roster_dict: dict) -> list:
+    """
+    Normalize YFPY's various roster response shapes into a flat list of player dicts.
+    """
+    # Shape 1: {"players": [{"player": {...}}, ...]}
+    if "players" in roster_dict:
+        raw = roster_dict["players"]
+        if isinstance(raw, list):
+            result = []
+            for item in raw:
+                p = item.get("player", item) if isinstance(item, dict) else {}
+                result.append(p)
+            return result
+        if isinstance(raw, dict) and "player" in raw:
+            return [raw["player"]]
+
+    # Shape 2: direct list
+    if isinstance(roster_dict, list):
+        return [
+            (item.get("player", item) if isinstance(item, dict) else {})
+            for item in roster_dict
+        ]
+
+    return []
+
+
+def _safe_int(val, default: int = 0) -> int:
+    try:
+        return int(val)
+    except (TypeError, ValueError):
+        return default
+
+
+def _safe_float(val, default: float = 0.0) -> float:
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        return default
