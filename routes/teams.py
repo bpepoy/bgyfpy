@@ -30,9 +30,11 @@ from services.team_service import (
     get_team_results,
     get_team_matchups,
     get_team_transactions,
+    get_team_players,
     get_all_teams_records,
     get_all_teams_points,
     get_h2h_matchups,
+    build_season_seed,
 )
 
 router = APIRouter(prefix="/teams", tags=["Teams"])
@@ -232,6 +234,34 @@ def h2h_matchups(
     """
     try:
         return get_h2h_matchups(name1, name2, year)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
+@router.get("/{name}/players")
+def team_players(name: str):
+    """
+    Per-season player roster for a manager, ordered by total points.
+
+    For each season returns:
+      - Player name, position, total points
+      - Weeks on roster vs weeks as starter
+      - How they were acquired (draft, trade, waiver) — from seeded config data
+
+    Data comes from PLAYER_HISTORY_MANUAL in config.py (seeded after each season
+    via GET /league/seed?year=YYYY). Falls back to live API fetch for current/
+    unseeded seasons (no acquisition data in live mode).
+
+    Args:
+        name: Manager display name — case-insensitive
+
+    Examples:
+        GET /teams/brian/players
+        GET /teams/zef/players
+    """
+    try:
+        return get_team_players(name)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

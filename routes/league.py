@@ -582,3 +582,52 @@ def seed_top_players(year: str):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/seed")
+def seed_all_managers(year: str = Query(..., description="Season year e.g. '2024'")):
+    """
+    Admin/utility endpoint — run ONCE after each season ends.
+
+    Fetches weekly rosters, player stats, draft results, and transactions
+    for ALL managers in the given season. Returns a ready-to-paste config
+    block for PLAYER_HISTORY_MANUAL in config.py.
+
+    This is intentionally slow (many API calls) — it runs once per season,
+    not on every frontend request.
+
+    Usage: GET /league/seed?year=2024
+
+    After running:
+      1. Copy the 'paste_into_config' section from the response
+      2. Merge it into PLAYER_HISTORY_MANUAL in config.py
+      3. Fill in any 'punishment' fields manually
+      4. Commit and deploy
+    """
+    try:
+        from services.team_service import build_season_seed
+        import json
+
+        year_int = int(year)
+        seed_data = build_season_seed(year_int)
+
+        # Build paste-ready config string
+        lines = []
+        for manager_id, seasons in seed_data.items():
+            for yr, data in seasons.items():
+                lines.append(f'    # {manager_id} {yr}')
+                lines.append(f'    # Add to PLAYER_HISTORY_MANUAL["{manager_id}"][{yr}]:')
+                lines.append(f'    {json.dumps({yr: data}, indent=8)}')
+
+        return {
+            "year": year,
+            "managers_seeded": list(seed_data.keys()),
+            "data": seed_data,
+            "instructions": (
+                "For each manager, merge the data into PLAYER_HISTORY_MANUAL "
+                "in config.py under that manager's key. "
+                "Example: PLAYER_HISTORY_MANUAL['brian'][2024] = data['brian'][2024]"
+            ),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

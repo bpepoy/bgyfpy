@@ -281,6 +281,110 @@ def _build_era_summaries(valid_rows: list) -> dict:
     return result
 
 
+
+def _split_record_by_type(matchup_history: list) -> dict:
+    """
+    Given a list of matchup dicts (each with is_playoffs, is_consolation,
+    result W/L/T, my_points, opponent_points), return a dict with:
+      regular_season: {wins, losses, ties, games}
+      playoffs:       {wins, losses, ties, games}
+    """
+    rs = {"wins": 0, "losses": 0, "ties": 0, "games": 0}
+    pl = {"wins": 0, "losses": 0, "ties": 0, "games": 0}
+
+    for m in matchup_history:
+        bucket = pl if m.get("is_playoffs") else rs
+        r = m.get("result", "")
+        bucket["games"] += 1
+        if r == "W":   bucket["wins"]   += 1
+        elif r == "L": bucket["losses"] += 1
+        else:          bucket["ties"]   += 1
+
+    def _fmt(b):
+        rec = f"{b['wins']}-{b['losses']}-{b['ties']}" if b["ties"] else f"{b['wins']}-{b['losses']}"
+        return {
+            "record": rec,
+            "wins": b["wins"], "losses": b["losses"], "ties": b["ties"],
+            "games": b["games"],
+            "win_pct": round(b["wins"] / b["games"], 4) if b["games"] else None,
+        }
+
+    return {"regular_season": _fmt(rs), "playoffs": _fmt(pl)}
+
+
+def _fetch_matchup_history(display_name: str, blackgold_league_keys: set) -> list:
+    """
+    Fetch ALL matchups across all seasons for a manager.
+    Returns a flat list of matchup dicts:
+      {year, week, is_playoffs, is_consolation, result, my_points, opp_points,
+       opp_team_key, opp_name}
+
+    Used by overview and matchups to avoid duplicate API calls when both
+    reg/playoff split AND H2H data are needed.
+    """
+    all_matchups = []
+
+    for season in _get_seasons_for_manager(display_name):
+        year      = season["year"]
+        league_key = season["league_key"]
+        team_key   = season["team_key"]
+
+        if league_key not in blackgold_league_keys:
+            continue
+
+        try:
+            query    = get_query(league_key)
+            team_map = _get_all_team_map(query)
+            raw      = query.get_team_matchups(_team_id_from_key(team_key))
+            md       = _convert_to_dict(raw)
+
+            matchups_raw = md.get("matchups", []) if isinstance(md, dict) else (md if isinstance(md, list) else [])
+
+            for m in matchups_raw:
+                matchup     = m.get("matchup", m) if isinstance(m, dict) else {}
+                teams       = matchup.get("teams", [])
+                if isinstance(teams, dict):
+                    teams = list(teams.values())
+
+                my_pts = opp_pts = opp_team_key = None
+
+                for tw in teams:
+                    t  = tw.get("team", tw) if isinstance(tw, dict) else {}
+                    tk = t.get("team_key")
+                    pts = t.get("points")
+                    pts = float(pts) if pts is not None else _extract_points(t)
+                    if tk == team_key:
+                        my_pts = pts
+                    else:
+                        opp_pts      = pts
+                        opp_team_key = tk
+
+                if not opp_team_key:
+                    continue
+
+                winner_key = matchup.get("winner_team_key")
+                is_tied    = bool(int(matchup.get("is_tied",       0) or 0))
+                is_playoff = bool(int(matchup.get("is_playoffs",   0) or 0))
+                is_consol  = bool(int(matchup.get("is_consolation",0) or 0))
+                result     = "T" if is_tied else ("W" if winner_key == team_key else "L")
+
+                all_matchups.append({
+                    "year":            year,
+                    "week":            int(matchup.get("week") or 0),
+                    "is_playoffs":     is_playoff,
+                    "is_consolation":  is_consol,
+                    "result":          result,
+                    "my_points":       my_pts,
+                    "opp_points":      opp_pts,
+                    "opp_team_key":    opp_team_key,
+                    "opp_name":        _resolve_opponent_name(opp_team_key, team_map),
+                })
+
+        except Exception:
+            continue
+
+    return all_matchups
+
 # ---------------------------------------------------------------------------
 # /teams/{name}/overview  — Career summary across all seasons
 # ---------------------------------------------------------------------------
@@ -316,7 +420,7 @@ def _effective_finish(rank, seed) -> int | None:
 
 
 def get_team_overview(display_name: str) -> dict:
-    from config import LEAGUE_CONFIG
+    from config import LEAGUE_CONFIG, get_player_history_season
 
     manager_data = _get_manager_data(display_name)
     if not manager_data:
@@ -325,11 +429,17 @@ def get_team_overview(display_name: str) -> dict:
             f"Call /teams/managers to see valid names."
         )
 
-    # Only include seasons that belong to the BlackGold league chain.
-    # get_all_seasons() follows the renew chain from the known BlackGold key,
-    # so this set is already scoped correctly — this guard makes it explicit.
     seasons_data = get_all_seasons()
     blackgold_league_keys = {s["league_key"] for s in seasons_data.get("seasons", [])}
+
+    # Fetch all matchups once — used for reg/playoff split AND best/worst week
+    all_matchups = _fetch_matchup_history(display_name, blackgold_league_keys)
+    record_split = _split_record_by_type(all_matchups)
+
+    # Best and worst single-week scores (from matchup data, free)
+    scored_weeks = [m for m in all_matchups if m["my_points"] is not None and m["my_points"] > 0]
+    best_week  = max(scored_weeks, key=lambda m: m["my_points"], default=None)
+    worst_week = min(scored_weeks, key=lambda m: m["my_points"], default=None)
 
     num_teams = 10
 
@@ -466,51 +576,79 @@ def get_team_overview(display_name: str) -> dict:
 
     # --- Derived career stats ---
     avg_points_per_season = round(total_points_for / seasons_played, 2) if seasons_played else 0.0
-    avg_points_per_game = round(total_points_for / total_games, 2) if total_games else 0.0
+    avg_points_per_game   = round(total_points_for / total_games,    2) if total_games    else 0.0
     avg_points_against_per_season = round(total_points_against / seasons_played, 2) if seasons_played else 0.0
-    avg_points_against_per_game = round(total_points_against / total_games, 2) if total_games else 0.0
-    avg_points_rank = round(sum(points_ranks) / len(points_ranks), 2) if points_ranks else None
-    avg_finish = round(sum(finish_positions) / len(finish_positions), 2) if finish_positions else None
+    avg_points_against_per_game   = round(total_points_against / total_games,    2) if total_games    else 0.0
+    avg_points_rank = round(sum(points_ranks)     / len(points_ranks),     2) if points_ranks     else None
+    avg_finish      = round(sum(finish_positions) / len(finish_positions), 2) if finish_positions  else None
     record_str = f"{total_wins}-{total_losses}-{total_ties}" if total_ties else f"{total_wins}-{total_losses}"
 
-    # Build era summaries from season_history (already fetched — no extra API calls)
-    valid_history = [h for h in season_history if "error" not in h]
-    era_summaries = _build_era_summaries(valid_history)
+    # Best / worst season by avg PPG (derived from season_history)
+    valid_history = [h for h in season_history if "error" not in h and h.get("avg_points_per_game")]
+    best_ppg_season  = max(valid_history, key=lambda h: h["avg_points_per_game"], default=None)
+    worst_ppg_season = min(valid_history, key=lambda h: h["avg_points_per_game"], default=None)
+
+    def _ppg_season_ref(h):
+        if not h:
+            return None
+        return {"year": h["year"], "team_name": h.get("team_name"), "avg_points_per_game": h["avg_points_per_game"]}
+
+    # Reg season vs playoff record (from pre-fetched matchup history)
+    era_summaries = _build_era_summaries([h for h in season_history if "error" not in h])
+
+    # Per-season seeded player data
+    manager_id = manager_data["manager_id"]
+
+    # Aggregate career top players from seeded data
+    career_top_by_pos = _career_top_players_from_seed(manager_id, valid_history)
+    career_frequent   = _career_frequent_players_from_seed(manager_id, valid_history)
 
     return {
         "display_name": manager_data["display_name"],
-        "manager_id": manager_data["manager_id"],
-        "league": LEAGUE_CONFIG["name"],
+        "manager_id":   manager_id,
+        "league":       LEAGUE_CONFIG["name"],
 
         # Core career stats
-        "seasons_played": seasons_played,
-        "championships": championships,
-        "last_place_finishes": last_place_finishes,
-        "playoff_appearances": playoff_appearances,
+        "seasons_played":       seasons_played,
+        "championships":        championships,
+        "last_place_finishes":  last_place_finishes,
+        "playoff_appearances":  playoff_appearances,
 
-        # Record
-        "total_wins": total_wins,
+        # Record split
+        "regular_season_record": record_split["regular_season"],
+        "playoff_record":        record_split["playoffs"],
+        "total_record":          record_str,
+        "total_wins":   total_wins,
         "total_losses": total_losses,
-        "total_ties": total_ties,
-        "total_games": total_games,
-        "total_record": record_str,
-        "best_record_season": best_record_season,
+        "total_ties":   total_ties,
+        "total_games":  total_games,
+        "best_record_season":  best_record_season,
         "worst_record_season": worst_record_season,
 
         # Points
-        "total_points_for": round(total_points_for, 2),
-        "total_points_against": round(total_points_against, 2),
-        "avg_points_per_season": avg_points_per_season,
-        "avg_points_per_game": avg_points_per_game,
-        "avg_points_against_per_season": avg_points_against_per_season,
-        "avg_points_against_per_game": avg_points_against_per_game,
+        "total_points_for":               round(total_points_for,    2),
+        "total_points_against":           round(total_points_against, 2),
+        "avg_points_per_season":          avg_points_per_season,
+        "avg_points_per_game":            avg_points_per_game,
+        "avg_points_against_per_season":  avg_points_against_per_season,
+        "avg_points_against_per_game":    avg_points_against_per_game,
+        "best_ppg_season":                _ppg_season_ref(best_ppg_season),
+        "worst_ppg_season":               _ppg_season_ref(worst_ppg_season),
+
+        # Single-week extremes (free from matchup data)
+        "best_week":  {"year": best_week["year"],  "week": best_week["week"],  "points": best_week["my_points"]}  if best_week  else None,
+        "worst_week": {"year": worst_week["year"], "week": worst_week["week"], "points": worst_week["my_points"]} if worst_week else None,
 
         # Rankings
         "avg_points_rank": avg_points_rank,
-        "avg_finish": avg_finish,
+        "avg_finish":      avg_finish,
 
-        # Full season-by-season breakdown
-        "eras": era_summaries,
+        # Career top players (from seeded config data)
+        "career_top_players": career_top_by_pos,
+        "frequent_players":   career_frequent,
+
+        # Eras + full season-by-season breakdown
+        "eras":           era_summaries,
         "season_history": season_history,
     }
 
@@ -524,7 +662,7 @@ def get_team_results(display_name: str) -> dict:
     Single endpoint combining season-by-season record and points data.
     One standings fetch per season serves both sections — no duplicate API calls.
     """
-    from config import LEAGUE_CONFIG
+    from config import LEAGUE_CONFIG, get_player_history_season
 
     manager_data = _get_manager_data(display_name)
     if not manager_data:
@@ -581,6 +719,36 @@ def get_team_results(display_name: str) -> dict:
             avg_ppg = round(pf / games, 2) if games else 0.0
             avg_pa_ppg = round(pa / games, 2) if games else 0.0
 
+            # Fetch matchups for this season to get reg/playoff split
+            season_matchups = []
+            try:
+                team_map = _get_all_team_map(query)
+                raw_m = query.get_team_matchups(_team_id_from_key(team_key))
+                md    = _convert_to_dict(raw_m)
+                matchups_raw = md.get("matchups", []) if isinstance(md, dict) else (md if isinstance(md, list) else [])
+                for m in matchups_raw:
+                    matchup = m.get("matchup", m) if isinstance(m, dict) else {}
+                    teams_m = matchup.get("teams", [])
+                    if isinstance(teams_m, dict): teams_m = list(teams_m.values())
+                    my_pts_m = opp_pts_m = opp_tk = None
+                    for tw in teams_m:
+                        tm = tw.get("team", tw) if isinstance(tw, dict) else {}
+                        tk2 = tm.get("team_key")
+                        pts = tm.get("points")
+                        pts = float(pts) if pts is not None else _extract_points(tm)
+                        if tk2 == team_key: my_pts_m = pts
+                        else: opp_pts_m = pts; opp_tk = tk2
+                    if not opp_tk: continue
+                    winner_key = matchup.get("winner_team_key")
+                    is_tied    = bool(int(matchup.get("is_tied", 0) or 0))
+                    is_playoff = bool(int(matchup.get("is_playoffs", 0) or 0))
+                    result_m   = "T" if is_tied else ("W" if winner_key == team_key else "L")
+                    season_matchups.append({"year": year, "week": int(matchup.get("week") or 0),
+                                            "is_playoffs": is_playoff, "result": result_m,
+                                            "my_points": my_pts_m, "opp_points": opp_pts_m})
+            except Exception:
+                pass
+
             rows.append({
                 "year": year,
                 "team_name": t.get("name"),
@@ -597,6 +765,7 @@ def get_team_results(display_name: str) -> dict:
                 "avg_points_against_per_game": avg_pa_ppg,
                 "points_rank": points_rank,
                 "logo_url": _extract_logo_url(t),
+                "_matchups": season_matchups,  # stripped before final return
             })
 
         except Exception as e:
@@ -606,15 +775,40 @@ def get_team_results(display_name: str) -> dict:
     rows.sort(key=lambda r: r.get("year", 0), reverse=True)
 
     valid_rows = [r for r in rows if "error" not in r]
-    last_5 = valid_rows[:5]  # newest-first, so first 5 = last 5 seasons
+    last_5 = valid_rows[:5]
+
+    # Reg season vs playoff split from matchup history (already fetched above per season)
+    # We stored per-season matchup buckets on each row during the loop
+    all_matchups_flat = []
+    for r in valid_rows:
+        all_matchups_flat.extend(r.pop("_matchups", []))
+
+    record_split = _split_record_by_type(all_matchups_flat)
+
+    # Enrich each season row with seeded player data
+    manager_id = manager_data["manager_id"]
+    for r in rows:
+        if "error" in r:
+            continue
+        yr = r["year"]
+        seed = get_player_history_season(manager_id, yr)
+        r["top_starters"]        = seed.get("top_starters")
+        r["starter_points_total"]= seed.get("starter_points_total")
+        # Reg/playoff split per season
+        season_matchups = [m for m in all_matchups_flat if m["year"] == yr]
+        split = _split_record_by_type(season_matchups)
+        r["regular_season_record"] = split["regular_season"]
+        r["playoff_record"]        = split["playoffs"]
 
     return {
         "display_name": manager_data["display_name"],
         "league": LEAGUE_CONFIG["name"],
-        "all_time": _summarize_rows(valid_rows),
-        "last_5_seasons": _summarize_rows(last_5),
-        "eras": _build_era_summaries(valid_rows),
-        "seasons": rows,
+        "regular_season_record": record_split["regular_season"],
+        "playoff_record":        record_split["playoffs"],
+        "all_time":              _summarize_rows(valid_rows),
+        "last_5_seasons":        _summarize_rows(last_5),
+        "eras":                  _build_era_summaries(valid_rows),
+        "seasons":               rows,
     }
 
 
@@ -716,27 +910,41 @@ def get_team_matchups(display_name: str) -> dict:
                         "wins": 0, "losses": 0, "ties": 0,
                         "total_pf": 0.0, "total_pa": 0.0,
                         "games": 0,
-                        # Store (year, week, result) tuples for last-5 logic
+                        "rs_wins": 0, "rs_losses": 0, "rs_ties": 0,
+                        "pl_wins": 0, "pl_losses": 0, "pl_ties": 0,
                         "_history": [],
                     }
 
-                acc = opponents[opp_name]
-                if result == "W":
-                    acc["wins"] += 1
-                elif result == "L":
-                    acc["losses"] += 1
-                else:
-                    acc["ties"] += 1
+                acc      = opponents[opp_name]
+                week_num = int(matchup.get("week") or 0)
+                is_pl    = bool(int(matchup.get("is_playoffs",   0) or 0))
+                is_con   = bool(int(matchup.get("is_consolation",0) or 0))
 
-                acc["games"] += 1
+                if result == "W":   acc["wins"]   += 1
+                elif result == "L": acc["losses"] += 1
+                else:               acc["ties"]   += 1
+
+                if is_pl:
+                    if result == "W":   acc["pl_wins"]   += 1
+                    elif result == "L": acc["pl_losses"] += 1
+                    else:               acc["pl_ties"]   += 1
+                else:
+                    if result == "W":   acc["rs_wins"]   += 1
+                    elif result == "L": acc["rs_losses"] += 1
+                    else:               acc["rs_ties"]   += 1
+
+                acc["games"]    += 1
                 acc["total_pf"] += my_pts or 0
                 acc["total_pa"] += opp_pts or 0
                 acc["_history"].append({
-                    "year": year,
-                    "week": int(matchup.get("week") or 0),
-                    "result": result,
-                    "my_points": my_pts,
-                    "opponent_points": opp_pts,
+                    "year":             year,
+                    "week":             week_num,
+                    "is_playoffs":      is_pl,
+                    "is_consolation":   is_con,
+                    "result":           result,
+                    "my_points":        my_pts,
+                    "opponent_points":  opp_pts,
+                    "margin":           round((my_pts or 0) - (opp_pts or 0), 2),
                 })
 
         except Exception as e:
@@ -751,44 +959,101 @@ def get_team_matchups(display_name: str) -> dict:
     # Build final per-opponent rows
     rows = []
     season_errors = {}
+    from config import get_league_eras
+
     for opp_name, acc in opponents.items():
         if opp_name.startswith("__error_"):
             season_errors[opp_name] = acc.get("_error")
             continue
-        g = acc["games"]
-        wins = acc["wins"]
-        losses = acc["losses"]
-        ties = acc["ties"]
+
+        g      = acc["games"]
+        wins   = acc["wins"];   losses = acc["losses"];   ties = acc["ties"]
         avg_pf = round(acc["total_pf"] / g, 2) if g else 0.0
         avg_pa = round(acc["total_pa"] / g, 2) if g else 0.0
+
+        def _rec(w, l, t, gm):
+            rec = f"{w}-{l}-{t}" if t else f"{w}-{l}"
+            return {"record": rec, "wins": w, "losses": l, "ties": t, "games": gm,
+                    "win_pct": round(w / gm, 4) if gm else None}
+
         record_str = f"{wins}-{losses}-{ties}" if ties else f"{wins}-{losses}"
 
-        # Sort history chronologically and take last 5
+        # Sort history chronologically
         history_sorted = sorted(acc["_history"], key=lambda x: (x["year"], x["week"]))
-        last_5 = [h["result"] for h in history_sorted[-5:]]
+        last_5_results = [h["result"] for h in history_sorted[-5:]]
+        last_5_detail  = [{"year": h["year"], "week": h["week"], "result": h["result"],
+                           "my_points": h["my_points"], "opponent_points": h["opponent_points"]}
+                          for h in history_sorted[-5:]]
+
+        # Margins
+        margins = [h["margin"] for h in history_sorted if h["my_points"] is not None]
+        best_margin_entry  = max(history_sorted, key=lambda h: h["margin"],  default=None) if margins else None
+        worst_margin_entry = min(history_sorted, key=lambda h: h["margin"],  default=None) if margins else None
+        closest_win_entry  = min([h for h in history_sorted if h["result"] == "W"],
+                                  key=lambda h: h["margin"], default=None)
+        closest_loss_entry = max([h for h in history_sorted if h["result"] == "L"],
+                                  key=lambda h: h["margin"], default=None)
+
+        def _margin_ref(h):
+            if not h: return None
+            return {"year": h["year"], "week": h["week"], "margin": h["margin"],
+                    "my_points": h["my_points"], "opponent_points": h["opponent_points"]}
+
+        # Era breakdowns
+        eras = get_league_eras()
+        era_records = {}
+        for slug, era in eras.items():
+            if slug == "overall": continue
+            start = era["start_year"]; end = era["end_year"]
+            era_h = [h for h in history_sorted
+                     if h["year"] >= start and (end is None or h["year"] <= end)]
+            if not era_h: continue
+            rs_h = [h for h in era_h if not h["is_playoffs"]]
+            pl_h = [h for h in era_h if h["is_playoffs"]]
+            def _count(lst):
+                w = sum(1 for h in lst if h["result"]=="W")
+                l = sum(1 for h in lst if h["result"]=="L")
+                t = sum(1 for h in lst if h["result"]=="T")
+                return _rec(w, l, t, len(lst))
+            era_records[slug] = {
+                "era_name":       era["display_name"],
+                "overall":        _count(era_h),
+                "regular_season": _count(rs_h),
+                "playoffs":       _count(pl_h),
+            }
 
         rows.append({
-            "opponent_name": opp_name,
-            "record": record_str,
-            "wins": wins,
-            "losses": losses,
-            "ties": ties,
-            "games_played": g,
-            "avg_points_for": avg_pf,
-            "avg_points_against": avg_pa,
-            "point_differential": round(avg_pf - avg_pa, 2),
-            "last_5": last_5,  # e.g. ["W","L","W","W","L"]
+            "opponent_name":     opp_name,
+            "record":            record_str,
+            "wins":              wins,
+            "losses":            losses,
+            "ties":              ties,
+            "games_played":      g,
+            "avg_points_for":    avg_pf,
+            "avg_points_against":avg_pa,
+            "point_differential":round(avg_pf - avg_pa, 2),
+            "regular_season":    _rec(acc["rs_wins"], acc["rs_losses"], acc["rs_ties"],
+                                      acc["rs_wins"]+acc["rs_losses"]+acc["rs_ties"]),
+            "playoffs":          _rec(acc["pl_wins"], acc["pl_losses"], acc["pl_ties"],
+                                      acc["pl_wins"]+acc["pl_losses"]+acc["pl_ties"]),
+            "last_5":            last_5_results,
+            "last_5_detail":     last_5_detail,
+            "biggest_win":       _margin_ref(best_margin_entry),
+            "biggest_loss":      _margin_ref(worst_margin_entry),
+            "closest_win":       _margin_ref(closest_win_entry),
+            "closest_loss":      _margin_ref(closest_loss_entry),
+            "eras":              era_records,
         })
 
     # Sort by games played desc, then opponent name alpha
     rows.sort(key=lambda r: (-r["games_played"], r["opponent_name"]))
 
     return {
-        "display_name": manager_data["display_name"],
-        "league": LEAGUE_CONFIG["name"],
-        "opponents": rows,
-        "total_opponents": len(rows),
-        "season_errors": season_errors if season_errors else None,
+        "display_name":   manager_data["display_name"],
+        "league":         LEAGUE_CONFIG["name"],
+        "opponents":      rows,
+        "total_opponents":len(rows),
+        "season_errors":  season_errors if season_errors else None,
     }
 
 
@@ -1068,3 +1333,451 @@ def _get_h2h_all_seasons(name1: str, name2: str) -> dict:
             continue
 
     return {"name1": name1, "name2": name2, "year": "all", "summary": total_summary, "matchups": all_matchups}
+
+# ---------------------------------------------------------------------------
+# Seed helpers — read from PLAYER_HISTORY_MANUAL in config
+# ---------------------------------------------------------------------------
+
+def _career_top_players_from_seed(manager_id: str, valid_history: list) -> dict:
+    """
+    Aggregate career-best starter per position across all seeded seasons.
+    Returns {"QB": {name, team_name, year, total_points, weeks_started}, ...}
+    """
+    from config import get_player_history_season
+    POSITIONS = ["QB", "WR", "RB", "TE"]
+    best: dict = {}
+
+    for row in valid_history:
+        yr   = row["year"]
+        seed = get_player_history_season(manager_id, yr)
+        top  = seed.get("top_starters") or {}
+        for pos in POSITIONS:
+            p = top.get(pos)
+            if not p:
+                continue
+            pts = p.get("total_points", 0)
+            if pos not in best or pts > best[pos]["total_points"]:
+                best[pos] = {**p, "year": yr, "position": pos}
+
+    return best
+
+
+def _career_frequent_players_from_seed(manager_id: str, valid_history: list) -> list:
+    """
+    Aggregate most-frequent players across all seeded seasons.
+    Returns top 10 by total weeks_on_roster.
+    """
+    from config import get_player_history_season
+    player_totals: dict = {}
+
+    for row in valid_history:
+        yr   = row["year"]
+        seed = get_player_history_season(manager_id, yr)
+        freq = seed.get("frequent_players") or []
+        for p in freq:
+            name = p.get("name")
+            if not name:
+                continue
+            if name not in player_totals:
+                player_totals[name] = {
+                    "name":            name,
+                    "position":        p.get("position"),
+                    "weeks_on_roster": 0,
+                    "weeks_as_starter":0,
+                    "total_points":    0.0,
+                    "seasons":         [],
+                }
+            player_totals[name]["weeks_on_roster"]  += p.get("weeks_on_roster",  0)
+            player_totals[name]["weeks_as_starter"] += p.get("weeks_as_starter", 0)
+            player_totals[name]["total_points"]     += p.get("total_points",     0.0)
+            player_totals[name]["seasons"].append(yr)
+
+    ranked = sorted(player_totals.values(), key=lambda x: x["weeks_on_roster"], reverse=True)
+    return ranked[:10]
+
+
+# ---------------------------------------------------------------------------
+# /teams/{name}/players  — Simplified player history per season
+# ---------------------------------------------------------------------------
+
+def get_team_players(display_name: str) -> dict:
+    """
+    Per-season player roster for a manager.
+
+    For each season returns players ordered by total points (desc):
+      - name, position, total_points
+      - weeks_on_roster, weeks_as_starter
+      - season-by-season breakdown (from seeded config data)
+
+    Data source: PLAYER_HISTORY_MANUAL in config.py (seeded after each season).
+    Falls back to live API fetch for current/unseeded seasons.
+    """
+    from config import LEAGUE_CONFIG, get_player_history
+
+    manager_data = _get_manager_data(display_name)
+    if not manager_data:
+        raise Exception(f"Manager '{display_name}' not found.")
+
+    manager_id    = manager_data["manager_id"]
+    seeded_data   = get_player_history(manager_id)
+    seasons_data  = get_all_seasons()
+    blackgold_keys= {s["league_key"] for s in seasons_data.get("seasons", [])}
+
+    seasons_out = []
+
+    for season in _get_seasons_for_manager(display_name):
+        year       = season["year"]
+        league_key = season["league_key"]
+        team_key   = season["team_key"]
+
+        if league_key not in blackgold_keys:
+            continue
+
+        seed = seeded_data.get(year, {})
+
+        if seed.get("players"):
+            # Fast path: use hardcoded data
+            players = _players_from_seed(seed["players"])
+            source  = "seeded"
+        else:
+            # Live fetch fallback (current/unseeded season only)
+            players = _fetch_players_live(league_key, team_key)
+            source  = "live" if players else None
+
+        seasons_out.append({
+            "year":       year,
+            "team_name":  None,   # enriched below if we have seed data
+            "source":     source,
+            "players":    players,
+        })
+
+    seasons_out.sort(key=lambda r: r["year"], reverse=True)
+
+    return {
+        "display_name": manager_data["display_name"],
+        "manager_id":   manager_id,
+        "league":       LEAGUE_CONFIG["name"],
+        "seasons":      seasons_out,
+    }
+
+
+def _players_from_seed(players_dict: dict) -> list:
+    """Convert seeded players dict to sorted list (most points first)."""
+    result = []
+    for player_key, p in players_dict.items():
+        result.append({
+            "player_key":       player_key,
+            "name":             p.get("name"),
+            "position":         p.get("position"),
+            "total_points":     p.get("total_points"),
+            "weeks_on_roster":  p.get("weeks_on_roster"),
+            "weeks_as_starter": p.get("weeks_as_starter"),
+            "acquired_type":    p.get("acquired_type"),
+            "acquired_detail":  p.get("acquired_detail"),
+        })
+    result.sort(key=lambda x: (x.get("total_points") or 0), reverse=True)
+    return result
+
+
+def _fetch_players_live(league_key: str, team_key: str) -> list:
+    """
+    Live fallback: fetch rostered players + season stats for unseeded seasons.
+    Returns list sorted by total_points desc, or empty list on failure.
+    """
+    try:
+        query   = get_query(league_key)
+        team_id = _team_id_from_key(team_key)
+
+        roster_raw  = query.get_team_roster_player_stats_by_season(team_id)
+        roster_dict = _convert_to_dict(roster_raw)
+
+        players = []
+        raw_list = roster_dict if isinstance(roster_dict, list) else \
+                   roster_dict.get("players", [])
+
+        for item in raw_list:
+            p    = item.get("player", item) if isinstance(item, dict) else {}
+            name = p.get("full_name") or p.get("name")
+            pos  = (p.get("display_position") or p.get("primary_position") or "")
+            pos  = str(pos).split(",")[0].strip()
+            pts_raw = (p.get("player_points_total") or p.get("points_total")
+                       or p.get("total_points") or 0)
+            try:
+                pts = float(pts_raw)
+            except (TypeError, ValueError):
+                pts = 0.0
+
+            if not name:
+                continue
+
+            players.append({
+                "player_key":       p.get("player_key"),
+                "name":             name,
+                "position":         pos,
+                "total_points":     pts,
+                "weeks_on_roster":  None,  # not available from season stats call
+                "weeks_as_starter": None,
+                "acquired_type":    None,
+                "acquired_detail":  None,
+            })
+
+        players.sort(key=lambda x: (x.get("total_points") or 0), reverse=True)
+        return players
+
+    except Exception:
+        return []
+
+
+# ---------------------------------------------------------------------------
+# GET /league/seed?year=YYYY — Admin endpoint data builder
+# ---------------------------------------------------------------------------
+
+def build_season_seed(year: int) -> dict:
+    """
+    Builds the full PLAYER_HISTORY_MANUAL config block for all managers
+    for a given season. Run once after each season ends.
+
+    Fetches for every active manager that season:
+      - Weekly rosters (to count weeks_on_roster / weeks_as_starter)
+      - Season player stats (total points)
+      - Draft results (acquisition info)
+      - Transaction log (trade/waiver acquisition info)
+
+    Returns a dict ready to paste into PLAYER_HISTORY_MANUAL in config.py.
+    """
+    from config import MANAGER_IDENTITY_MAP
+    from services.league_service import get_league_key_for_season
+
+    league_key = get_league_key_for_season(str(year))
+    query      = get_query(league_key)
+
+    # Get all teams for this season
+    team_map = _get_all_team_map(query)
+
+    # Get playoff start week from settings
+    try:
+        settings_raw = query.get_league_settings()
+        settings_dict = _convert_to_dict(settings_raw)
+        playoff_start = int(settings_dict.get("playoff_start_week") or 15)
+        end_week      = int(settings_dict.get("end_week") or 17)
+    except Exception:
+        playoff_start = 15
+        end_week      = 17
+
+    # Build acquisition map from draft results
+    acq_map = _build_acquisition_map(query, league_key)
+
+    result = {}
+
+    for team_key, team_dict in team_map.items():
+        identity = get_manager_identity(team_key=team_key)
+        if not identity:
+            continue
+
+        manager_id   = identity["manager_id"]
+        team_id      = _team_id_from_key(team_key)
+        team_name    = team_dict.get("name", "")
+
+        # --- Weekly roster scan ---
+        # player_key -> {weeks_on_roster, weeks_as_starter, points_by_week}
+        player_weekly: dict = {}
+
+        for week in range(1, end_week + 1):
+            try:
+                roster_raw  = query.get_team_roster_by_week(team_id, week)
+                roster_dict = _convert_to_dict(roster_raw)
+                players_raw = _extract_roster_players(roster_dict)
+
+                for p in players_raw:
+                    pk       = p.get("player_key") or p.get("player_id")
+                    pname    = p.get("full_name") or p.get("name")
+                    pos_raw  = p.get("display_position") or p.get("primary_position") or ""
+                    pos      = str(pos_raw).split(",")[0].strip()
+                    slot     = p.get("selected_position") or p.get("starting_status") or ""
+                    is_start = str(slot).upper() not in ("BN", "IR", "BENCH", "")
+
+                    # Try to get points for this player this week
+                    pts_raw = (p.get("player_points") or p.get("points") or
+                               p.get("player_points_total") or 0)
+                    try:
+                        pts = float(pts_raw)
+                    except (TypeError, ValueError):
+                        pts = 0.0
+
+                    if not pk or not pname:
+                        continue
+
+                    if pk not in player_weekly:
+                        player_weekly[pk] = {
+                            "name":             pname,
+                            "position":         pos,
+                            "weeks_on_roster":  0,
+                            "weeks_as_starter": 0,
+                            "total_points":     0.0,
+                        }
+
+                    player_weekly[pk]["weeks_on_roster"]  += 1
+                    if is_start:
+                        player_weekly[pk]["weeks_as_starter"] += 1
+                    player_weekly[pk]["total_points"] += pts
+
+            except Exception:
+                continue
+
+        # --- Top starters by position ---
+        POSITIONS = ["QB", "WR", "RB", "TE"]
+        top_starters = {}
+        for pos in POSITIONS:
+            candidates = [
+                (pk, d) for pk, d in player_weekly.items()
+                if d["position"] == pos and d["weeks_as_starter"] > 0
+            ]
+            if candidates:
+                best_pk, best_d = max(candidates, key=lambda x: x[1]["total_points"])
+                top_starters[pos] = {
+                    "name":          best_d["name"],
+                    "team_name":     team_name,
+                    "total_points":  round(best_d["total_points"], 2),
+                    "weeks_started": best_d["weeks_as_starter"],
+                }
+
+        # --- Frequent players top 10 ---
+        frequent = sorted(
+            player_weekly.values(),
+            key=lambda d: d["weeks_on_roster"],
+            reverse=True
+        )[:10]
+        frequent_out = [
+            {
+                "name":             d["name"],
+                "position":         d["position"],
+                "weeks_on_roster":  d["weeks_on_roster"],
+                "weeks_as_starter": d["weeks_as_starter"],
+                "total_points":     round(d["total_points"], 2),
+            }
+            for d in frequent
+        ]
+
+        # --- Starter points total ---
+        starter_pts = sum(
+            d["total_points"] for d in player_weekly.values()
+            if d["weeks_as_starter"] > 0
+        )
+
+        # --- Players dict (all players, acquisition info merged) ---
+        players_out = {}
+        for pk, d in player_weekly.items():
+            acq = acq_map.get(team_key, {}).get(pk, {})
+            players_out[pk] = {
+                "name":             d["name"],
+                "position":         d["position"],
+                "total_points":     round(d["total_points"], 2),
+                "weeks_on_roster":  d["weeks_on_roster"],
+                "weeks_as_starter": d["weeks_as_starter"],
+                "acquired_type":    acq.get("type"),
+                "acquired_detail":  acq.get("detail"),
+            }
+
+        result[manager_id] = {
+            year: {
+                "top_starters":         top_starters,
+                "frequent_players":     frequent_out,
+                "starter_points_total": round(starter_pts, 2),
+                "players":              players_out,
+            }
+        }
+
+    return result
+
+
+def _build_acquisition_map(query, league_key: str) -> dict:
+    """
+    Returns {team_key: {player_key: {type, detail}}}
+    Merges draft picks + transactions.
+    """
+    acq: dict = {}
+
+    # Draft results
+    try:
+        draft_raw  = query.get_league_draft_results()
+        draft_dict = _convert_to_dict(draft_raw)
+        picks      = draft_dict if isinstance(draft_dict, list) else draft_dict.get("draft_results", [])
+
+        for item in picks:
+            p    = item.get("draft_result", item) if isinstance(item, dict) else {}
+            tk   = p.get("team_key")
+            pk   = p.get("player_key")
+            pick = p.get("pick")
+            rnd  = p.get("round")
+            if not tk or not pk:
+                continue
+            if tk not in acq:
+                acq[tk] = {}
+            detail = f"Pick {rnd}.{str(pick).zfill(2)}" if rnd and pick else f"Pick #{pick}"
+            acq[tk][pk] = {"type": "draft", "detail": detail}
+
+    except Exception:
+        pass
+
+    # Transactions (adds = waiver/FA, trades)
+    try:
+        trans_raw  = query.get_league_transactions()
+        trans_dict = _convert_to_dict(trans_raw)
+        trans_list = trans_dict if isinstance(trans_dict, list) else trans_dict.get("transactions", [])
+
+        for item in trans_list:
+            tx   = item.get("transaction", item) if isinstance(item, dict) else {}
+            ttype = tx.get("type", "")  # "add", "trade", "drop"
+            faab  = tx.get("faab_bid")
+
+            players_raw = tx.get("players", [])
+            if isinstance(players_raw, dict):
+                players_raw = [players_raw]
+
+            for pw in players_raw:
+                pp   = pw.get("player", pw) if isinstance(pw, dict) else {}
+                pk   = pp.get("player_key")
+                td   = pp.get("transaction_data", {})
+                if isinstance(td, list):
+                    td = td[0] if td else {}
+                dest_type = td.get("destination_type", "")
+                dest_team = td.get("destination_team_key", "")
+                src_team  = td.get("source_team_key", "")
+
+                if not pk or not dest_team:
+                    continue
+                if dest_team not in acq:
+                    acq[dest_team] = {}
+                # Don't overwrite a draft pick entry
+                if pk in acq.get(dest_team, {}):
+                    continue
+
+                if ttype == "trade":
+                    identity = get_manager_identity(team_key=src_team)
+                    from_name = identity["display_name"] if identity else src_team
+                    acq[dest_team][pk] = {"type": "trade", "detail": f"From: {from_name}"}
+                elif ttype in ("add", "waiver", "freeagent"):
+                    if faab:
+                        acq[dest_team][pk] = {"type": "waiver", "detail": f"${faab} FAAB"}
+                    else:
+                        acq[dest_team][pk] = {"type": "waiver", "detail": "Free agent"}
+
+    except Exception:
+        pass
+
+    return acq
+
+
+def _extract_roster_players(roster_dict) -> list:
+    """Normalize YFPY roster response to flat list of player dicts."""
+    if isinstance(roster_dict, list):
+        return [(item.get("player", item) if isinstance(item, dict) else {}) for item in roster_dict]
+    if isinstance(roster_dict, dict):
+        raw = roster_dict.get("players") or roster_dict.get("roster", {})
+        if isinstance(raw, list):
+            return [(item.get("player", item) if isinstance(item, dict) else {}) for item in raw]
+        if isinstance(raw, dict):
+            inner = raw.get("players", [])
+            if isinstance(inner, list):
+                return [(item.get("player", item) if isinstance(item, dict) else {}) for item in inner]
+    return []

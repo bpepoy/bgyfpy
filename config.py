@@ -551,12 +551,12 @@ def get_faab_budget_default() -> int:
 
 SEASON_HISTORY_MANUAL = {
     2025: {
-        "punishment": "Loser Wears a Caleb Williams Jersey Downtown before a Lions Game",  # TODO: update after punishment is voted on
+        "punishment": "Loser Wears a Caleb Williams Jersey Downtown before a Lions Game",
         "first_pick": None,  # TODO: populate or will be fetched live from API
         "top_players": None, # TODO: run seed-players endpoint after season ends
     },
     2024: {
-        "punishment": "Loser Gets a Broccoli Dangle and Goes out to the Club Dressed like Gen Z",  # TODO: update after punishment is voted on
+        "punishment": "Loser Gets a Broccoli Dangle and Goes out to the Club Dressed like Gen Z",
         "first_pick": None,
         "top_players": None,
     },
@@ -601,12 +601,12 @@ SEASON_HISTORY_MANUAL = {
         "top_players": None,
     },
     2015: {
-        "punishment": "Loser Skates Around Campius Martius in a Tutu with an 'I Suck At Fantasy Football Sign'",
+        "punishment": "Loser Skates Around Campus Martius in a Tutu with an 'I Suck At Fantasy Football' Sign",
         "first_pick": None,
         "top_players": None,
     },
     2014: {
-        "punishment": "Loser Wears a Dress and Stands at the Corner of Big Beave with an 'I Suck At Fantasy Football Sign'",
+        "punishment": "Loser Wears a Dress and Stands at the Corner of Big Beaver with an 'I Suck At Fantasy Football' Sign",
         "first_pick": None,
         "top_players": None,
     },
@@ -657,3 +657,57 @@ def get_season_manual_data(year: int) -> dict:
 def get_all_manual_history() -> dict:
     """Return the full manual history dict."""
     return SEASON_HISTORY_MANUAL
+
+
+# ---------------------------------------------------------------------------
+# Player History — Per-Manager Hardcoded Data
+# ---------------------------------------------------------------------------
+# Populated by running GET /league/seed?year=YYYY after each season ends.
+# Paste the returned config block here.
+#
+# Structure per manager per season:
+#   top_starters: {
+#       "QB": {"name": "Josh Allen",  "team_name": "Frank Black",
+#              "total_points": 412.5, "weeks_started": 15},
+#       "WR": {...}, "RB": {...}, "TE": {...}
+#   }
+#   frequent_players: [
+#       {"name": "Ja'Marr Chase", "position": "WR",
+#        "weeks_on_roster": 15, "weeks_as_starter": 14,
+#        "total_points": 310.2},
+#       ...  (top 10)
+#   ]
+#   starter_points_total: 1654.2   # sum of starter-slot points only
+#   best_week:  {"week": 12, "points": 198.4}
+#   worst_week: {"week":  3, "points":  62.1}
+#
+# Player history for /players endpoint, keyed by player_key:
+#   players: {
+#       "nfl.p.8793": {
+#           "name": "Ja'Marr Chase", "position": "WR",
+#           "total_points": 310.2,
+#           "weeks_on_roster": 15, "weeks_as_starter": 14,
+#           "acquired_type": "draft" | "waiver" | "trade",
+#           "acquired_detail": "Pick 1.03" | "$42 FAAB" | "From: Zef",
+#       }
+#   }
+# ---------------------------------------------------------------------------
+
+PLAYER_HISTORY_MANUAL: dict = {
+    # Format:
+    # "brian": {
+    #     2024: { "top_starters": {...}, "frequent_players": [...],
+    #             "starter_points_total": ..., "players": {...} },
+    #     2023: { ... },
+    # },
+}
+
+
+def get_player_history(manager_id: str) -> dict:
+    """Return all seeded season data for a manager, or empty dict."""
+    return PLAYER_HISTORY_MANUAL.get(manager_id.lower(), {})
+
+
+def get_player_history_season(manager_id: str, year: int) -> dict:
+    """Return seeded data for a manager's specific season, or empty dict."""
+    return PLAYER_HISTORY_MANUAL.get(manager_id.lower(), {}).get(year, {})
