@@ -819,3 +819,33 @@ def get_my_leagues():
                 status_code=500,
                 detail=f"Primary: {str(e)} | Fallback: {str(e2)}"
             )
+
+@router.get("/explore/yfpy-methods")
+def get_yfpy_methods():
+    """
+    Returns all available methods on the YFPY query object.
+    Use this to find the correct method for fetching user leagues.
+    """
+    try:
+        from services.yahoo_service import get_query
+        from config import get_known_league_key
+ 
+        query = get_query(get_known_league_key())
+ 
+        # Get all public methods (no leading underscore)
+        methods = [m for m in dir(query) if not m.startswith("_")]
+ 
+        # Filter to likely relevant ones
+        user_methods      = [m for m in methods if "user" in m.lower()]
+        league_methods    = [m for m in methods if "league" in m.lower()]
+        game_methods      = [m for m in methods if "game" in m.lower()]
+ 
+        return {
+            "user_related":   user_methods,
+            "league_related": league_methods,
+            "game_related":   game_methods,
+            "all_methods":    methods,
+        }
+ 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
