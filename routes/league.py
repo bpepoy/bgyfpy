@@ -631,3 +631,144 @@ def seed_all_managers(year: str = Query(..., description="Season year e.g. '2024
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Real Bros NBA league discovery
+# ---------------------------------------------------------------------------
+ 
+@router.get("/explore/nba-discovery")
+def discover_nba_league(
+    league_id: str = Query(..., description="Your NBA league ID e.g. '38685'"),
+):
+    """
+    Discovers the correct league key for an NBA Yahoo Fantasy league.
+ 
+    Yahoo requires a numeric game_id prefix (e.g. '428.l.38685') rather than
+    just the league ID. This endpoint tries common recent NBA game_ids to find
+    the one that matches your league, then returns the full metadata so you can
+    confirm it's the right league and build a config from it.
+ 
+    Usage: GET /league/explore/nba-discovery?league_id=38685
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.league_service import _convert_to_dict
+ 
+        # Known NBA game_ids by season (Yahoo increments these annually)
+        # NBA seasons span two calendar years — keyed by the season start year
+        nba_game_ids = {
+            2024: 428,  # 2024-25 season
+            2023: 418,  # 2023-24 season
+            2022: 406,  # 2022-23 season
+            2021: 396,  # 2021-22 season
+            2020: 385,  # 2020-21 season
+            2019: 375,  # 2019-20 season
+            2018: 363,  # 2018-19 season
+            2017: 352,  # 2017-18 season
+            2016: 341,  # 2016-17 season
+            2015: 331,  # 2015-16 season
+        }
+ 
+        found = []
+        errors = []
+ 
+        for season_year, game_id in sorted(nba_game_ids.items(), reverse=True):
+            league_key = f"{game_id}.l.{league_id}"
+            try:
+                query = get_query(league_key)
+                raw = query.get_league_metadata()
+                meta = _convert_to_dict(raw)
+ 
+                found.append({
+                    "season_year":   season_year,
+                    "game_id":       game_id,
+                    "league_key":    league_key,
+                    "league_name":   meta.get("name"),
+                    "season":        meta.get("season"),
+                    "num_teams":     meta.get("num_teams"),
+                    "game_code":     meta.get("game_code"),
+                    "renew":         meta.get("renew"),
+                    "renewed":       meta.get("renewed"),
+                    "start_date":    meta.get("start_date"),
+                    "end_date":      meta.get("end_date"),
+                    "is_finished":   meta.get("is_finished"),
+                })
+            except Exception as e:
+                errors.append({
+                    "season_year": season_year,
+                    "league_key":  league_key,
+                    "error":       str(e)[:80],
+                })
+ 
+        return {
+            "league_id":    league_id,
+            "found_seasons": found,
+            "failed_attempts": errors,
+            "next_step": (
+                "Use the league_key and game_id values from 'found_seasons' "
+                "to build a config entry for Real Bros, mirroring how BlackGold "
+                "is configured in config.py with LEAGUE_CONFIG and MANUAL_SEASON_MAPPING."
+            ),
+        }
+ 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+ 
+ 
+@router.get("/explore/nba-season/{league_key}")
+def explore_nba_season(league_key: str):
+    """
+    Same as /explore/season/{year} but takes a full league key directly.
+    Use this for NBA leagues where you already know the league key from
+    the nba-discovery endpoint.
+ 
+    Usage: GET /league/explore/nba-season/428.l.38685
+ 
+    Note: Use dots in the URL — e.g. 428.l.38685
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.league_service import _convert_to_dict
+ 
+        query = get_query(league_key)
+        data  = {}
+ 
+        for label, fetcher in [
+            ("league_metadata",     lambda: query.get_league_metadata()),
+            ("league_settings",     lambda: query.get_league_settings()),
+            ("league_standings",    lambda: query.get_league_standings()),
+            ("league_teams",        lambda: query.get_league_teams()),
+            ("draft_results",       lambda: query.get_league_draft_results()),
+            ("transactions",        lambda: query.get_league_transactions()),
+            ("scoreboard_week_1",   lambda: query.get_league_scoreboard_by_week(1)),
+        ]:
+            try:
+                data[label] = _convert_to_dict(fetcher())
+            except Exception as e:
+                data[label] = {"error": str(e)[:100]}
+ 
+        # Try roster for first team
+        try:
+            teams_raw  = query.get_league_teams()
+            teams_dict = _convert_to_dict(teams_raw)
+            teams_list = teams_dict if isinstance(teams_dict, list) else \
+                         teams_dict.get("teams", [])
+            first = teams_list[0] if teams_list else {}
+            first_team = first.get("team", first) if isinstance(first, dict) else {}
+            tk = first_team.get("team_key")
+            if tk:
+                tid = tk.split(".t.")[-1]
+                data["sample_roster_week_1"] = _convert_to_dict(
+                    query.get_team_roster_by_week(tid, 1)
+                )
+        except Exception as e:
+            data["sample_roster_week_1"] = {"error": str(e)[:100]}
+ 
+        return {
+            "league_key":    league_key,
+            "available_data": data,
+        }
+ 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
