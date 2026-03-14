@@ -636,25 +636,25 @@ def seed_all_managers(year: str = Query(..., description="Season year e.g. '2024
 # ---------------------------------------------------------------------------
 # Real Bros NBA league discovery
 # ---------------------------------------------------------------------------
- 
+
 @router.get("/explore/nba-discovery")
 def discover_nba_league(
     league_id: str = Query(..., description="Your NBA league ID e.g. '38685'"),
 ):
     """
     Discovers the correct league key for an NBA Yahoo Fantasy league.
- 
+
     Yahoo requires a numeric game_id prefix (e.g. '428.l.38685') rather than
     just the league ID. This endpoint tries common recent NBA game_ids to find
     the one that matches your league, then returns the full metadata so you can
     confirm it's the right league and build a config from it.
- 
+
     Usage: GET /league/explore/nba-discovery?league_id=38685
     """
     try:
         from services.yahoo_service import get_query
         from services.league_service import _convert_to_dict
- 
+
         # Known NBA game_ids by season (Yahoo increments these annually)
         # NBA seasons span two calendar years — keyed by the season start year
         nba_game_ids = {
@@ -669,17 +669,17 @@ def discover_nba_league(
             2016: 341,  # 2016-17 season
             2015: 331,  # 2015-16 season
         }
- 
+
         found = []
         errors = []
- 
+
         for season_year, game_id in sorted(nba_game_ids.items(), reverse=True):
             league_key = f"{game_id}.l.{league_id}"
             try:
                 query = get_query(league_key)
                 raw = query.get_league_metadata()
                 meta = _convert_to_dict(raw)
- 
+
                 found.append({
                     "season_year":   season_year,
                     "game_id":       game_id,
@@ -700,7 +700,7 @@ def discover_nba_league(
                     "league_key":  league_key,
                     "error":       str(e)[:80],
                 })
- 
+
         return {
             "league_id":    league_id,
             "found_seasons": found,
@@ -711,29 +711,29 @@ def discover_nba_league(
                 "is configured in config.py with LEAGUE_CONFIG and MANUAL_SEASON_MAPPING."
             ),
         }
- 
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
- 
- 
+
+
 @router.get("/explore/nba-season/{league_key}")
 def explore_nba_season(league_key: str):
     """
     Same as /explore/season/{year} but takes a full league key directly.
     Use this for NBA leagues where you already know the league key from
     the nba-discovery endpoint.
- 
+
     Usage: GET /league/explore/nba-season/428.l.38685
- 
+
     Note: Use dots in the URL — e.g. 428.l.38685
     """
     try:
         from services.yahoo_service import get_query
         from services.league_service import _convert_to_dict
- 
+
         query = get_query(league_key)
         data  = {}
- 
+
         for label, fetcher in [
             ("league_metadata",     lambda: query.get_league_metadata()),
             ("league_settings",     lambda: query.get_league_settings()),
@@ -747,7 +747,7 @@ def explore_nba_season(league_key: str):
                 data[label] = _convert_to_dict(fetcher())
             except Exception as e:
                 data[label] = {"error": str(e)[:100]}
- 
+
         # Try roster for first team
         try:
             teams_raw  = query.get_league_teams()
@@ -764,11 +764,58 @@ def explore_nba_season(league_key: str):
                 )
         except Exception as e:
             data["sample_roster_week_1"] = {"error": str(e)[:100]}
- 
+
         return {
             "league_key":    league_key,
             "available_data": data,
         }
- 
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/explore/my-leagues")
+def get_my_leagues():
+    """
+    Returns ALL Yahoo Fantasy leagues associated with your authenticated account,
+    across all sports and seasons. Use this to find the correct league_key for
+    Real Bros NBA league without guessing game_ids.
+
+    Usage: GET /league/explore/my-leagues
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.league_service import _convert_to_dict
+
+        # Use any valid league key just to get an authenticated query object
+        from config import get_known_league_key
+        query = get_query(get_known_league_key())
+
+        # Ask Yahoo for all leagues the authenticated user belongs to
+        raw  = query.get_user_leagues_by_game_codes(["nfl", "nba", "mlb", "nhl"])
+        data = _convert_to_dict(raw)
+
+        return {
+            "message": "All leagues for your Yahoo account",
+            "data": data,
+        }
+
+    except Exception as e:
+        # Fallback: try the games endpoint directly
+        try:
+            from services.yahoo_service import get_query
+            from services.league_service import _convert_to_dict
+            from config import get_known_league_key
+
+            query = get_query(get_known_league_key())
+            raw   = query.get_user_games_leagues()
+            data  = _convert_to_dict(raw)
+            return {
+                "message": "All leagues for your Yahoo account (fallback method)",
+                "data": data,
+            }
+        except Exception as e2:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Primary: {str(e)} | Fallback: {str(e2)}"
+            )
