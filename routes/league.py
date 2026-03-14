@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from services.league_service import (
     get_league_settings, 
     get_all_seasons, 
