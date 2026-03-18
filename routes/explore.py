@@ -16,7 +16,7 @@ Base URL: /explore/...
 
 from fastapi import APIRouter, HTTPException, Query
 from services.yahoo_service import get_query
-from services.league_service import (
+from services.fantasy.league_service import (
     get_league_key_for_season,
     get_current_season,
     _convert_to_dict,

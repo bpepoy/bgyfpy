@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Query
-from services.league_service import (
+from services.fantasy.league_service import (
     get_league_settings, 
     get_all_seasons, 
     get_league_key_for_season,
@@ -131,7 +131,7 @@ def season_standings(year: str):
         /league/season/current/standings
     """
     try:
-        from services.league_service import get_league_standings
+        from services.fantasy.league_service import get_league_standings
         
         # Handle "current" alias
         if year == "current":
@@ -244,7 +244,7 @@ def get_rules():
     Example: GET /league/rules
     """
     try:
-        from services.league_service import get_league_rules
+        from services.fantasy.league_service import get_league_rules
         return get_league_rules()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -257,7 +257,7 @@ def explore_season_data(year: str):
     """
     try:
         from services.yahoo_service import get_query
-        from services.league_service import (
+        from services.fantasy.league_service import (
             get_league_key_for_season,
             _convert_to_dict
         )
@@ -401,7 +401,7 @@ def check_data_availability():
     """
     try:
         from services.yahoo_service import get_query
-        from services.league_service import (
+        from services.fantasy.league_service import (
             get_all_seasons,
             _convert_to_dict
         )
@@ -529,7 +529,7 @@ def league_history():
     All 19 seasons returned newest-first.
     """
     try:
-        from services.league_service import get_league_history
+        from services.fantasy.league_service import get_league_history
         return get_league_history()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -547,7 +547,7 @@ def seed_top_players(year: str):
     Usage: GET /league/history/seed-players?year=2024
     """
     try:
-        from services.league_service import (
+        from services.fantasy.league_service import (
             get_league_key_for_season,
             _fetch_top_players,
             _fetch_first_pick,
@@ -605,7 +605,7 @@ def seed_all_managers(year: str = Query(..., description="Season year e.g. '2024
       4. Commit and deploy
     """
     try:
-        from services.team_service import build_season_seed
+        from services.fantasy.team_service import build_season_seed
         import json
 
         year_int = int(year)
@@ -653,7 +653,7 @@ def discover_nba_league(
     """
     try:
         from services.yahoo_service import get_query
-        from services.league_service import _convert_to_dict
+        from services.fantasy.league_service import _convert_to_dict
 
         # Known NBA game_ids by season (Yahoo increments these annually)
         # NBA seasons span two calendar years — keyed by the season start year
@@ -729,7 +729,7 @@ def explore_nba_season(league_key: str):
     """
     try:
         from services.yahoo_service import get_query
-        from services.league_service import _convert_to_dict
+        from services.fantasy.league_service import _convert_to_dict
 
         query = get_query(league_key)
         data  = {}
@@ -784,7 +784,7 @@ def get_my_leagues():
     """
     try:
         from services.yahoo_service import get_query
-        from services.league_service import _convert_to_dict
+        from services.fantasy.league_service import _convert_to_dict
         from config import get_known_league_key
 
         query = get_query(get_known_league_key())

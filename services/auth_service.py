@@ -14,7 +14,7 @@ import os
 import secrets
 import time
 from jose import jwt, JWTError
-from users import get_user, is_known_user
+from config.users import get_user, is_known_user
 
 # ---------------------------------------------------------------------------
 # Config

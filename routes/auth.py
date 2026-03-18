@@ -27,7 +27,7 @@ from services.auth_service import (
     decode_jwt,
     send_magic_link_email,
 )
-from users import is_known_user, has_permission, get_all_users, get_user
+from config.users import is_known_user, has_permission, get_all_users, get_user
 
 router  = APIRouter(prefix="/auth", tags=["Auth"])
 bearer  = HTTPBearer(auto_error=False)

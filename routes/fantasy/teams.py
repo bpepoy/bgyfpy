@@ -24,7 +24,7 @@ All year params accept: "current" (default), specific year e.g. "2022", or "all"
 """
 
 from fastapi import APIRouter, HTTPException, Query
-from services.team_service import (
+from services.fantasy.team_service import (
     get_all_managers,
     get_team_overview,
     get_team_results,
@@ -280,11 +280,11 @@ def debug_matchups_raw(
     Use this to diagnose why /matchups returns empty opponents.
     """
     try:
-        from services.team_service import (
+        from services.fantasy.team_service import (
             _get_manager_data, _get_team_key, _team_id_from_key,
             _get_all_team_map, _resolve_year, _convert_to_dict
         )
-        from services.league_service import get_league_key_for_season
+        from services.fantasy.league_service import get_league_key_for_season
         from services.yahoo_service import get_query
 
         year = _resolve_year(year)
@@ -335,11 +335,11 @@ def debug_transactions_raw(
     Use this to diagnose why /transactions shows no FAAB seasons.
     """
     try:
-        from services.team_service import (
+        from services.fantasy.team_service import (
             _get_manager_data, _get_team_key, _resolve_year,
             _extract_teams_list, _find_team_in_standings, _convert_to_dict
         )
-        from services.league_service import get_league_key_for_season
+        from services.fantasy.league_service import get_league_key_for_season
         from services.yahoo_service import get_query
 
         year = _resolve_year(year)

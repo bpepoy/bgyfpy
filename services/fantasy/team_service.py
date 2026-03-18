@@ -1,5 +1,5 @@
 from services.yahoo_service import get_query
-from services.league_service import (
+from services.fantasy.league_service import (
     get_current_season,
     get_all_seasons,
     _convert_to_dict,
@@ -1184,7 +1184,7 @@ def get_team_transactions(display_name: str) -> dict:
 
 def get_all_teams_records(year: str = "current") -> dict:
     year = _resolve_year(year)
-    from services.league_service import get_league_key_for_season
+    from services.fantasy.league_service import get_league_key_for_season
     league_key = get_league_key_for_season(year)
     query = get_query(league_key)
 
@@ -1243,7 +1243,7 @@ def get_h2h_matchups(name1: str, name2: str, year: str = "current") -> dict:
         return _get_h2h_all_seasons(name1, name2)
 
     year = _resolve_year(year)
-    from services.league_service import get_league_key_for_season
+    from services.fantasy.league_service import get_league_key_for_season
     league_key = get_league_key_for_season(year)
 
     team_key1 = _get_team_key(name1, league_key)
@@ -1546,7 +1546,7 @@ def build_season_seed(year: int) -> dict:
     Returns a dict ready to paste into PLAYER_HISTORY_MANUAL in config.py.
     """
     from config import MANAGER_IDENTITY_MAP
-    from services.league_service import get_league_key_for_season
+    from services.fantasy.league_service import get_league_key_for_season
 
     league_key = get_league_key_for_season(str(year))
     query      = get_query(league_key)
