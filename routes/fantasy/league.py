@@ -891,11 +891,12 @@ def generate_managers_data(
             get_all_seasons,
             get_league_key_for_season,
             _convert_to_dict,
-            _extract_teams_list,
             _safe_get,
         )
+        from services.fantasy.team_service import _extract_teams_list
         from services.yahoo_service import get_query
         from config import get_manager_identity
+        import json, os
 
         seasons_data = get_all_seasons()
         all_seasons  = seasons_data.get("seasons", [])
@@ -987,13 +988,36 @@ def generate_managers_data(
             except Exception as e:
                 result[yr] = {"year": int(yr), "error": str(e)}
 
+        # Auto-merge into data/fantasy/managers.json
+        data_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            "data", "fantasy", "managers.json"
+        )
+
+        # Load existing file if it exists
+        existing = {}
+        if os.path.exists(data_path):
+            with open(data_path) as f:
+                existing = json.load(f)
+
+        # Merge new seasons in (overwrites existing year keys)
+        merged  = {**existing, **{k: v for k, v in result.items() if "error" not in v}}
+        errors  = {k: v for k, v in result.items() if "error" in v}
+
+        # Sort by year descending
+        sorted_merged = dict(sorted(merged.items(), key=lambda x: int(x[0]), reverse=True))
+
+        # Write back
+        os.makedirs(os.path.dirname(data_path), exist_ok=True)
+        with open(data_path, "w") as f:
+            json.dump(sorted_merged, f, indent=2)
+
         return {
-            "instructions": (
-                "Merge each year key into data/fantasy/managers.json. "
-                "Example: managers_json['2025'] = result['2025']"
-            ),
-            "years_processed": list(result.keys()),
-            "data": result,
+            "status":          "success",
+            "years_updated":   [k for k in result if "error" not in result[k]],
+            "years_failed":    errors,
+            "total_seasons":   len(sorted_merged),
+            "file_written":    data_path,
         }
 
     except Exception as e:
