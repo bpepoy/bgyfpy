@@ -860,3 +860,141 @@ def get_yfpy_methods():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Data generation — managers.json
+# ---------------------------------------------------------------------------
+
+@router.get("/data/managers")
+def generate_managers_data(
+    year: str = Query(..., description="Season year e.g. '2025', or 'all' for every season"),
+):
+    """
+    Generates the managers.json data block for a given season (or all seasons).
+
+    Returns a dict keyed by year, ready to merge into data/fantasy/managers.json.
+    Each season includes league metadata + every manager's team info.
+
+    Usage:
+        GET /league/data/managers?year=2025      — single season
+        GET /league/data/managers?year=all       — all seasons (slow, one-time)
+
+    Workflow:
+        1. Run this endpoint
+        2. Copy the returned JSON
+        3. Merge into data/fantasy/managers.json under the year key
+        4. Commit to git
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_all_seasons,
+            get_league_key_for_season,
+            _convert_to_dict,
+            _extract_teams_list,
+            _safe_get,
+        )
+        from services.yahoo_service import get_query
+        from config import get_manager_identity
+
+        seasons_data = get_all_seasons()
+        all_seasons  = seasons_data.get("seasons", [])
+
+        # Determine which seasons to process
+        if year == "all":
+            target_years = [str(s["year"]) for s in all_seasons]
+        else:
+            target_years = [year]
+
+        result = {}
+
+        for yr in target_years:
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                # League metadata
+                meta_raw  = query.get_league_metadata()
+                meta      = _convert_to_dict(meta_raw)
+
+                # Teams + manager info
+                teams_raw  = query.get_league_teams()
+                teams_dict = _convert_to_dict(teams_raw)
+                teams_list = _extract_teams_list(teams_dict)
+
+                managers = []
+                for t in teams_list:
+                    if not isinstance(t, dict):
+                        continue
+
+                    team_key = t.get("team_key", "")
+                    team_id  = team_key.split(".t.")[-1] if ".t." in team_key else ""
+
+                    # Extract manager info
+                    managers_raw = t.get("managers", {})
+                    if isinstance(managers_raw, list):
+                        mgr_wrapper = managers_raw[0] if managers_raw else {}
+                    else:
+                        mgr_wrapper = managers_raw
+                    mgr = mgr_wrapper.get("manager", mgr_wrapper) if isinstance(mgr_wrapper, dict) else {}
+
+                    guid        = mgr.get("guid")
+                    nickname    = mgr.get("nickname")
+                    is_comanager= bool(int(mgr.get("is_comanager", 0) or 0))
+
+                    # Resolve display_name + manager_id from config
+                    identity    = get_manager_identity(team_key=team_key, manager_guid=guid)
+                    display_name= identity["display_name"] if identity else nickname or "Unknown"
+                    manager_id  = identity["manager_id"]   if identity else None
+
+                    # Logo
+                    logos = t.get("team_logos", {})
+                    if isinstance(logos, list):
+                        logos = logos[0] if logos else {}
+                    logo_obj = logos.get("team_logo", {}) if isinstance(logos, dict) else {}
+                    if isinstance(logo_obj, list):
+                        logo_obj = logo_obj[0] if logo_obj else {}
+                    team_logo = logo_obj.get("url") if isinstance(logo_obj, dict) else None
+
+                    managers.append({
+                        "manager_id":   manager_id,
+                        "display_name": display_name,
+                        "team_key":     team_key,
+                        "team_id":      team_id,
+                        "team_name":    t.get("name"),
+                        "guid":         guid,
+                        "nickname":     nickname,
+                        "is_comanager": is_comanager,
+                        "logo_url":     team_logo,
+                        "team_url":     t.get("url"),
+                    })
+
+                # Sort by team_id numerically for consistent ordering
+                managers.sort(key=lambda m: int(m["team_id"]) if m["team_id"].isdigit() else 0)
+
+                result[yr] = {
+                    "year":       int(yr),
+                    "league_key": league_key,
+                    "league_id":  _safe_get(meta, "league_id") or league_key.split(".l.")[-1],
+                    "league_name":_safe_get(meta, "name") or "BlackGold",
+                    "url":        _safe_get(meta, "url"),
+                    "logo_url":   _safe_get(meta, "logo_url"),
+                    "num_teams":  _safe_get(meta, "num_teams"),
+                    "season":     _safe_get(meta, "season"),
+                    "managers":   managers,
+                }
+
+            except Exception as e:
+                result[yr] = {"year": int(yr), "error": str(e)}
+
+        return {
+            "instructions": (
+                "Merge each year key into data/fantasy/managers.json. "
+                "Example: managers_json['2025'] = result['2025']"
+            ),
+            "years_processed": list(result.keys()),
+            "data": result,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
