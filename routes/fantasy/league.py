@@ -990,7 +990,7 @@ def generate_managers_data(
 
         # Auto-merge into data/fantasy/managers.json
         data_path = os.path.join(
-            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
             "data", "fantasy", "managers.json"
         )
 
@@ -1020,5 +1020,79 @@ def generate_managers_data(
             "file_written":    data_path,
         }
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/managers/download")
+def download_managers_json():
+    """
+    Returns the current contents of data/fantasy/managers.json.
+    Run this after building up the file via /data/managers?year=
+    to get the final JSON to save locally at C:\\bgyfpy\\data\\fantasy\\managers.json
+    and commit to git.
+    """
+    try:
+        import json, os
+        data_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "data", "fantasy", "managers.json"
+        )
+        if not os.path.exists(data_path):
+            raise HTTPException(
+                status_code=404,
+                detail="managers.json not found. Run /league/data/managers?year=2025 first."
+            )
+        with open(data_path) as f:
+            data = json.load(f)
+        return {
+            "total_seasons": len(data),
+            "years":         sorted(data.keys(), reverse=True),
+            "data":          data,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/managers/status")
+def managers_json_status():
+    """
+    Shows which years are in managers.json and which fields are still null.
+    Use this to see what still needs to be enriched via the API.
+    """
+    try:
+        import json, os
+        data_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "data", "fantasy", "managers.json"
+        )
+        if not os.path.exists(data_path):
+            return {"status": "file_not_found", "years": []}
+
+        with open(data_path) as f:
+            data = json.load(f)
+
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            season   = data[yr]
+            managers = season.get("managers", [])
+            enriched = sum(1 for m in managers if m.get("team_name") is not None)
+            summary.append({
+                "year":            int(yr),
+                "num_managers":    len(managers),
+                "enriched":        enriched,
+                "needs_api_call":  enriched < len(managers),
+                "league_url":      season.get("url"),
+                "league_logo":     season.get("logo_url"),
+            })
+
+        return {
+            "total_seasons":       len(data),
+            "fully_enriched":      sum(1 for s in summary if not s["needs_api_call"]),
+            "needs_enrichment":    [s["year"] for s in summary if s["needs_api_call"]],
+            "seasons":             summary,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
