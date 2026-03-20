@@ -1248,3 +1248,570 @@ def build_all_managers(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Data generation — results.json
+# ---------------------------------------------------------------------------
+
+def _get_data_path(filename: str) -> str:
+    """Resolve path to data/fantasy/ relative to project root."""
+    import os
+    return os.path.join(
+        os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+        "data", "fantasy", filename
+    )
+
+
+def _load_json(path: str) -> dict:
+    import json, os
+    if os.path.exists(path):
+        with open(path) as f:
+            return json.load(f)
+    return {}
+
+
+def _write_json(path: str, data: dict):
+    import json, os
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+def _build_results_for_season(yr: str, query, league_key: str) -> dict:
+    """
+    Fetch standings + scoreboard for one season.
+    Returns dict keyed by manager_id with full regular_season + playoffs blocks.
+
+    All four point dimensions tracked with total, average, and rank:
+      points_for, points_against, projected_points_for, projected_points_against
+    """
+    from services.fantasy.league_service import _convert_to_dict
+    from services.fantasy.team_service import (
+        _extract_teams_list, _extract_team_standings,
+        _extract_outcome_totals, _extract_logo_url,
+    )
+    from config import get_manager_identity
+
+    # --- Standings ---
+    standings_raw  = query.get_league_standings()
+    standings_dict = _convert_to_dict(standings_raw)
+    teams_list     = _extract_teams_list(standings_dict)
+
+    # Rank maps from standings (regular season totals)
+    def _rank_map(field):
+        vals = sorted(
+            [(t.get("team_key"), float(_extract_team_standings(t).get(field) or 0))
+             for t in teams_list if isinstance(t, dict)],
+            key=lambda x: x[1], reverse=True
+        )
+        return {tk: i+1 for i, (tk, _) in enumerate(vals)}
+
+    pf_rank_map = _rank_map("points_for")
+    pa_rank_map = _rank_map("points_against")
+
+    # Build initial season_data from standings
+    season_data = {}
+    team_key_map = {}  # manager_id -> team_key (for scoreboard lookup)
+
+    for t in teams_list:
+        if not isinstance(t, dict):
+            continue
+        team_key = t.get("team_key", "")
+        ts  = _extract_team_standings(t)
+        ot  = _extract_outcome_totals(ts)
+
+        identity   = get_manager_identity(team_key=team_key)
+        manager_id = identity["manager_id"] if identity else None
+        if not manager_id:
+            continue
+
+        team_key_map[manager_id] = team_key
+
+        wins   = int(ot.get("wins")   or 0)
+        losses = int(ot.get("losses") or 0)
+        ties   = int(ot.get("ties")   or 0)
+        games  = wins + losses + ties
+        pf     = float(ts.get("points_for")    or 0)
+        pa     = float(ts.get("points_against") or 0)
+        rank   = ts.get("rank")
+        seed   = ts.get("playoff_seed")
+
+        season_data[manager_id] = {
+            "team_name": t.get("name"),
+            "logo_url":  _extract_logo_url(t),
+            # Accumulators filled from scoreboard loop below
+            "_rs": {
+                "wins": wins, "losses": losses, "ties": ties, "games": games,
+                "pf": pf, "pa": pa,
+                "proj_pf": 0.0, "proj_pa": 0.0,
+                "rank": rank, "seed": seed,
+            },
+            "_pl": {
+                "wins": 0, "losses": 0, "ties": 0, "games": 0,
+                "pf": 0.0, "pa": 0.0,
+                "proj_pf": 0.0, "proj_pa": 0.0,
+            },
+        }
+
+    # --- Scoreboard loop: projected + playoff splits ---
+    try:
+        settings_raw  = query.get_league_settings()
+        settings_dict = _convert_to_dict(settings_raw)
+        playoff_start = int(settings_dict.get("playoff_start_week") or 15)
+        end_week      = int(settings_dict.get("end_week") or 17)
+    except Exception:
+        playoff_start = 15
+        end_week      = 17
+
+    for week in range(1, end_week + 1):
+        try:
+            sb_raw  = query.get_league_scoreboard_by_week(week)
+            sb_dict = _convert_to_dict(sb_raw)
+            matchups = sb_dict.get("matchups", []) if isinstance(sb_dict, dict) else                        (sb_dict if isinstance(sb_dict, list) else [])
+
+            is_playoff_week = week >= playoff_start
+
+            for m in matchups:
+                matchup = m.get("matchup", m) if isinstance(m, dict) else {}
+                teams_m = matchup.get("teams", [])
+                if isinstance(teams_m, dict):
+                    teams_m = list(teams_m.values())
+
+                winner_key = matchup.get("winner_team_key")
+                is_tied    = bool(int(matchup.get("is_tied", 0) or 0))
+
+                # Extract points + projected for both teams
+                team_pts  = {}
+                team_proj = {}
+                tkeys     = []
+
+                for tw in teams_m:
+                    tm   = tw.get("team", tw) if isinstance(tw, dict) else {}
+                    tk   = tm.get("team_key", "")
+                    pts  = float((tm.get("team_points") or {}).get("total") or
+                                 tm.get("points") or 0)
+                    proj = float((tm.get("team_projected_points") or {}).get("total") or 0)
+                    team_pts[tk]  = pts
+                    team_proj[tk] = proj
+                    tkeys.append(tk)
+
+                for tk in tkeys:
+                    identity = get_manager_identity(team_key=tk)
+                    if not identity:
+                        continue
+                    mid = identity["manager_id"]
+                    if mid not in season_data:
+                        continue
+
+                    opp_tk   = next((k for k in tkeys if k != tk), None)
+                    my_pts   = team_pts.get(tk, 0)
+                    opp_pts  = team_pts.get(opp_tk, 0)
+                    my_proj  = team_proj.get(tk, 0)
+                    opp_proj = team_proj.get(opp_tk, 0)
+
+                    bucket = "_pl" if is_playoff_week else "_rs"
+                    b = season_data[mid][bucket]
+
+                    if is_playoff_week:
+                        b["pf"]  = round(b["pf"]  + my_pts,   2)
+                        b["pa"]  = round(b["pa"]  + opp_pts,  2)
+                        b["proj_pf"] = round(b["proj_pf"] + my_proj,  2)
+                        b["proj_pa"] = round(b["proj_pa"] + opp_proj, 2)
+                        b["games"] += 1
+                        if is_tied:              b["ties"]   += 1
+                        elif winner_key == tk:   b["wins"]   += 1
+                        else:                    b["losses"] += 1
+                    else:
+                        # RS projected (actual RS totals come from standings)
+                        b["proj_pf"] = round(b["proj_pf"] + my_proj,  2)
+                        b["proj_pa"] = round(b["proj_pa"] + opp_proj, 2)
+
+        except Exception:
+            continue
+
+    # --- Build cross-manager rank maps from scoreboard accumulators ---
+    def _cross_rank(field, bucket):
+        vals = sorted(
+            [(mid, d[bucket][field]) for mid, d in season_data.items()],
+            key=lambda x: x[1], reverse=True
+        )
+        return {mid: i+1 for i, (mid, _) in enumerate(vals)}
+
+    rs_proj_pf_rank = _cross_rank("proj_pf", "_rs")
+    rs_proj_pa_rank = _cross_rank("proj_pa", "_rs")
+    pl_pf_rank      = _cross_rank("pf",      "_pl")
+    pl_pa_rank      = _cross_rank("pa",      "_pl")
+    pl_proj_pf_rank = _cross_rank("proj_pf", "_pl")
+    pl_proj_pa_rank = _cross_rank("proj_pa", "_pl")
+
+    # --- Assemble final output ---
+    for mid, d in season_data.items():
+        rs = d["_rs"]
+        pl = d["_pl"]
+        g_rs = rs["games"]
+        g_pl = pl["games"]
+
+        # Effective finish
+        try:
+            r = int(rs["rank"]) if rs["rank"] is not None else None
+            s = int(rs["seed"]) if rs["seed"] is not None else None
+        except (TypeError, ValueError):
+            r = s = None
+        if r in (1, 2, 3, 4, 9, 10):   finish = r
+        elif s and 5 <= s <= 8:          finish = s
+        else:                            finish = r
+
+        d["regular_season"] = {
+            "wins":    rs["wins"], "losses": rs["losses"],
+            "ties":    rs["ties"], "games":  g_rs,
+            "win_pct": round(rs["wins"] / g_rs, 4) if g_rs else None,
+            "rank":    rs["rank"], "playoff_seed": rs["seed"],
+
+            "points_for":               round(rs["pf"], 2),
+            "points_for_rank":          pf_rank_map.get(team_key_map.get(mid)),
+            "avg_points_for":           round(rs["pf"] / g_rs, 2) if g_rs else None,
+
+            "points_against":           round(rs["pa"], 2),
+            "points_against_rank":      pa_rank_map.get(team_key_map.get(mid)),
+            "avg_points_against":       round(rs["pa"] / g_rs, 2) if g_rs else None,
+
+            "projected_points_for":     round(rs["proj_pf"], 2) if rs["proj_pf"] else None,
+            "projected_points_for_rank":rs_proj_pf_rank.get(mid),
+            "avg_projected_points_for": round(rs["proj_pf"] / g_rs, 2) if g_rs and rs["proj_pf"] else None,
+
+            "projected_points_against":      round(rs["proj_pa"], 2) if rs["proj_pa"] else None,
+            "projected_points_against_rank": rs_proj_pa_rank.get(mid),
+            "avg_projected_points_against":  round(rs["proj_pa"] / g_rs, 2) if g_rs and rs["proj_pa"] else None,
+        }
+
+        d["playoffs"] = {
+            "made_playoffs": pl["games"] > 0,
+            "finish":        finish,
+            "wins":    pl["wins"], "losses": pl["losses"],
+            "ties":    pl["ties"], "games":  g_pl,
+            "win_pct": round(pl["wins"] / g_pl, 4) if g_pl else None,
+
+            "points_for":               round(pl["pf"], 2) if g_pl else None,
+            "points_for_rank":          pl_pf_rank.get(mid) if g_pl else None,
+            "avg_points_for":           round(pl["pf"] / g_pl, 2) if g_pl else None,
+
+            "points_against":           round(pl["pa"], 2) if g_pl else None,
+            "points_against_rank":      pl_pa_rank.get(mid) if g_pl else None,
+            "avg_points_against":       round(pl["pa"] / g_pl, 2) if g_pl else None,
+
+            "projected_points_for":     round(pl["proj_pf"], 2) if g_pl and pl["proj_pf"] else None,
+            "projected_points_for_rank":pl_proj_pf_rank.get(mid) if g_pl else None,
+            "avg_projected_points_for": round(pl["proj_pf"] / g_pl, 2) if g_pl and pl["proj_pf"] else None,
+
+            "projected_points_against":      round(pl["proj_pa"], 2) if g_pl and pl["proj_pa"] else None,
+            "projected_points_against_rank": pl_proj_pa_rank.get(mid) if g_pl else None,
+            "avg_projected_points_against":  round(pl["proj_pa"] / g_pl, 2) if g_pl and pl["proj_pa"] else None,
+        }
+
+        # Remove internal accumulators
+        del d["_rs"]
+        del d["_pl"]
+
+    return season_data
+
+
+@router.get("/data/results/build-all")
+def build_results(
+    skip_existing: bool = Query(default=True),
+    year: str = Query(default=None, description="Single year e.g. '2025', or omit for all"),
+):
+    """
+    Generates results.json — regular season + playoff W-L-T, points, ranks, projected.
+
+    Fetches standings + weekly scoreboard per season.
+    Writes to data/fantasy/results.json keyed by year then manager_id.
+
+    Usage:
+        GET /league/data/results/build-all              — all seasons
+        GET /league/data/results/build-all?year=2025    — single season
+        GET /league/data/results/build-all?skip_existing=false — force refresh all
+    """
+    try:
+        from services.fantasy.league_service import get_all_seasons, get_league_key_for_season
+        from services.yahoo_service import get_query
+
+        path     = _get_data_path("results.json")
+        existing = _load_json(path)
+
+        seasons_data = get_all_seasons()
+        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
+        target_years = [year] if year else all_years
+
+        results = {"success": [], "skipped": [], "failed": {}}
+
+        for yr in target_years:
+            if skip_existing and yr in existing and existing[yr]:
+                results["skipped"].append(int(yr))
+                continue
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+                season_data = _build_results_for_season(yr, query, league_key)
+                existing[yr] = season_data
+                results["success"].append(int(yr))
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        _write_json(path, sorted_data)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "next_step":       "GET /league/data/results/download to save locally",
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/results/status")
+def results_status():
+    """Shows which years are in results.json and enrichment state."""
+    try:
+        path = _get_data_path("results.json")
+        data = _load_json(path)
+        if not data:
+            return {"status": "file_not_found", "years": []}
+
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            season   = data[yr]
+            managers = list(season.keys())
+            enriched = sum(
+                1 for m in season.values()
+                if isinstance(m, dict) and m.get("regular_season", {}).get("points_for")
+            )
+            summary.append({
+                "year":         int(yr),
+                "num_managers": len(managers),
+                "enriched":     enriched,
+                "needs_refresh":enriched < len(managers),
+            })
+
+        return {
+            "total_seasons":   len(data),
+            "fully_enriched":  sum(1 for s in summary if not s["needs_refresh"]),
+            "needs_enrichment":[s["year"] for s in summary if s["needs_refresh"]],
+            "seasons":         summary,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/results/download")
+def download_results():
+    """Returns current results.json for local save."""
+    try:
+        path = _get_data_path("results.json")
+        data = _load_json(path)
+        if not data:
+            raise HTTPException(status_code=404, detail="results.json not found.")
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Data generation — transactions.json (trades + moves/FAAB)
+# ---------------------------------------------------------------------------
+
+@router.get("/data/transactions/build-all")
+def build_transactions(
+    skip_existing: bool = Query(default=True),
+    year: str = Query(default=None, description="Single year e.g. '2025', or omit for all"),
+):
+    """
+    Generates transactions.json — trades and waiver/FA moves per season.
+
+    Keyed by year: {"2025": {"trades": [...], "moves": [...]}}
+
+    Usage:
+        GET /league/data/transactions/build-all
+        GET /league/data/transactions/build-all?year=2025
+    """
+    try:
+        from services.fantasy.league_service import get_all_seasons, get_league_key_for_season, _convert_to_dict
+        from services.yahoo_service import get_query
+        from config import get_manager_identity
+
+        path     = _get_data_path("transactions.json")
+        existing = _load_json(path)
+
+        seasons_data = get_all_seasons()
+        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
+        target_years = [year] if year else all_years
+
+        results = {"success": [], "skipped": [], "failed": {}}
+
+        for yr in target_years:
+            if skip_existing and yr in existing and existing[yr]:
+                results["skipped"].append(int(yr))
+                continue
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                tx_raw  = query.get_league_transactions()
+                tx_dict = _convert_to_dict(tx_raw)
+                tx_list = tx_dict if isinstance(tx_dict, list) else \
+                          tx_dict.get("transactions", [])
+
+                trades = []
+                moves  = []
+
+                for item in tx_list:
+                    tx     = item.get("transaction", item) if isinstance(item, dict) else {}
+                    ttype  = tx.get("type", "")
+                    status = tx.get("status", "")
+                    if status != "successful":
+                        continue
+
+                    # Parse timestamp to week (approximate)
+                    ts    = tx.get("timestamp") or tx.get("transaction_id", "")
+                    week  = None  # Yahoo doesn't always expose week directly
+
+                    players_raw = tx.get("players", [])
+                    if isinstance(players_raw, dict):
+                        players_raw = list(players_raw.values())
+
+                    if ttype == "trade":
+                        trader_tk = tx.get("trader_team_key", "")
+                        tradee_tk = tx.get("tradee_team_key", "")
+                        ti_a      = get_manager_identity(team_key=trader_tk)
+                        ti_b      = get_manager_identity(team_key=tradee_tk)
+                        mgr_a     = ti_a["manager_id"] if ti_a else trader_tk
+                        mgr_b     = ti_b["manager_id"] if ti_b else tradee_tk
+
+                        a_received = []
+                        b_received = []
+
+                        for pw in players_raw:
+                            p   = pw.get("player", pw) if isinstance(pw, dict) else {}
+                            td  = p.get("transaction_data", {})
+                            if isinstance(td, list): td = td[0] if td else {}
+                            name     = p.get("full_name") or p.get("name", "Unknown")
+                            dest_tk  = td.get("destination_team_key", "")
+                            if dest_tk == trader_tk:
+                                a_received.append(name)
+                            else:
+                                b_received.append(name)
+
+                        trades.append({
+                            "timestamp":   ts,
+                            "manager_a":   mgr_a,
+                            "manager_b":   mgr_b,
+                            "a_received":  a_received,
+                            "b_received":  b_received,
+                        })
+
+                    elif ttype in ("add", "drop", "add/drop", "waiver"):
+                        for pw in players_raw:
+                            p   = pw.get("player", pw) if isinstance(pw, dict) else {}
+                            td  = p.get("transaction_data", {})
+                            if isinstance(td, list): td = td[0] if td else {}
+                            name      = p.get("full_name") or p.get("name", "Unknown")
+                            move_type = td.get("type", ttype)
+                            dest_tk   = td.get("destination_team_key", "")
+                            src_tk    = td.get("source_team_key", "")
+                            faab      = tx.get("faab_bid")
+
+                            team_key  = dest_tk if move_type == "add" else src_tk
+                            identity  = get_manager_identity(team_key=team_key)
+                            manager   = identity["manager_id"] if identity else team_key
+
+                            if move_type in ("add", "waiver"):
+                                moves.append({
+                                    "timestamp": ts,
+                                    "manager":   manager,
+                                    "type":      "add",
+                                    "player":    name,
+                                    "faab_bid":  int(faab) if faab is not None else None,
+                                    "source":    td.get("source_type", ""),
+                                })
+                            elif move_type == "drop":
+                                moves.append({
+                                    "timestamp": ts,
+                                    "manager":   manager,
+                                    "type":      "drop",
+                                    "player":    name,
+                                    "faab_bid":  None,
+                                    "source":    None,
+                                })
+
+                existing[yr] = {
+                    "trades": sorted(trades, key=lambda x: x.get("timestamp") or ""),
+                    "moves":  sorted(moves,  key=lambda x: x.get("timestamp") or ""),
+                }
+                results["success"].append(int(yr))
+
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        _write_json(path, sorted_data)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "next_step":       "GET /league/data/transactions/download to save locally",
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/transactions/status")
+def transactions_status():
+    """Shows which years are in transactions.json."""
+    try:
+        path = _get_data_path("transactions.json")
+        data = _load_json(path)
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            season = data[yr]
+            summary.append({
+                "year":        int(yr),
+                "trades":      len(season.get("trades", [])),
+                "moves":       len(season.get("moves", [])),
+                "has_data":    bool(season.get("trades") or season.get("moves")),
+            })
+        return {
+            "total_seasons": len(data),
+            "seasons":       summary,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/transactions/download")
+def download_transactions():
+    """Returns current transactions.json for local save."""
+    try:
+        path = _get_data_path("transactions.json")
+        data = _load_json(path)
+        if not data:
+            raise HTTPException(status_code=404, detail="transactions.json not found.")
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
