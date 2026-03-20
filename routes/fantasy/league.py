@@ -918,10 +918,10 @@ def generate_managers_data(
                 meta_raw  = query.get_league_metadata()
                 meta      = _convert_to_dict(meta_raw)
 
-                # Teams + manager info
-                teams_raw  = query.get_league_teams()
-                teams_dict = _convert_to_dict(teams_raw)
-                teams_list = _extract_teams_list(teams_dict)
+                # Use get_league_standings — returns full team info
+                standings_raw  = query.get_league_standings()
+                standings_dict = _convert_to_dict(standings_raw)
+                teams_list     = _extract_teams_list(standings_dict)
 
                 managers = []
                 for t in teams_list:
@@ -1078,15 +1078,26 @@ def managers_json_status():
         for yr in sorted(data.keys(), reverse=True):
             season   = data[yr]
             managers = season.get("managers", [])
-            enriched = sum(1 for m in managers if m.get("team_name") is not None)
+            # A season is enriched if league_url is populated (comes from API)
+            # team_name check as secondary signal
+            is_enriched = season.get("url") is not None
+            enriched_managers = sum(1 for m in managers if m.get("team_name") is not None)
             summary.append({
-                "year":            int(yr),
-                "num_managers":    len(managers),
-                "enriched":        enriched,
-                "needs_api_call":  enriched < len(managers),
-                "league_url":      season.get("url"),
-                "league_logo":     season.get("logo_url"),
+                "year":             int(yr),
+                "num_managers":     len(managers),
+                "enriched_managers":enriched_managers,
+                "league_enriched":  is_enriched,
+                "needs_api_call":   not is_enriched,
+                "league_url":       season.get("url"),
+                "league_logo":      season.get("logo_url"),
             })
+
+        return {
+            "total_seasons":    len(data),
+            "fully_enriched":   sum(1 for s in summary if not s["needs_api_call"]),
+            "needs_enrichment": [s["year"] for s in summary if s["needs_api_call"]],
+            "seasons":          summary,
+        }
 
         return {
             "total_seasons":       len(data),
@@ -1094,5 +1105,146 @@ def managers_json_status():
             "needs_enrichment":    [s["year"] for s in summary if s["needs_api_call"]],
             "seasons":             summary,
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/managers/build-all")
+def build_all_managers(
+    skip_existing: bool = Query(default=True, description="Skip years already enriched"),
+):
+    """
+    Runs /league/data/managers for ALL seasons in sequence.
+    Enriches managers.json with live Yahoo data for every year.
+
+    WARNING: Slow — makes API calls for each of the 19 seasons.
+    Run once to do the full historical build.
+
+    Use skip_existing=true (default) to skip years already enriched,
+    so you can safely re-run without overwriting good data.
+
+    Usage:
+        GET /league/data/managers/build-all
+        GET /league/data/managers/build-all?skip_existing=false
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_all_seasons,
+            get_league_key_for_season,
+            _convert_to_dict,
+            _safe_get,
+        )
+        from services.fantasy.team_service import _extract_teams_list
+        from services.yahoo_service import get_query
+        from config import get_manager_identity
+        import json, os
+
+        data_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+            "data", "fantasy", "managers.json"
+        )
+
+        # Load existing
+        existing = {}
+        if os.path.exists(data_path):
+            with open(data_path) as f:
+                existing = json.load(f)
+
+        seasons_data = get_all_seasons()
+        all_years    = [str(s["year"]) for s in seasons_data.get("seasons", [])]
+
+        results  = {"success": [], "skipped": [], "failed": {}}
+
+        for yr in sorted(all_years):
+            # Skip if already enriched and skip_existing is True
+            if skip_existing and yr in existing and existing[yr].get("url") is not None:
+                results["skipped"].append(int(yr))
+                continue
+
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                meta_raw   = query.get_league_metadata()
+                meta       = _convert_to_dict(meta_raw)
+                # Use get_league_standings — returns full team info
+                standings_raw  = query.get_league_standings()
+                standings_dict = _convert_to_dict(standings_raw)
+                teams_list     = _extract_teams_list(standings_dict)
+
+                managers = []
+                for t in teams_list:
+                    if not isinstance(t, dict):
+                        continue
+                    team_key = t.get("team_key", "")
+                    team_id  = team_key.split(".t.")[-1] if ".t." in team_key else ""
+
+                    managers_raw = t.get("managers", {})
+                    if isinstance(managers_raw, list):
+                        mgr_wrapper = managers_raw[0] if managers_raw else {}
+                    else:
+                        mgr_wrapper = managers_raw
+                    mgr = mgr_wrapper.get("manager", mgr_wrapper) if isinstance(mgr_wrapper, dict) else {}
+
+                    guid         = mgr.get("guid")
+                    nickname     = mgr.get("nickname")
+                    is_comanager = bool(int(mgr.get("is_comanager", 0) or 0))
+                    identity     = get_manager_identity(team_key=team_key, manager_guid=guid)
+                    display_name = identity["display_name"] if identity else nickname or "Unknown"
+                    manager_id   = identity["manager_id"]   if identity else None
+
+                    logos    = t.get("team_logos", {})
+                    if isinstance(logos, list): logos = logos[0] if logos else {}
+                    logo_obj = logos.get("team_logo", {}) if isinstance(logos, dict) else {}
+                    if isinstance(logo_obj, list): logo_obj = logo_obj[0] if logo_obj else {}
+                    team_logo = logo_obj.get("url") if isinstance(logo_obj, dict) else None
+
+                    managers.append({
+                        "manager_id":   manager_id,
+                        "display_name": display_name,
+                        "team_key":     team_key,
+                        "team_id":      team_id,
+                        "team_name":    t.get("name"),
+                        "guid":         guid,
+                        "nickname":     nickname,
+                        "is_comanager": is_comanager,
+                        "logo_url":     team_logo,
+                        "team_url":     t.get("url"),
+                    })
+
+                managers.sort(key=lambda m: int(m["team_id"]) if m["team_id"].isdigit() else 0)
+
+                existing[yr] = {
+                    "year":        int(yr),
+                    "league_key":  league_key,
+                    "league_id":   _safe_get(meta, "league_id") or league_key.split(".l.")[-1],
+                    "league_name": _safe_get(meta, "name") or "BlackGold",
+                    "url":         _safe_get(meta, "url"),
+                    "logo_url":    _safe_get(meta, "logo_url"),
+                    "num_teams":   _safe_get(meta, "num_teams"),
+                    "season":      _safe_get(meta, "season"),
+                    "managers":    managers,
+                }
+                results["success"].append(int(yr))
+
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        # Write merged file sorted newest first
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        os.makedirs(os.path.dirname(data_path), exist_ok=True)
+        with open(data_path, "w") as f:
+            json.dump(sorted_data, f, indent=2)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    data_path,
+            "next_step":       "Run GET /league/data/managers/download to save locally",
+        }
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
