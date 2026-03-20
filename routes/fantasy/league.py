@@ -1410,20 +1410,26 @@ def _build_results_for_season(yr: str, query, league_key: str) -> dict:
                     my_proj  = team_proj.get(tk, 0)
                     opp_proj = team_proj.get(opp_tk, 0)
 
-                    bucket = "_pl" if is_playoff_week else "_rs"
-                    b = season_data[mid][bucket]
+                    # Only count true playoffs (seed 1-4), not consolation (seed 5-8)
+                    seed_val = season_data[mid]["_rs"].get("seed")
+                    try:
+                        is_true_playoff = is_playoff_week and int(seed_val or 99) <= 4
+                    except (TypeError, ValueError):
+                        is_true_playoff = False
 
-                    if is_playoff_week:
-                        b["pf"]  = round(b["pf"]  + my_pts,   2)
-                        b["pa"]  = round(b["pa"]  + opp_pts,  2)
+                    if is_true_playoff:
+                        b = season_data[mid]["_pl"]
+                        b["pf"]      = round(b["pf"]      + my_pts,   2)
+                        b["pa"]      = round(b["pa"]      + opp_pts,  2)
                         b["proj_pf"] = round(b["proj_pf"] + my_proj,  2)
                         b["proj_pa"] = round(b["proj_pa"] + opp_proj, 2)
                         b["games"] += 1
                         if is_tied:              b["ties"]   += 1
                         elif winner_key == tk:   b["wins"]   += 1
                         else:                    b["losses"] += 1
-                    else:
+                    elif not is_playoff_week:
                         # RS projected (actual RS totals come from standings)
+                        b = season_data[mid]["_rs"]
                         b["proj_pf"] = round(b["proj_pf"] + my_proj,  2)
                         b["proj_pa"] = round(b["proj_pa"] + opp_proj, 2)
 
@@ -1485,29 +1491,39 @@ def _build_results_for_season(yr: str, query, league_key: str) -> dict:
             "avg_projected_points_against":  round(rs["proj_pa"] / g_rs, 2) if g_rs and rs["proj_pa"] else None,
         }
 
-        d["playoffs"] = {
-            "made_playoffs": pl["games"] > 0,
-            "finish":        finish,
-            "wins":    pl["wins"], "losses": pl["losses"],
-            "ties":    pl["ties"], "games":  g_pl,
-            "win_pct": round(pl["wins"] / g_pl, 4) if g_pl else None,
+        # Only include playoffs block for true playoff teams (seed 1-4)
+        try:
+            seed_int = int(d["_rs"].get("seed") or 99)
+        except (TypeError, ValueError):
+            seed_int = 99
+        is_playoff_team = seed_int <= 4
 
-            "points_for":               round(pl["pf"], 2) if g_pl else None,
-            "points_for_rank":          pl_pf_rank.get(mid) if g_pl else None,
-            "avg_points_for":           round(pl["pf"] / g_pl, 2) if g_pl else None,
+        if is_playoff_team and g_pl > 0:
+            d["playoffs"] = {
+                "made_playoffs": True,
+                "finish":        finish,
+                "wins":    pl["wins"], "losses": pl["losses"],
+                "ties":    pl["ties"], "games":  g_pl,
+                "win_pct": round(pl["wins"] / g_pl, 4) if g_pl else None,
 
-            "points_against":           round(pl["pa"], 2) if g_pl else None,
-            "points_against_rank":      pl_pa_rank.get(mid) if g_pl else None,
-            "avg_points_against":       round(pl["pa"] / g_pl, 2) if g_pl else None,
+                "points_for":               round(pl["pf"], 2),
+                "points_for_rank":          pl_pf_rank.get(mid),
+                "avg_points_for":           round(pl["pf"] / g_pl, 2),
 
-            "projected_points_for":     round(pl["proj_pf"], 2) if g_pl and pl["proj_pf"] else None,
-            "projected_points_for_rank":pl_proj_pf_rank.get(mid) if g_pl else None,
-            "avg_projected_points_for": round(pl["proj_pf"] / g_pl, 2) if g_pl and pl["proj_pf"] else None,
+                "points_against":           round(pl["pa"], 2),
+                "points_against_rank":      pl_pa_rank.get(mid),
+                "avg_points_against":       round(pl["pa"] / g_pl, 2),
 
-            "projected_points_against":      round(pl["proj_pa"], 2) if g_pl and pl["proj_pa"] else None,
-            "projected_points_against_rank": pl_proj_pa_rank.get(mid) if g_pl else None,
-            "avg_projected_points_against":  round(pl["proj_pa"] / g_pl, 2) if g_pl and pl["proj_pa"] else None,
-        }
+                "projected_points_for":      round(pl["proj_pf"], 2) if pl["proj_pf"] else None,
+                "projected_points_for_rank": pl_proj_pf_rank.get(mid),
+                "avg_projected_points_for":  round(pl["proj_pf"] / g_pl, 2) if pl["proj_pf"] else None,
+
+                "projected_points_against":      round(pl["proj_pa"], 2) if pl["proj_pa"] else None,
+                "projected_points_against_rank": pl_proj_pa_rank.get(mid),
+                "avg_projected_points_against":  round(pl["proj_pa"] / g_pl, 2) if pl["proj_pa"] else None,
+            }
+        else:
+            d["playoffs"] = {"made_playoffs": False}
 
         # Remove internal accumulators
         del d["_rs"]
