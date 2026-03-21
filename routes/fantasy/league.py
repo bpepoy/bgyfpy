@@ -975,15 +975,16 @@ def generate_managers_data(
                 managers.sort(key=lambda m: int(m["team_id"]) if m["team_id"].isdigit() else 0)
 
                 result[yr] = {
-                    "year":       int(yr),
-                    "league_key": league_key,
-                    "league_id":  _safe_get(meta, "league_id") or league_key.split(".l.")[-1],
-                    "league_name":_safe_get(meta, "name") or "BlackGold",
-                    "url":        _safe_get(meta, "url"),
-                    "logo_url":   _safe_get(meta, "logo_url"),
-                    "num_teams":  _safe_get(meta, "num_teams"),
-                    "season":     _safe_get(meta, "season"),
-                    "managers":   managers,
+                    "year":        int(yr),
+                    "league_key":  league_key,
+                    "league_id":   _safe_get(meta, "league_id") or league_key.split(".l.")[-1],
+                    "league_name": _safe_get(meta, "name") or "BlackGold",
+                    "url":         _safe_get(meta, "url"),
+                    "logo_url":    _safe_get(meta, "logo_url"),
+                    "num_teams":   _safe_get(meta, "num_teams"),
+                    "season":      _safe_get(meta, "season"),
+                    "is_finished": bool(int(_safe_get(meta, "is_finished") or 0)),
+                    "managers":    managers,
                 }
 
             except Exception as e:
@@ -1570,8 +1571,18 @@ def build_results(
             try:
                 league_key = get_league_key_for_season(yr)
                 query      = get_query(league_key)
+
+                # Fetch is_finished flag from metadata
+                from services.fantasy.league_service import _convert_to_dict, _safe_get
+                meta_raw    = query.get_league_metadata()
+                meta        = _convert_to_dict(meta_raw)
+                is_finished = bool(int(_safe_get(meta, "is_finished") or 0))
+
                 season_data = _build_results_for_season(yr, query, league_key)
-                existing[yr] = season_data
+                existing[yr] = {
+                    "is_finished": is_finished,
+                    "managers":    season_data,
+                }
                 results["success"].append(int(yr))
             except Exception as e:
                 results["failed"][yr] = str(e)
@@ -1604,14 +1615,17 @@ def results_status():
 
         summary = []
         for yr in sorted(data.keys(), reverse=True):
-            season   = data[yr]
-            managers = list(season.keys())
-            enriched = sum(
-                1 for m in season.values()
+            season      = data[yr]
+            is_finished = season.get("is_finished")
+            mgr_data    = season.get("managers", season)  # handle both old and new shape
+            managers    = [k for k in mgr_data if k != "is_finished"]
+            enriched    = sum(
+                1 for m in mgr_data.values()
                 if isinstance(m, dict) and m.get("regular_season", {}).get("points_for")
             )
             summary.append({
                 "year":         int(yr),
+                "is_finished":  is_finished,
                 "num_managers": len(managers),
                 "enriched":     enriched,
                 "needs_refresh":enriched < len(managers),
@@ -1999,31 +2013,26 @@ def build_drafts(
                 # Get draft results
                 draft_raw  = query.get_league_draft_results()
                 draft_dict = _convert_to_dict(draft_raw)
-                picks_raw  = draft_dict if isinstance(draft_dict, list) else \
-                             draft_dict.get("draft_results", [])
+                # YFPY returns flat draft pick objects with fields:
+                # pick, round, cost, team_key, player_key — no wrapper, no player names
+                picks_raw = draft_dict if isinstance(draft_dict, list) else \
+                            draft_dict.get("draft_results", [])
 
                 picks = []
                 for item in picks_raw:
-                    p        = item.get("draft_result", item) if isinstance(item, dict) else {}
-                    team_key = p.get("team_key", "")
-                    pick_num = p.get("pick")
-                    round_num= p.get("round")
-                    cost     = p.get("cost")
+                    p          = item if isinstance(item, dict) else {}
+                    team_key   = p.get("team_key", "")
+                    pick_num   = p.get("pick")
+                    round_num  = p.get("round")
+                    cost       = p.get("cost")
                     player_key = p.get("player_key", "")
+
+                    if not team_key and not player_key:
+                        continue
 
                     identity     = get_manager_identity(team_key=team_key)
                     manager_id   = identity["manager_id"]   if identity else None
                     display_name = identity["display_name"] if identity else team_key
-
-                    # Get player info if available
-                    player_name = p.get("player_name") or p.get("name")
-                    position    = p.get("display_position") or p.get("position")
-
-                    # If player info not on the pick, try nested player object
-                    if not player_name and "player" in p:
-                        pl = p["player"] if isinstance(p["player"], dict) else {}
-                        player_name = pl.get("full_name") or pl.get("name")
-                        position    = pl.get("display_position") or pl.get("primary_position") or position
 
                     try:
                         cost_int = int(cost) if cost is not None else None
@@ -2031,14 +2040,14 @@ def build_drafts(
                         cost_int = None
 
                     picks.append({
-                        "overall_pick": int(pick_num) if pick_num else None,
+                        "overall_pick": int(pick_num)  if pick_num  else None,
                         "round":        int(round_num) if round_num else None,
                         "manager_id":   manager_id,
                         "display_name": display_name,
                         "player_key":   player_key,
-                        "player_name":  player_name,
-                        "position":     position,
-                        "cost":         cost_int,      # null for snake, dollars for auction
+                        "player_name":  None,  # not in draft API response
+                        "position":     None,  # not in draft API response
+                        "cost":         cost_int,
                     })
 
                 # Sort by overall pick number
@@ -2113,6 +2122,128 @@ def download_drafts():
         data = _load_json(path)
         if not data:
             raise HTTPException(status_code=404, detail="drafts.json not found.")
+        return {
+            "total_seasons": len(data),
+            "years":         sorted(data.keys(), reverse=True),
+            "data":          data,
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Data generation — punishment.json
+# ---------------------------------------------------------------------------
+
+@router.get("/data/punishment/build")
+def build_punishment():
+    """
+    Generates punishment.json from SEASON_HISTORY_MANUAL in config.py.
+
+    Structure: {"2025": {"punishment": "..."}, "2024": {...}}
+
+    Loser is NOT stored here — derive it at runtime from results.json
+    where rank == 10 for completed seasons.
+
+    Run this once to seed the file. After that, update punishment.json
+    directly via the commissioner UI or by editing the file manually.
+
+    Usage:
+        GET /league/data/punishment/build
+    """
+    try:
+        from config import get_all_manual_history
+
+        path     = _get_data_path("punishment.json")
+        existing = _load_json(path)
+
+        manual = get_all_manual_history()
+
+        for yr, data in manual.items():
+            yr_str = str(yr)
+            punishment = data.get("punishment")
+
+            # Only add if not already in file (don't overwrite manual edits)
+            if yr_str not in existing:
+                existing[yr_str] = {
+                    "year":       yr,
+                    "punishment": punishment,
+                }
+            else:
+                # Update punishment text only if config has one and file doesn't
+                if punishment and not existing[yr_str].get("punishment"):
+                    existing[yr_str]["punishment"] = punishment
+
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        _write_json(path, sorted_data)
+
+        populated   = sum(1 for v in sorted_data.values() if v.get("punishment"))
+        unpopulated = [k for k, v in sorted_data.items() if not v.get("punishment")]
+
+        return {
+            "status":       "complete",
+            "total_seasons":len(sorted_data),
+            "populated":    populated,
+            "missing":      unpopulated,
+            "file_written": path,
+            "next_step":    "GET /league/data/punishment/download to save locally",
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/data/punishment/update")
+def update_punishment(
+    year: int = Query(..., description="Season year e.g. 2026"),
+    punishment: str = Query(..., description="Punishment text for the loser"),
+    user: dict = Depends(require_permission("edit_settings")),
+):
+    """
+    Commissioner/app owner endpoint — add or update punishment for a season.
+
+    Protected: requires commissioner or app_owner role.
+
+    Usage:
+        POST /league/data/punishment/update?year=2026&punishment=Loser+does+X
+        Authorization: Bearer <jwt>
+    """
+    try:
+        path     = _get_data_path("punishment.json")
+        existing = _load_json(path)
+
+        yr_str = str(year)
+        existing[yr_str] = {
+            "year":        year,
+            "punishment":  punishment,
+            "updated_by":  user.get("display_name"),
+            "updated_at":  __import__("datetime").datetime.utcnow().isoformat(),
+        }
+
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        _write_json(path, sorted_data)
+
+        return {
+            "status":     "updated",
+            "year":       year,
+            "punishment": punishment,
+            "updated_by": user.get("display_name"),
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/punishment/download")
+def download_punishment():
+    """Returns current punishment.json for local save."""
+    try:
+        path = _get_data_path("punishment.json")
+        data = _load_json(path)
+        if not data:
+            raise HTTPException(status_code=404, detail="punishment.json not found. Run /league/data/punishment/build first.")
         return {
             "total_seasons": len(data),
             "years":         sorted(data.keys(), reverse=True),
