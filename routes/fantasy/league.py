@@ -1757,7 +1757,8 @@ def build_transactions(
                     }
 
                 for item in tx_list:
-                    tx     = item.get("transaction", item) if isinstance(item, dict) else {}
+                    # YFPY returns flat transaction objects (no "transaction" wrapper)
+                    tx     = item if isinstance(item, dict) else {}
                     ttype  = tx.get("type", "")
                     status = tx.get("status", "")
                     if status != "successful":
@@ -1771,9 +1772,28 @@ def build_transactions(
                     except (TypeError, ValueError):
                         faab_int = None
 
+                    # players is a list of {"player": {...}} objects
                     players_raw = tx.get("players", [])
                     if isinstance(players_raw, dict):
                         players_raw = list(players_raw.values())
+
+                    def _extract_player(pw):
+                        """Extract player fields from {"player": {...}} wrapper."""
+                        p  = pw.get("player", pw) if isinstance(pw, dict) else {}
+                        td = p.get("transaction_data", {})
+                        if isinstance(td, list): td = td[0] if td else {}
+                        # name can be a nested object or flat string
+                        name_raw = p.get("name", {})
+                        if isinstance(name_raw, dict):
+                            name = name_raw.get("full") or p.get("full_name", "Unknown")
+                        else:
+                            name = p.get("full_name") or str(name_raw) or "Unknown"
+                        return {
+                            "name":       name,
+                            "position":   p.get("display_position") or p.get("primary_position"),
+                            "player_key": p.get("player_key"),
+                            "td":         td,
+                        }
 
                     if ttype == "trade":
                         trader_tk = tx.get("trader_team_key", "")
@@ -1787,9 +1807,9 @@ def build_transactions(
                         b_received = []
 
                         for pw in players_raw:
-                            pi = _player_info(pw)
+                            pi      = _extract_player(pw)
                             dest_tk = pi["td"].get("destination_team_key", "")
-                            entry = {
+                            entry   = {
                                 "name":       pi["name"],
                                 "position":   pi["position"],
                                 "player_key": pi["player_key"],
@@ -1809,31 +1829,27 @@ def build_transactions(
                         })
 
                     elif ttype in ("add", "drop", "add/drop", "waiver", "free agent"):
-                        # Group adds and drops from the same transaction together
                         added   = []
                         dropped = []
 
                         for pw in players_raw:
-                            pi        = _player_info(pw)
+                            pi        = _extract_player(pw)
                             move_type = pi["td"].get("type", "")
-                            dest_tk   = pi["td"].get("destination_team_key", "")
-                            src_tk    = pi["td"].get("source_type", "")
-                            entry = {
-                                "name":        pi["name"],
-                                "position":    pi["position"],
-                                "player_key":  pi["player_key"],
+                            entry     = {
+                                "name":       pi["name"],
+                                "position":   pi["position"],
+                                "player_key": pi["player_key"],
                             }
-                            if move_type in ("add",):
+                            if move_type == "add":
                                 added.append({**entry,
-                                    "player_key":  pi["player_key"],
                                     "source_type": pi["td"].get("source_type", "")})
-                            elif move_type in ("drop",):
-                                dropped.append({**entry, "player_key": pi["player_key"]})
+                            elif move_type == "drop":
+                                dropped.append(entry)
 
-                        # Resolve manager from first add or drop
+                        # Resolve manager from first add, fall back to first drop
                         team_key = None
                         for pw in players_raw:
-                            pi = _player_info(pw)
+                            pi = _extract_player(pw)
                             mt = pi["td"].get("type", "")
                             if mt == "add":
                                 team_key = pi["td"].get("destination_team_key", "")
@@ -1915,6 +1931,193 @@ def download_transactions():
         if not data:
             raise HTTPException(status_code=404, detail="transactions.json not found.")
         return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Data generation — drafts.json
+# ---------------------------------------------------------------------------
+
+@router.get("/data/drafts/build-all")
+def build_drafts(
+    skip_existing: bool = Query(default=True),
+    year: str = Query(default=None, description="Single year e.g. '2025', or omit for all"),
+):
+    """
+    Generates drafts.json — full draft board per season.
+
+    For each pick stores: round, pick number, overall pick, manager,
+    player name, position, player_key, and auction cost (if applicable).
+
+    Snake drafts: cost = null
+    Auction drafts: cost = dollars spent (2023+)
+
+    Keyed by year: {"2025": {"draft_type": "auction", "picks": [...]}}
+
+    Usage:
+        GET /league/data/drafts/build-all
+        GET /league/data/drafts/build-all?year=2025
+        GET /league/data/drafts/build-all?skip_existing=false
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_all_seasons, get_league_key_for_season, _convert_to_dict, _safe_get
+        )
+        from services.yahoo_service import get_query
+        from config import get_manager_identity
+
+        path     = _get_data_path("drafts.json")
+        existing = _load_json(path)
+
+        seasons_data = get_all_seasons(force_refresh=True)
+        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
+        target_years = [year] if year else all_years
+
+        results = {"success": [], "skipped": [], "failed": {}}
+
+        for yr in target_years:
+            if skip_existing and yr in existing and existing[yr]:
+                results["skipped"].append(int(yr))
+                continue
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                # Get draft type from settings
+                try:
+                    settings_raw  = query.get_league_settings()
+                    settings_dict = _convert_to_dict(settings_raw)
+                    is_auction    = bool(int(settings_dict.get("is_auction_draft") or 0))
+                    draft_type    = "auction" if is_auction else "snake"
+                except Exception:
+                    draft_type = "unknown"
+                    is_auction = False
+
+                # Get draft results
+                draft_raw  = query.get_league_draft_results()
+                draft_dict = _convert_to_dict(draft_raw)
+                picks_raw  = draft_dict if isinstance(draft_dict, list) else \
+                             draft_dict.get("draft_results", [])
+
+                picks = []
+                for item in picks_raw:
+                    p        = item.get("draft_result", item) if isinstance(item, dict) else {}
+                    team_key = p.get("team_key", "")
+                    pick_num = p.get("pick")
+                    round_num= p.get("round")
+                    cost     = p.get("cost")
+                    player_key = p.get("player_key", "")
+
+                    identity     = get_manager_identity(team_key=team_key)
+                    manager_id   = identity["manager_id"]   if identity else None
+                    display_name = identity["display_name"] if identity else team_key
+
+                    # Get player info if available
+                    player_name = p.get("player_name") or p.get("name")
+                    position    = p.get("display_position") or p.get("position")
+
+                    # If player info not on the pick, try nested player object
+                    if not player_name and "player" in p:
+                        pl = p["player"] if isinstance(p["player"], dict) else {}
+                        player_name = pl.get("full_name") or pl.get("name")
+                        position    = pl.get("display_position") or pl.get("primary_position") or position
+
+                    try:
+                        cost_int = int(cost) if cost is not None else None
+                    except (TypeError, ValueError):
+                        cost_int = None
+
+                    picks.append({
+                        "overall_pick": int(pick_num) if pick_num else None,
+                        "round":        int(round_num) if round_num else None,
+                        "manager_id":   manager_id,
+                        "display_name": display_name,
+                        "player_key":   player_key,
+                        "player_name":  player_name,
+                        "position":     position,
+                        "cost":         cost_int,      # null for snake, dollars for auction
+                    })
+
+                # Sort by overall pick number
+                picks.sort(key=lambda x: x.get("overall_pick") or 9999)
+
+                existing[yr] = {
+                    "year":       int(yr),
+                    "draft_type": draft_type,
+                    "total_picks":len(picks),
+                    "picks":      picks,
+                }
+                results["success"].append(int(yr))
+
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        _write_json(path, sorted_data)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "next_step":       "GET /league/data/drafts/download to save locally",
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/drafts/status")
+def drafts_status():
+    """Shows which years are in drafts.json and draft type per season."""
+    try:
+        path = _get_data_path("drafts.json")
+        data = _load_json(path)
+        if not data:
+            return {"status": "file_not_found", "years": []}
+
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            season = data[yr]
+            picks  = season.get("picks", [])
+            has_player_names = sum(1 for p in picks if p.get("player_name"))
+            summary.append({
+                "year":             int(yr),
+                "draft_type":       season.get("draft_type"),
+                "total_picks":      len(picks),
+                "picks_with_names": has_player_names,
+                "needs_refresh":    has_player_names < len(picks) // 2 if picks else True,
+            })
+
+        return {
+            "total_seasons":  len(data),
+            "auction_seasons":[s["year"] for s in summary if s["draft_type"] == "auction"],
+            "snake_seasons":  [s["year"] for s in summary if s["draft_type"] == "snake"],
+            "seasons":        summary,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/drafts/download")
+def download_drafts():
+    """Returns current drafts.json for local save."""
+    try:
+        path = _get_data_path("drafts.json")
+        data = _load_json(path)
+        if not data:
+            raise HTTPException(status_code=404, detail="drafts.json not found.")
+        return {
+            "total_seasons": len(data),
+            "years":         sorted(data.keys(), reverse=True),
+            "data":          data,
+        }
     except HTTPException:
         raise
     except Exception as e:
