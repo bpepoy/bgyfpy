@@ -1003,12 +1003,15 @@ def generate_managers_data(
             with open(data_path) as f:
                 existing = json.load(f)
 
+        # Strip any non-year keys (e.g. "total_seasons" from old format)
+        existing = {k: v for k, v in existing.items() if str(k).isdigit()}
+
         # Merge new seasons in (overwrites existing year keys)
         merged  = {**existing, **{k: v for k, v in result.items() if "error" not in v}}
         errors  = {k: v for k, v in result.items() if "error" in v}
 
         # Sort by year descending
-        sorted_merged = dict(sorted(merged.items(), key=lambda x: int(x[0]), reverse=True))
+        sorted_merged = dict(sorted(merged.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else -1, reverse=True))
 
         # Write back
         os.makedirs(os.path.dirname(data_path), exist_ok=True)
@@ -1234,7 +1237,7 @@ def build_all_managers(
                 results["failed"][yr] = str(e)
 
         # Write merged file sorted newest first
-        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else -1, reverse=True))
         os.makedirs(os.path.dirname(data_path), exist_ok=True)
         with open(data_path, "w") as f:
             json.dump(sorted_data, f, indent=2)
@@ -1556,7 +1559,7 @@ def build_results(
         from services.yahoo_service import get_query
 
         path     = _get_data_path("results.json")
-        existing = _load_json(path)
+        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         # Force full season cache build — ensures all 19 seasons are discoverable
         seasons_data = get_all_seasons(force_refresh=True)
@@ -1588,7 +1591,7 @@ def build_results(
             except Exception as e:
                 results["failed"][yr] = str(e)
 
-        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else -1, reverse=True))
         _write_json(path, sorted_data)
 
         return {
@@ -1725,7 +1728,7 @@ def build_transactions(
         from config import get_manager_identity
 
         path     = _get_data_path("transactions.json")
-        existing = _load_json(path)
+        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         # Force full season cache build — ensures all 19 seasons are discoverable
         seasons_data = get_all_seasons(force_refresh=True)
@@ -1895,7 +1898,7 @@ def build_transactions(
             except Exception as e:
                 results["failed"][yr] = str(e)
 
-        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else -1, reverse=True))
         _write_json(path, sorted_data)
 
         return {
@@ -1985,7 +1988,7 @@ def build_drafts(
         from config import get_manager_identity
 
         path     = _get_data_path("drafts.json")
-        existing = _load_json(path)
+        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         seasons_data = get_all_seasons(force_refresh=True)
         all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
@@ -2065,7 +2068,7 @@ def build_drafts(
             except Exception as e:
                 results["failed"][yr] = str(e)
 
-        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else -1, reverse=True))
         _write_json(path, sorted_data)
 
         return {
@@ -2158,7 +2161,7 @@ def build_punishment():
         from config import get_all_manual_history
 
         path     = _get_data_path("punishment.json")
-        existing = _load_json(path)
+        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         manual = get_all_manual_history()
 
@@ -2177,7 +2180,7 @@ def build_punishment():
                 if punishment and not existing[yr_str].get("punishment"):
                     existing[yr_str]["punishment"] = punishment
 
-        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else -1, reverse=True))
         _write_json(path, sorted_data)
 
         populated   = sum(1 for v in sorted_data.values() if v.get("punishment"))
@@ -2213,7 +2216,7 @@ def update_punishment(
     """
     try:
         path     = _get_data_path("punishment.json")
-        existing = _load_json(path)
+        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         yr_str = str(year)
         existing[yr_str] = {
@@ -2223,7 +2226,7 @@ def update_punishment(
             "updated_at":  __import__("datetime").datetime.utcnow().isoformat(),
         }
 
-        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]), reverse=True))
+        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else -1, reverse=True))
         _write_json(path, sorted_data)
 
         return {
