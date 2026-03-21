@@ -898,7 +898,8 @@ def generate_managers_data(
         from config import get_manager_identity
         import json, os
 
-        seasons_data = get_all_seasons()
+        # Force full season cache build — ensures all 19 seasons are discoverable
+        seasons_data = get_all_seasons(force_refresh=True)
         all_seasons  = seasons_data.get("seasons", [])
 
         # Determine which seasons to process
@@ -1555,7 +1556,8 @@ def build_results(
         path     = _get_data_path("results.json")
         existing = _load_json(path)
 
-        seasons_data = get_all_seasons()
+        # Force full season cache build — ensures all 19 seasons are discoverable
+        seasons_data = get_all_seasons(force_refresh=True)
         all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
         target_years = [year] if year else all_years
 
@@ -1644,6 +1646,50 @@ def download_results():
 # Data generation — transactions.json (trades + moves/FAAB)
 # ---------------------------------------------------------------------------
 
+
+def _build_week_map(query, yr: str) -> list:
+    """Build week->date range map for a season using game weeks API."""
+    from services.fantasy.league_service import _convert_to_dict
+    try:
+        league_key = query.league_key if hasattr(query, 'league_key') else ""
+        game_id    = str(league_key).split(".")[0] if league_key else None
+        if not game_id:
+            return []
+        raw   = query.get_game_weeks_by_game_id(game_id)
+        data  = _convert_to_dict(raw)
+        weeks = data if isinstance(data, list) else data.get("game_weeks", [])
+        result = []
+        for w in weeks:
+            week_obj = w.get("game_week", w) if isinstance(w, dict) else {}
+            result.append({
+                "week":       int(week_obj.get("week") or week_obj.get("display_name") or 0),
+                "start_date": week_obj.get("start") or week_obj.get("start_date"),
+                "end_date":   week_obj.get("end")   or week_obj.get("end_date"),
+            })
+        return sorted(result, key=lambda x: x["week"])
+    except Exception:
+        return []
+
+
+def _date_to_week(date_str: str, week_map: list) -> int | None:
+    """Map a YYYY-MM-DD date to its season week number."""
+    if not date_str or not week_map:
+        return None
+    try:
+        import datetime
+        d = datetime.datetime.strptime(date_str, "%Y-%m-%d").date()
+        for w in week_map:
+            try:
+                start = datetime.datetime.strptime(w["start_date"], "%Y-%m-%d").date()
+                end   = datetime.datetime.strptime(w["end_date"],   "%Y-%m-%d").date()
+                if start <= d <= end:
+                    return w["week"]
+            except (TypeError, ValueError):
+                continue
+    except (TypeError, ValueError):
+        pass
+    return None
+
 @router.get("/data/transactions/build-all")
 def build_transactions(
     skip_existing: bool = Query(default=True),
@@ -1666,9 +1712,12 @@ def build_transactions(
         path     = _get_data_path("transactions.json")
         existing = _load_json(path)
 
-        seasons_data = get_all_seasons()
+        # Force full season cache build — ensures all 19 seasons are discoverable
+        seasons_data = get_all_seasons(force_refresh=True)
         all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
         target_years = [year] if year else all_years
+
+        import datetime
 
         results = {"success": [], "skipped": [], "failed": {}}
 
@@ -1679,14 +1728,33 @@ def build_transactions(
             try:
                 league_key = get_league_key_for_season(yr)
                 query      = get_query(league_key)
+                week_map   = _build_week_map(query, yr)
 
                 tx_raw  = query.get_league_transactions()
                 tx_dict = _convert_to_dict(tx_raw)
-                tx_list = tx_dict if isinstance(tx_dict, list) else \
-                          tx_dict.get("transactions", [])
+                tx_list = tx_dict if isinstance(tx_dict, list) else                           tx_dict.get("transactions", [])
 
                 trades = []
                 moves  = []
+
+                def _ts_to_date(ts):
+                    """Convert unix timestamp to readable date string."""
+                    try:
+                        return datetime.datetime.fromtimestamp(int(ts)).strftime("%Y-%m-%d")
+                    except (TypeError, ValueError):
+                        return None
+
+                def _player_info(pw):
+                    """Extract name, position, player_key from a player wrapper."""
+                    p  = pw.get("player", pw) if isinstance(pw, dict) else {}
+                    td = p.get("transaction_data", {})
+                    if isinstance(td, list): td = td[0] if td else {}
+                    return {
+                        "name":       p.get("full_name") or p.get("name", "Unknown"),
+                        "position":   p.get("display_position") or p.get("primary_position"),
+                        "player_key": p.get("player_key"),
+                        "td":         td,
+                    }
 
                 for item in tx_list:
                     tx     = item.get("transaction", item) if isinstance(item, dict) else {}
@@ -1695,9 +1763,13 @@ def build_transactions(
                     if status != "successful":
                         continue
 
-                    # Parse timestamp to week (approximate)
-                    ts    = tx.get("timestamp") or tx.get("transaction_id", "")
-                    week  = None  # Yahoo doesn't always expose week directly
+                    ts       = tx.get("timestamp")
+                    date_str = _ts_to_date(ts)
+                    faab     = tx.get("faab_bid")
+                    try:
+                        faab_int = int(faab) if faab is not None else None
+                    except (TypeError, ValueError):
+                        faab_int = None
 
                     players_raw = tx.get("players", [])
                     if isinstance(players_raw, dict):
@@ -1706,70 +1778,86 @@ def build_transactions(
                     if ttype == "trade":
                         trader_tk = tx.get("trader_team_key", "")
                         tradee_tk = tx.get("tradee_team_key", "")
-                        ti_a      = get_manager_identity(team_key=trader_tk)
-                        ti_b      = get_manager_identity(team_key=tradee_tk)
-                        mgr_a     = ti_a["manager_id"] if ti_a else trader_tk
-                        mgr_b     = ti_b["manager_id"] if ti_b else tradee_tk
+                        ti_a = get_manager_identity(team_key=trader_tk)
+                        ti_b = get_manager_identity(team_key=tradee_tk)
+                        mgr_a = ti_a["manager_id"] if ti_a else trader_tk
+                        mgr_b = ti_b["manager_id"] if ti_b else tradee_tk
 
                         a_received = []
                         b_received = []
 
                         for pw in players_raw:
-                            p   = pw.get("player", pw) if isinstance(pw, dict) else {}
-                            td  = p.get("transaction_data", {})
-                            if isinstance(td, list): td = td[0] if td else {}
-                            name     = p.get("full_name") or p.get("name", "Unknown")
-                            dest_tk  = td.get("destination_team_key", "")
+                            pi = _player_info(pw)
+                            dest_tk = pi["td"].get("destination_team_key", "")
+                            entry = {
+                                "name":       pi["name"],
+                                "position":   pi["position"],
+                                "player_key": pi["player_key"],
+                            }
                             if dest_tk == trader_tk:
-                                a_received.append(name)
+                                a_received.append(entry)
                             else:
-                                b_received.append(name)
+                                b_received.append(entry)
 
                         trades.append({
-                            "timestamp":   ts,
-                            "manager_a":   mgr_a,
-                            "manager_b":   mgr_b,
-                            "a_received":  a_received,
-                            "b_received":  b_received,
+                            "week":       _date_to_week(date_str, week_map),
+                            "date":       date_str,
+                            "manager_a":  mgr_a,
+                            "manager_b":  mgr_b,
+                            "a_received": a_received,
+                            "b_received": b_received,
                         })
 
-                    elif ttype in ("add", "drop", "add/drop", "waiver"):
+                    elif ttype in ("add", "drop", "add/drop", "waiver", "free agent"):
+                        # Group adds and drops from the same transaction together
+                        added   = []
+                        dropped = []
+
                         for pw in players_raw:
-                            p   = pw.get("player", pw) if isinstance(pw, dict) else {}
-                            td  = p.get("transaction_data", {})
-                            if isinstance(td, list): td = td[0] if td else {}
-                            name      = p.get("full_name") or p.get("name", "Unknown")
-                            move_type = td.get("type", ttype)
-                            dest_tk   = td.get("destination_team_key", "")
-                            src_tk    = td.get("source_team_key", "")
-                            faab      = tx.get("faab_bid")
+                            pi        = _player_info(pw)
+                            move_type = pi["td"].get("type", "")
+                            dest_tk   = pi["td"].get("destination_team_key", "")
+                            src_tk    = pi["td"].get("source_type", "")
+                            entry = {
+                                "name":        pi["name"],
+                                "position":    pi["position"],
+                                "player_key":  pi["player_key"],
+                            }
+                            if move_type in ("add",):
+                                added.append({**entry,
+                                    "player_key":  pi["player_key"],
+                                    "source_type": pi["td"].get("source_type", "")})
+                            elif move_type in ("drop",):
+                                dropped.append({**entry, "player_key": pi["player_key"]})
 
-                            team_key  = dest_tk if move_type == "add" else src_tk
-                            identity  = get_manager_identity(team_key=team_key)
-                            manager   = identity["manager_id"] if identity else team_key
+                        # Resolve manager from first add or drop
+                        team_key = None
+                        for pw in players_raw:
+                            pi = _player_info(pw)
+                            mt = pi["td"].get("type", "")
+                            if mt == "add":
+                                team_key = pi["td"].get("destination_team_key", "")
+                                break
+                            elif mt == "drop":
+                                team_key = pi["td"].get("source_team_key", "")
+                                break
 
-                            if move_type in ("add", "waiver"):
-                                moves.append({
-                                    "timestamp": ts,
-                                    "manager":   manager,
-                                    "type":      "add",
-                                    "player":    name,
-                                    "faab_bid":  int(faab) if faab is not None else None,
-                                    "source":    td.get("source_type", ""),
-                                })
-                            elif move_type == "drop":
-                                moves.append({
-                                    "timestamp": ts,
-                                    "manager":   manager,
-                                    "type":      "drop",
-                                    "player":    name,
-                                    "faab_bid":  None,
-                                    "source":    None,
-                                })
+                        identity = get_manager_identity(team_key=team_key) if team_key else None
+                        manager  = identity["manager_id"] if identity else team_key
+
+                        if added or dropped:
+                            moves.append({
+                                "week":     _date_to_week(date_str, week_map),
+                                "date":     date_str,
+                                "manager":  manager,
+                                "added":    added,
+                                "dropped":  dropped,
+                                "faab_bid": faab_int,
+                            })
 
                 existing[yr] = {
-                    "trades": sorted(trades, key=lambda x: x.get("timestamp") or ""),
-                    "moves":  sorted(moves,  key=lambda x: x.get("timestamp") or ""),
+                    "trades": sorted(trades, key=lambda x: (x.get("week") or 99, x.get("date") or "")),
+                    "moves":  sorted(moves,  key=lambda x: (x.get("week") or 99, x.get("date") or "")),
                 }
                 results["success"].append(int(yr))
 
