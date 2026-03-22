@@ -1118,6 +1118,7 @@ def managers_json_status():
 @router.get("/data/managers/build-all")
 def build_all_managers(
     skip_existing: bool = Query(default=True, description="Skip years already enriched"),
+    force_clean:   bool = Query(default=False, description="Wipe file and rebuild from scratch"),
 ):
     """
     Runs /league/data/managers for ALL seasons in sequence.
@@ -1150,11 +1151,11 @@ def build_all_managers(
             "data", "fantasy", "managers.json"
         )
 
-        # Load existing
+        # Load existing (or wipe if force_clean)
         existing = {}
-        if os.path.exists(data_path):
-            with open(data_path) as f:
-                existing = json.load(f)
+        if not force_clean and os.path.exists(data_path):
+            raw = json.load(open(data_path))
+            existing = {k: v for k, v in raw.items() if str(k).isdigit()}
 
         seasons_data = get_all_seasons()
         all_years    = [str(s["year"]) for s in seasons_data.get("seasons", [])]
@@ -1229,6 +1230,7 @@ def build_all_managers(
                     "logo_url":    _safe_get(meta, "logo_url"),
                     "num_teams":   _safe_get(meta, "num_teams"),
                     "season":      _safe_get(meta, "season"),
+                    "is_finished": bool(int(_safe_get(meta, "is_finished") or 0)),
                     "managers":    managers,
                 }
                 results["success"].append(int(yr))
@@ -1236,8 +1238,11 @@ def build_all_managers(
             except Exception as e:
                 results["failed"][yr] = str(e)
 
-        # Write merged file sorted newest first
-        sorted_data = dict(sorted(existing.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else -1, reverse=True))
+        # Write merged file sorted newest first — year keys only
+        sorted_data = dict(sorted(
+            {k: v for k, v in existing.items() if str(k).isdigit()}.items(),
+            key=lambda x: int(x[0]), reverse=True
+        ))
         os.makedirs(os.path.dirname(data_path), exist_ok=True)
         with open(data_path, "w") as f:
             json.dump(sorted_data, f, indent=2)
@@ -1542,6 +1547,7 @@ def _build_results_for_season(yr: str, query, league_key: str) -> dict:
 def build_results(
     skip_existing: bool = Query(default=True),
     year: str = Query(default=None, description="Single year e.g. '2025', or omit for all"),
+    force_clean:   bool = Query(default=False, description="Wipe file and rebuild from scratch"),
 ):
     """
     Generates results.json — regular season + playoff W-L-T, points, ranks, projected.
@@ -1559,7 +1565,7 @@ def build_results(
         from services.yahoo_service import get_query
 
         path     = _get_data_path("results.json")
-        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         # Force full season cache build — ensures all 19 seasons are discoverable
         seasons_data = get_all_seasons(force_refresh=True)
@@ -1712,6 +1718,7 @@ def _date_to_week(date_str: str, week_map: list) -> int | None:
 def build_transactions(
     skip_existing: bool = Query(default=True),
     year: str = Query(default=None, description="Single year e.g. '2025', or omit for all"),
+    force_clean:   bool = Query(default=False, description="Wipe file and rebuild from scratch"),
 ):
     """
     Generates transactions.json — trades and waiver/FA moves per season.
@@ -1728,7 +1735,7 @@ def build_transactions(
         from config import get_manager_identity
 
         path     = _get_data_path("transactions.json")
-        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         # Force full season cache build — ensures all 19 seasons are discoverable
         seasons_data = get_all_seasons(force_refresh=True)
@@ -1963,6 +1970,7 @@ def download_transactions():
 def build_drafts(
     skip_existing: bool = Query(default=True),
     year: str = Query(default=None, description="Single year e.g. '2025', or omit for all"),
+    force_clean:   bool = Query(default=False, description="Wipe file and rebuild from scratch"),
 ):
     """
     Generates drafts.json — full draft board per season.
@@ -1988,7 +1996,7 @@ def build_drafts(
         from config import get_manager_identity
 
         path     = _get_data_path("drafts.json")
-        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         seasons_data = get_all_seasons(force_refresh=True)
         all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
