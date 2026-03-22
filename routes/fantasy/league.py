@@ -2024,15 +2024,33 @@ def build_drafts(
 
                 # Get draft results
                 draft_raw  = query.get_league_draft_results()
-                draft_dict = _convert_to_dict(draft_raw)
-                # YFPY returns flat draft pick objects with fields:
-                # pick, round, cost, team_key, player_key — no wrapper, no player names
-                picks_raw = draft_dict if isinstance(draft_dict, list) else \
-                            draft_dict.get("draft_results", [])
+
+                # YFPY can return a list directly OR wrap it in a dict
+                # _convert_to_dict may also transform a list into a dict — handle all cases
+                if isinstance(draft_raw, list):
+                    picks_raw = draft_raw
+                else:
+                    draft_dict = _convert_to_dict(draft_raw)
+                    if isinstance(draft_dict, list):
+                        picks_raw = draft_dict
+                    elif isinstance(draft_dict, dict):
+                        picks_raw = (
+                            draft_dict.get("draft_results") or
+                            draft_dict.get("picks") or
+                            list(draft_dict.values())[0] if draft_dict else []
+                        )
+                        if not isinstance(picks_raw, list):
+                            picks_raw = [picks_raw] if picks_raw else []
+                    else:
+                        picks_raw = []
 
                 picks = []
                 for item in picks_raw:
-                    p          = item if isinstance(item, dict) else {}
+                    # Handle possible "draft_result" wrapper
+                    if isinstance(item, dict) and "draft_result" in item:
+                        p = item["draft_result"]
+                    else:
+                        p = item if isinstance(item, dict) else {}
                     team_key   = p.get("team_key", "")
                     pick_num   = p.get("pick")
                     round_num  = p.get("round")
@@ -2089,6 +2107,37 @@ def build_drafts(
             "next_step":       "GET /league/data/drafts/download to save locally",
         }
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/drafts/debug")
+def debug_draft_raw(year: str = Query(default="2025")):
+    """
+    Returns raw YFPY draft response before any parsing.
+    Use to diagnose pick extraction issues.
+    """
+    try:
+        from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
+        from services.yahoo_service import get_query
+
+        league_key = get_league_key_for_season(year)
+        query      = get_query(league_key)
+        raw        = query.get_league_draft_results()
+        converted  = _convert_to_dict(raw)
+
+        return {
+            "raw_type":        str(type(raw)),
+            "converted_type":  str(type(converted)),
+            "raw_is_list":     isinstance(raw, list),
+            "raw_len":         len(raw) if hasattr(raw, "__len__") else None,
+            "converted_is_list": isinstance(converted, list),
+            "converted_len":   len(converted) if hasattr(converted, "__len__") else None,
+            "first_raw":       (raw[0] if isinstance(raw, list) and raw
+                               else dict(list(raw.items())[:1]) if isinstance(raw, dict) else str(raw)),
+            "first_converted": (converted[0] if isinstance(converted, list) and converted
+                               else dict(list(converted.items())[:1]) if isinstance(converted, dict) else str(converted)),
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

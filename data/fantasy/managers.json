@@ -31,6 +31,7 @@
       "logo_url": "https://s.yimg.com/ep/cx/blendr/v2/image-avatar-football-trophy-sf-png_1721783652750.png",
       "num_teams": 10,
       "season": 2025,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -163,6 +164,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2024,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -295,6 +297,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2023,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -427,6 +430,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2022,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -559,6 +563,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2021,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -691,6 +696,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2020,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -823,6 +829,7 @@
       "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/44657524321_75e22d.jpg",
       "num_teams": 10,
       "season": 2019,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -955,6 +962,7 @@
       "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/44657524321_75e22d.jpg",
       "num_teams": 10,
       "season": 2018,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -1087,6 +1095,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2017,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -1219,6 +1228,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2016,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -1351,6 +1361,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2015,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -1483,6 +1494,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2014,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -1615,6 +1627,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2013,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -1747,6 +1760,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2012,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -1879,6 +1893,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2011,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "zef",
@@ -2011,6 +2026,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2010,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "kyle",
@@ -2143,6 +2159,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2009,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "joey",
@@ -2275,6 +2292,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2008,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "joey",
@@ -2407,6 +2425,7 @@
       "logo_url": false,
       "num_teams": 10,
       "season": 2007,
+      "is_finished": true,
       "managers": [
         {
           "manager_id": "brian",
