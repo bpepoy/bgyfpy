@@ -963,6 +963,7 @@ def _build_results_for_season(yr: str, query, league_key: str) -> dict:
         pa     = float(ts.get("points_against") or 0)
 
         season_data[manager_id] = {
+            "team_key":  team_key,
             "team_name": t.get("name"),
             "logo_url":  _extract_logo_url(t),
             "_rs": {
