@@ -41,23 +41,18 @@ router = APIRouter(prefix="/basketball/league", tags=["Basketball League"])
 NBA_LEAGUE_ID   = "38685"
 NBA_LEAGUE_NAME = "Real Bros"
 
-# Known NBA Yahoo game_ids by season-start year (update annually)
+# Known NBA Yahoo game_ids by display year (the season end year — e.g. 2025 = 2024-25 season)
+# game_id is the prefix of the league_key: "466.l.38685"
+# Update this dict each new season by checking the current league URL on Yahoo.
+# NOTE: Yahoo's API returns season = start year (e.g. 2024 for the 2024-25 season),
+#       but we key this dict by the end/display year for human readability.
 NBA_GAME_IDS = {
-    2024: 428,
-    2023: 418,
-    2022: 406,
-    2021: 396,
-    2020: 385,
-    2019: 375,
-    2018: 363,
-    2017: 352,
-    2016: 341,
-    2015: 331,
-    2014: 321,
-    2013: 310,
-    2012: 299,
-    2011: 285,
-    2010: 271,
+    2025: 466,   # 2024-25 season — current
+    2024: 454,   # 2023-24 season  (league_key confirmed: 454.l.2122 — diff league_id)
+    # NOTE: Real Bros may have used a different league_id in earlier seasons.
+    # Add confirmed keys here as they are discovered via /explore/discover-seasons.
+    # Earlier seasons with league_id 38685:
+    # 2024: 428 — this returned "Yahoo Public 38685", confirmed as Real Bros
 }
 
 # ---------------------------------------------------------------------------
@@ -293,9 +288,18 @@ def get_nba_seasons():
 def discover_nba_seasons(save: bool = Query(default=True, description="Save results to season_keys.json")):
     """
     Discovers all Real Bros NBA seasons by trying each known game_id against
-    league_id 38685. Saves results to data/basketball/season_keys.json.
+    the configured league_id. Saves confirmed results to data/basketball/season_keys.json.
 
-    Run this once to bootstrap, then re-run each new season.
+    Verification logic
+    ------------------
+    A season is confirmed as "our league" ONLY if the returned league_id from the
+    API exactly matches NBA_LEAGUE_ID. Name-based matching is intentionally NOT used
+    because public Yahoo leagues hide real names as "Yahoo Public XXXXX".
+
+    Common false-positive causes:
+    - Same league_id exists under a different game_id but belongs to a different league
+    - A stale or reused league_id from years ago
+    Both are caught because the returned league_id must exactly equal NBA_LEAGUE_ID.
 
     Usage:
         GET /basketball/league/explore/discover-seasons
@@ -305,51 +309,77 @@ def discover_nba_seasons(save: bool = Query(default=True, description="Save resu
         from services.yahoo_service import get_query
         from services.fantasy.league_service import _convert_to_dict
 
-        found  = {}
-        errors = []
+        found   = {}
+        details = []
 
-        for season_year, game_id in sorted(NBA_GAME_IDS.items(), reverse=True):
+        for display_year, game_id in sorted(NBA_GAME_IDS.items(), reverse=True):
             league_key = f"{game_id}.l.{NBA_LEAGUE_ID}"
             try:
                 query = get_query(league_key)
                 meta  = _convert_to_dict(query.get_league_metadata())
-                # Verify it's actually our league
-                if str(meta.get("league_id")) == NBA_LEAGUE_ID or \
-                   (meta.get("name") and NBA_LEAGUE_NAME.lower() in str(meta.get("name", "")).lower()):
-                    found[str(season_year)] = league_key
-                    errors.append({
-                        "season_year": season_year,
-                        "league_key":  league_key,
-                        "status":      "✅ found",
-                        "league_name": meta.get("name"),
-                        "season":      meta.get("season"),
-                        "num_teams":   meta.get("num_teams"),
-                        "is_finished": meta.get("is_finished"),
+
+                returned_lid = str(meta.get("league_id") or "")
+                league_name  = meta.get("name") or ""
+                api_season   = meta.get("season")      # start year from Yahoo
+                num_teams    = meta.get("num_teams")
+                is_finished  = meta.get("is_finished")
+                renew        = meta.get("renew")
+                renewed      = meta.get("renewed")
+
+                # Strict match: returned league_id must equal our known league_id
+                if returned_lid == NBA_LEAGUE_ID:
+                    found[str(display_year)] = league_key
+                    details.append({
+                        "display_year": display_year,
+                        "league_key":   league_key,
+                        "status":       "✅ confirmed",
+                        "league_name":  league_name,
+                        "api_season":   api_season,
+                        "num_teams":    num_teams,
+                        "is_finished":  is_finished,
+                        "renew":        renew,
+                        "renewed":      renewed,
                     })
                 else:
-                    errors.append({
-                        "season_year": season_year,
-                        "league_key":  league_key,
-                        "status":      "⚠️ different league",
-                        "name_found":  meta.get("name"),
+                    # API responded but it's a different league sharing the same league_id slot
+                    details.append({
+                        "display_year":       display_year,
+                        "league_key":         league_key,
+                        "status":             "⚠️ different league — league_id mismatch",
+                        "returned_league_id": returned_lid,
+                        "returned_name":      league_name,
+                        "note": (
+                            "Yahoo reused this league_id for a different league under "
+                            f"game_id {game_id}. Not our league."
+                        ),
                     })
+
             except Exception as e:
-                errors.append({
-                    "season_year": season_year,
-                    "league_key":  league_key,
-                    "status":      f"❌ {str(e)[:80]}",
+                err_str = str(e)
+                # Distinguish "league doesn't exist" (404/access denied) from real errors
+                is_not_found = any(x in err_str for x in ("404", "access", "denied", "URL", "retrieve"))
+                details.append({
+                    "display_year": display_year,
+                    "league_key":   league_key,
+                    "status":       "⛔ not found" if is_not_found else f"❌ error: {err_str[:100]}",
                 })
 
         if save and found:
             _write_json(_get_data_path("season_keys.json"), found)
 
         return {
-            "league_id":       NBA_LEAGUE_ID,
-            "seasons_found":   len(found),
-            "season_keys":     found,
-            "details":         errors,
-            "saved":           save and bool(found),
-            "next_step":       "Run GET /basketball/league/explore/season/{year} to inspect any season.",
+            "league_id":          NBA_LEAGUE_ID,
+            "seasons_found":      len(found),
+            "season_keys":        found,
+            "game_ids_tested":    dict(sorted(NBA_GAME_IDS.items(), reverse=True)),
+            "details":            details,
+            "saved":              save and bool(found),
+            "note": (
+                "Only seasons where the API returned league_id == '38685' are saved. "
+                "If a known season is missing, add its game_id to NBA_GAME_IDS in basketball/league.py "
+                "and re-run this endpoint."
+            ),
+            "next_step": "Run GET /basketball/league/explore/season/{year} to inspect any confirmed season.",
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
