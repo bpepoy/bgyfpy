@@ -481,6 +481,448 @@ def check_nba_data_availability():
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/explore/scoreboard-week")
+def explore_nba_scoreboard_week(
+    year: str = Query(default="2025"),
+    week: int = Query(default=1, description="Week number to inspect"),
+):
+    """
+    Returns the full scoreboard for one week — shows per-team category stat totals
+    and how Yahoo structures category-scoring matchups.
+
+    This is the primary source for:
+      - Per-matchup category winners (FG%, PTS, REB, AST, ST, BLK, TO, 3PTM, FT%)
+      - Weekly team stat totals per category
+      - is_playoffs / is_consolation flags per matchup
+
+    Usage:
+        GET /basketball/league/explore/scoreboard-week?year=2025&week=1
+        GET /basketball/league/explore/scoreboard-week?year=2025&week=21
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.fantasy.league_service import _convert_to_dict
+
+        league_key = _league_key_for_season(year)
+        query      = get_query(league_key)
+        sb         = _convert_to_dict(query.get_league_scoreboard_by_week(week))
+
+        # Surface the first matchup and its two teams fully for inspection
+        matchups = sb.get("matchups", []) if isinstance(sb, dict) else (sb if isinstance(sb, list) else [])
+        first_m  = matchups[0] if matchups else {}
+        matchup  = first_m.get("matchup", first_m) if isinstance(first_m, dict) else {}
+        teams_m  = matchup.get("teams", [])
+        if isinstance(teams_m, dict):
+            teams_m = list(teams_m.values())
+
+        return {
+            "year":              year,
+            "week":              week,
+            "league_key":        league_key,
+            "num_matchups":      len(matchups),
+            "raw_scoreboard":    sb,
+            "first_matchup":     matchup,
+            "first_matchup_team_0": teams_m[0] if len(teams_m) > 0 else None,
+            "first_matchup_team_1": teams_m[1] if len(teams_m) > 1 else None,
+            "note": (
+                "Look at first_matchup_team_0/1 → team_stats → stats for category values. "
+                "stat_winners shows which team won each category for this matchup."
+            ),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/explore/team-matchups")
+def explore_nba_team_matchups(
+    year: str      = Query(default="2025"),
+    team_key: str  = Query(default=None, description="e.g. 466.l.38685.t.5 — omit to use first team"),
+):
+    """
+    Returns all matchups for a single team across the full season.
+    Shows week-by-week results including category breakdowns per matchup.
+
+    This is the source for:
+      - Full season schedule (opponent, week, result)
+      - Whether each week was regular season, playoffs, or consolation
+      - Per-week category win/loss detail at the matchup level
+
+    Usage:
+        GET /basketball/league/explore/team-matchups?year=2025
+        GET /basketball/league/explore/team-matchups?year=2025&team_key=466.l.38685.t.5
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.fantasy.league_service import _convert_to_dict
+        from services.fantasy.team_service import _extract_teams_list
+
+        league_key = _league_key_for_season(year)
+        query      = get_query(league_key)
+
+        if not team_key:
+            teams_dict = _convert_to_dict(query.get_league_teams())
+            teams_list = _extract_teams_list(teams_dict)
+            first      = teams_list[0] if teams_list else {}
+            first_team = first.get("team", first) if isinstance(first, dict) else {}
+            team_key   = first_team.get("team_key")
+
+        matchups_raw = _convert_to_dict(query.get_team_matchups(team_key))
+
+        return {
+            "year":        year,
+            "team_key":    team_key,
+            "league_key":  league_key,
+            "raw":         matchups_raw,
+            "note": (
+                "Each matchup entry shows week, opponent, is_playoffs, is_consolation, "
+                "winner_team_key, and team stat totals for both sides. "
+                "stat_winners per matchup shows which team won each category."
+            ),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/explore/team-stats-week")
+def explore_nba_team_stats_week(
+    year: str     = Query(default="2025"),
+    week: int     = Query(default=1),
+    team_key: str = Query(default=None, description="e.g. 466.l.38685.t.5 — omit to use first team"),
+):
+    """
+    Returns a team's category stat totals for one week.
+    This is the per-team, per-week data that drives category W-L-T in results.json.
+
+    Shows the raw stat values (FG%, PTS, REB, AST, ST, BLK, TO, 3PTM, FT%) that
+    are compared head-to-head to determine category winners.
+
+    Usage:
+        GET /basketball/league/explore/team-stats-week?year=2025&week=5
+        GET /basketball/league/explore/team-stats-week?year=2025&week=5&team_key=466.l.38685.t.5
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.fantasy.league_service import _convert_to_dict
+        from services.fantasy.team_service import _extract_teams_list
+
+        league_key = _league_key_for_season(year)
+        query      = get_query(league_key)
+
+        if not team_key:
+            teams_dict = _convert_to_dict(query.get_league_teams())
+            teams_list = _extract_teams_list(teams_dict)
+            first      = teams_list[0] if teams_list else {}
+            first_team = first.get("team", first) if isinstance(first, dict) else {}
+            team_key   = first_team.get("team_key")
+
+        stats_raw = _convert_to_dict(query.get_team_stats_by_week(team_key, week))
+
+        # Also extract using our current function to compare
+        extracted = _extract_team_category_stats(
+            stats_raw if isinstance(stats_raw, dict) else {}
+        )
+
+        return {
+            "year":                year,
+            "week":                week,
+            "team_key":            team_key,
+            "league_key":          league_key,
+            "raw":                 stats_raw,
+            "extracted_by_stat_id": extracted,
+            "note": (
+                "extracted_by_stat_id shows what _extract_team_category_stats() pulls out. "
+                "If all None/empty, the nesting path in raw differs from what we expect — "
+                "look at raw to find the correct path to stat values."
+            ),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/explore/team-roster-week")
+def explore_nba_team_roster_week(
+    year: str     = Query(default="2025"),
+    week: int     = Query(default=1),
+    team_key: str = Query(default=None, description="e.g. 466.l.38685.t.5 — omit to use first team"),
+):
+    """
+    Returns a team's roster for one week — which players were on the roster,
+    their positions, and whether they were started or on the bench.
+
+    This is the source for rosters.json (weekly lineup by player_key + slot).
+
+    Usage:
+        GET /basketball/league/explore/team-roster-week?year=2025&week=1
+        GET /basketball/league/explore/team-roster-week?year=2025&week=10&team_key=466.l.38685.t.5
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.fantasy.league_service import _convert_to_dict
+        from services.fantasy.team_service import _extract_teams_list
+
+        league_key = _league_key_for_season(year)
+        query      = get_query(league_key)
+
+        if not team_key:
+            teams_dict = _convert_to_dict(query.get_league_teams())
+            teams_list = _extract_teams_list(teams_dict)
+            first      = teams_list[0] if teams_list else {}
+            first_team = first.get("team", first) if isinstance(first, dict) else {}
+            team_key   = first_team.get("team_key")
+
+        roster_raw = _convert_to_dict(query.get_team_roster_by_week(team_key, week))
+
+        return {
+            "year":       year,
+            "week":       week,
+            "team_key":   team_key,
+            "league_key": league_key,
+            "raw":        roster_raw,
+            "note": (
+                "Each player entry has: player_key, name, display_position, "
+                "selected_position (PG/SG/BN/IL etc.), and is_starting. "
+                "Use this to build rosters.json."
+            ),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/explore/player-stats")
+def explore_nba_player_stats(
+    year: str        = Query(default="2025"),
+    player_key: str  = Query(default=None, description="e.g. 466.p.4725 — omit to use first rostered player"),
+    week: int        = Query(default=None, description="Specific week, or omit for season totals"),
+):
+    """
+    Returns stat lines for a single player — either for one week or season totals.
+    This is the source for player_stats.json.
+
+    If player_key is omitted, fetches the first player from the first team's roster.
+
+    Usage:
+        GET /basketball/league/explore/player-stats?year=2025&player_key=466.p.4725
+        GET /basketball/league/explore/player-stats?year=2025&player_key=466.p.4725&week=5
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.fantasy.league_service import _convert_to_dict
+        from services.fantasy.team_service import _extract_teams_list
+
+        league_key = _league_key_for_season(year)
+        query      = get_query(league_key)
+
+        # Discover a player_key if none provided
+        if not player_key:
+            teams_dict = _convert_to_dict(query.get_league_teams())
+            teams_list = _extract_teams_list(teams_dict)
+            first      = teams_list[0] if teams_list else {}
+            first_team = first.get("team", first) if isinstance(first, dict) else {}
+            team_key   = first_team.get("team_key")
+            if team_key:
+                roster_raw  = _convert_to_dict(query.get_team_roster_by_week(team_key, 1))
+                players_raw = roster_raw if isinstance(roster_raw, list) else \
+                              roster_raw.get("players", []) if isinstance(roster_raw, dict) else []
+                if players_raw:
+                    first_p   = players_raw[0]
+                    first_p   = first_p.get("player", first_p) if isinstance(first_p, dict) else {}
+                    player_key = first_p.get("player_key")
+
+        if not player_key:
+            return {"error": "Could not determine a player_key to fetch. Pass ?player_key= explicitly."}
+
+        results = {"year": year, "player_key": player_key, "league_key": league_key}
+
+        # Season totals
+        try:
+            results["season_stats"] = _convert_to_dict(
+                query.get_player_stats_for_a_league(player_key, "season_stats")
+            )
+        except Exception as e:
+            results["season_stats"] = {"error": str(e)[:150]}
+
+        # Week-specific stats
+        if week:
+            try:
+                results[f"week_{week}_stats"] = _convert_to_dict(
+                    query.get_player_stats_by_week(player_key, week)
+                )
+            except Exception as e:
+                results[f"week_{week}_stats"] = {"error": str(e)[:150]}
+
+        # Player info
+        try:
+            results["player_info"] = _convert_to_dict(query.get_player(player_key))
+        except Exception as e:
+            results["player_info"] = {"error": str(e)[:150]}
+
+        results["note"] = (
+            "season_stats → per-category totals for the whole season. "
+            "week_N_stats → per-category totals for that scoring week. "
+            "Look for stat_id values 5 (FG%), 8 (FT%), 10 (3PTM), 12 (PTS), "
+            "15 (REB), 16 (AST), 17 (ST), 18 (BLK), 19 (TO)."
+        )
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/explore/league-players")
+def explore_nba_league_players(
+    year: str = Query(default="2025"),
+    count: int = Query(default=25, description="Number of players to fetch (max 25 per API call)"),
+    start: int = Query(default=0,  description="Pagination offset"),
+):
+    """
+    Returns the list of available players for the league — name, position, team,
+    player_key. Used to build player_info.json.
+
+    Yahoo paginates players in batches of 25. Use start= to page through.
+
+    Usage:
+        GET /basketball/league/explore/league-players?year=2025
+        GET /basketball/league/explore/league-players?year=2025&start=25
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.fantasy.league_service import _convert_to_dict
+
+        league_key = _league_key_for_season(year)
+        query      = get_query(league_key)
+
+        results = {}
+
+        # Try several YFPY player-list methods
+        for label, fetcher in [
+            ("players_raw",       lambda: query.get_league_players(player_count=count, player_start=start)),
+            ("players_available", lambda: query.get_league_players_available(player_count=count, player_start=start)),
+        ]:
+            try:
+                results[label] = _convert_to_dict(fetcher())
+            except Exception as e:
+                results[label] = {"error": str(e)[:150]}
+
+        results["pagination"] = {"start": start, "count": count, "next_start": start + count}
+        results["note"] = (
+            "player_key is the stable identifier for player_info.json and player_stats.json. "
+            "Page through with start=0, 25, 50... to collect all players."
+        )
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/explore/matchup-category-detail")
+def explore_nba_matchup_category_detail(
+    year: str      = Query(default="2025"),
+    week: int      = Query(default=1),
+    team_key: str  = Query(default=None, description="One team in the matchup — omit to use first team"),
+):
+    """
+    Deep-dives a single matchup to show exactly how Yahoo reports category winners.
+
+    Combines:
+      - scoreboard for the week (category totals + stat_winners)
+      - team_stats for both teams that week
+      - team_matchups for the specified team (full season schedule)
+
+    This is the definitive diagnostic for the categories-all-zeros bug in results.json.
+
+    Usage:
+        GET /basketball/league/explore/matchup-category-detail?year=2025&week=5
+        GET /basketball/league/explore/matchup-category-detail?year=2025&week=5&team_key=466.l.38685.t.5
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.fantasy.league_service import _convert_to_dict
+        from services.fantasy.team_service import _extract_teams_list
+
+        league_key = _league_key_for_season(year)
+        query      = get_query(league_key)
+
+        if not team_key:
+            teams_dict = _convert_to_dict(query.get_league_teams())
+            teams_list = _extract_teams_list(teams_dict)
+            first      = teams_list[0] if teams_list else {}
+            first_team = first.get("team", first) if isinstance(first, dict) else {}
+            team_key   = first_team.get("team_key")
+
+        result = {
+            "year": year, "week": week, "team_key": team_key, "league_key": league_key
+        }
+
+        # 1. Scoreboard for this week — shows all matchups + category totals
+        try:
+            sb = _convert_to_dict(query.get_league_scoreboard_by_week(week))
+            matchups = sb.get("matchups", []) if isinstance(sb, dict) else \
+                       (sb if isinstance(sb, list) else [])
+
+            # Find the matchup involving our team
+            our_matchup = None
+            for m in matchups:
+                matchup = m.get("matchup", m) if isinstance(m, dict) else {}
+                teams_m = matchup.get("teams", [])
+                if isinstance(teams_m, dict):
+                    teams_m = list(teams_m.values())
+                for tw in teams_m:
+                    tm = tw.get("team", tw) if isinstance(tw, dict) else {}
+                    if tm.get("team_key") == team_key:
+                        our_matchup = matchup
+                        break
+                if our_matchup:
+                    break
+
+            result["scoreboard_our_matchup"] = our_matchup
+            result["scoreboard_all_matchups_count"] = len(matchups)
+
+            # Show full structure of first matchup team for path diagnosis
+            if our_matchup:
+                teams_m = our_matchup.get("teams", [])
+                if isinstance(teams_m, dict):
+                    teams_m = list(teams_m.values())
+                if teams_m:
+                    tm0 = teams_m[0].get("team", teams_m[0]) if isinstance(teams_m[0], dict) else {}
+                    result["team_obj_keys"]         = list(tm0.keys())
+                    result["team_stats_value"]      = tm0.get("team_stats")
+                    result["team_points_value"]     = tm0.get("team_points")
+                    result["stat_winners_value"]    = our_matchup.get("stat_winners")
+                    result["extracted_stats_team0"] = _extract_team_category_stats(tm0)
+
+        except Exception as e:
+            result["scoreboard_error"] = str(e)
+
+        # 2. Direct team stats for this week
+        try:
+            result["team_stats_direct"] = _convert_to_dict(
+                query.get_team_stats_by_week(team_key, week)
+            )
+        except Exception as e:
+            result["team_stats_direct_error"] = str(e)
+
+        # 3. Team matchups (all weeks) to confirm schedule shape
+        try:
+            tm_raw = _convert_to_dict(query.get_team_matchups(team_key))
+            matchups_list = tm_raw if isinstance(tm_raw, list) else \
+                            tm_raw.get("matchups", []) if isinstance(tm_raw, dict) else []
+            result["team_matchups_count"]    = len(matchups_list)
+            result["team_matchups_week_sample"] = matchups_list[:2] if matchups_list else []
+        except Exception as e:
+            result["team_matchups_error"] = str(e)
+
+        result["diagnosis_note"] = (
+            "KEY FIELDS TO CHECK:\n"
+            "1. team_stats_value — if None/empty, Yahoo puts stats elsewhere on the scoreboard team object\n"
+            "2. stat_winners_value — Yahoo may provide pre-computed category winners per matchup\n"
+            "3. extracted_stats_team0 — what _extract_team_category_stats() currently pulls (all None = path wrong)\n"
+            "4. team_stats_direct — stats from get_team_stats_by_week() directly (may have different shape)\n"
+            "If stat_winners_value is populated, we can use it directly instead of computing from raw values."
+        )
+
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/explore/raw-league-key/{league_key}")
 def explore_by_league_key(league_key: str):
     """

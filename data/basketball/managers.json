@@ -16,8 +16,8 @@
       "is_finished": true,
       "managers": [
         {
-          "manager_id": null,
-          "display_name": "SamK",
+          "manager_id": "sam",
+          "display_name": "Sam",
           "team_key": "466.l.38685.t.1",
           "team_id": "1",
           "team_name": "Dunc Surf",
@@ -28,7 +28,7 @@
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/1"
         },
         {
-          "manager_id": null,
+          "manager_id": "brett",
           "display_name": "Brett",
           "team_key": "466.l.38685.t.2",
           "team_id": "2",
@@ -40,8 +40,8 @@
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/2"
         },
         {
-          "manager_id": null,
-          "display_name": "Eric Von Rat",
+          "manager_id": "eric",
+          "display_name": "Eric",
           "team_key": "466.l.38685.t.3",
           "team_id": "3",
           "team_name": "Shooters on the IL",
@@ -52,8 +52,8 @@
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/3"
         },
         {
-          "manager_id": null,
-          "display_name": "Nick",
+          "manager_id": "jezak",
+          "display_name": "Jezak",
           "team_key": "466.l.38685.t.4",
           "team_id": "4",
           "team_name": "Nasty Boys",
@@ -64,8 +64,8 @@
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/4"
         },
         {
-          "manager_id": null,
-          "display_name": "John",
+          "manager_id": "amboy",
+          "display_name": "Amboy",
           "team_key": "466.l.38685.t.5",
           "team_id": "5",
           "team_name": "Tequila Mockingbird",
@@ -76,8 +76,8 @@
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/5"
         },
         {
-          "manager_id": null,
-          "display_name": "Nick",
+          "manager_id": "kroppe",
+          "display_name": "Kroppe",
           "team_key": "466.l.38685.t.6",
           "team_id": "6",
           "team_name": "Tonga Ballas",
@@ -88,7 +88,7 @@
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/6"
         },
         {
-          "manager_id": null,
+          "manager_id": "dean",
           "display_name": "Dean",
           "team_key": "466.l.38685.t.7",
           "team_id": "7",
@@ -100,8 +100,8 @@
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/7"
         },
         {
-          "manager_id": null,
-          "display_name": "Nicholas",
+          "manager_id": "nick",
+          "display_name": "Nick",
           "team_key": "466.l.38685.t.8",
           "team_id": "8",
           "team_name": "Kawhi's Sugar Baby",
@@ -112,8 +112,8 @@
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/8"
         },
         {
-          "manager_id": null,
-          "display_name": "Ray L",
+          "manager_id": "ray",
+          "display_name": "Ray",
           "team_key": "466.l.38685.t.9",
           "team_id": "9",
           "team_name": "Sashi On Top",
@@ -124,7 +124,7 @@
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/9"
         },
         {
-          "manager_id": null,
+          "manager_id": "brian",
           "display_name": "Brian",
           "team_key": "466.l.38685.t.10",
           "team_id": "10",
@@ -132,6 +132,18 @@
           "guid": "IQHD5CED7LQZAJP3ISPARVVDDQ",
           "nickname": "Brian",
           "is_comanager": false,
+          "logo_url": "https://s.yimg.com/ep/cx/blendr/v2/image-coatof-arms-png_1721175496298.png",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/10"
+        },
+        {
+          "manager_id": "zef",
+          "display_name": "Zef",
+          "team_key": "466.l.38685.t.10",
+          "team_id": "10",
+          "team_name": "Juntao Ming",
+          "guid": "3JYXPSSMU2OOSZEZYREF43ATIQ",
+          "nickname": "Zefr",
+          "is_comanager": true,
           "logo_url": "https://s.yimg.com/ep/cx/blendr/v2/image-coatof-arms-png_1721175496298.png",
           "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/10"
         }
