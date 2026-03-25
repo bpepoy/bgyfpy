@@ -56,33 +56,23 @@ NBA_GAME_IDS = {
 }
 
 # ---------------------------------------------------------------------------
-# Manager identity map — guid → {manager_id, display_name}
+# Manager identity — imported from config/basketball.py
 # ---------------------------------------------------------------------------
-# Yahoo hides real nicknames for public leagues ("--hidden--").
-# Populate this manually after running /data/managers/build-all for the first
-# time: copy the guid values from each team entry and assign permanent IDs.
-#
-# Keys are Yahoo GUIDs (stable across seasons).
-# manager_id should be a short lowercase slug matching the football config
-# pattern (e.g. "brian", "zef") so cross-sport stats can be joined.
-#
-# Example:
-#   "ABCDEF123456": {"manager_id": "brian", "display_name": "Brian"},
+# get_nba_manager_identity() and NBA_MANAGER_IDENTITY_MAP live in
+# config/basketball.py — that file is the single source of truth.
+# Edit manager GUIDs and team_keys there, not here.
 # ---------------------------------------------------------------------------
-BASKETBALL_MANAGER_MAP: dict[str, dict] = {
-    # guid                      manager_id      display_name
-    # "GUID_HERE":             {"manager_id": "slug", "display_name": "Name"},
-}
-
-
-def _get_nba_manager_identity(guid: str | None) -> dict | None:
-    """
-    Resolve guid → {manager_id, display_name} from BASKETBALL_MANAGER_MAP.
-    Returns None if guid is unknown (manager not yet mapped).
-    """
-    if not guid:
+try:
+    from config.basketball import get_nba_manager_identity as _get_nba_manager_identity
+except ImportError:
+    import warnings
+    warnings.warn(
+        "Could not import get_nba_manager_identity from config.basketball. "
+        "Manager IDs will fall back to team_key until the import is resolved.",
+        stacklevel=2,
+    )
+    def _get_nba_manager_identity(guid: str | None = None, team_key: str | None = None) -> dict | None:
         return None
-    return BASKETBALL_MANAGER_MAP.get(guid)
 
 
 # NBA stat categories used in head-to-head scoring
@@ -625,40 +615,50 @@ def build_nba_managers(
                     team_key = t.get("team_key", "")
                     team_id  = team_key.split(".t.")[-1] if ".t." in team_key else ""
 
-                    managers_raw = t.get("managers", {})
-                    if isinstance(managers_raw, list):
-                        mgr_wrapper = managers_raw[0] if managers_raw else {}
-                    else:
-                        mgr_wrapper = managers_raw
-                    mgr = mgr_wrapper.get("manager", mgr_wrapper) if isinstance(mgr_wrapper, dict) else {}
-
-                    guid         = mgr.get("guid")
-                    nickname     = mgr.get("nickname")
-                    is_comanager = bool(int(mgr.get("is_comanager", 0) or 0))
-
-                    # Resolve display_name + manager_id from BASKETBALL_MANAGER_MAP
-                    identity     = _get_nba_manager_identity(guid)
-                    manager_id   = identity["manager_id"]   if identity else None
-                    display_name = identity["display_name"] if identity else nickname or "Unknown"
-
                     logos    = t.get("team_logos", {})
                     if isinstance(logos, list): logos = logos[0] if logos else {}
                     logo_obj = logos.get("team_logo", {}) if isinstance(logos, dict) else {}
                     if isinstance(logo_obj, list): logo_obj = logo_obj[0] if logo_obj else {}
                     team_logo = logo_obj.get("url") if isinstance(logo_obj, dict) else None
 
-                    managers.append({
-                        "manager_id":   manager_id,
-                        "display_name": display_name,
-                        "team_key":     team_key,
-                        "team_id":      team_id,
-                        "team_name":    t.get("name"),
-                        "guid":         guid,
-                        "nickname":     nickname,
-                        "is_comanager": is_comanager,
-                        "logo_url":     team_logo,
-                        "team_url":     t.get("url"),
-                    })
+                    # Normalize managers list — a team can have 1 primary + N co-managers
+                    managers_raw = t.get("managers", {})
+                    if isinstance(managers_raw, list):
+                        mgr_wrappers = managers_raw
+                    elif isinstance(managers_raw, dict):
+                        # May be a single {"manager": {...}} or numbered {"0": ..., "1": ...}
+                        if "manager" in managers_raw:
+                            mgr_wrappers = [managers_raw]
+                        else:
+                            mgr_wrappers = list(managers_raw.values())
+                    else:
+                        mgr_wrappers = []
+
+                    for mgr_wrapper in mgr_wrappers:
+                        mgr = mgr_wrapper.get("manager", mgr_wrapper) if isinstance(mgr_wrapper, dict) else {}
+                        if not mgr:
+                            continue
+
+                        guid         = mgr.get("guid")
+                        nickname     = mgr.get("nickname")
+                        is_comanager = bool(int(mgr.get("is_comanager", 0) or 0))
+
+                        identity     = _get_nba_manager_identity(manager_guid=guid)
+                        manager_id   = identity["manager_id"]   if identity else None
+                        display_name = identity["display_name"] if identity else nickname or "Unknown"
+
+                        managers.append({
+                            "manager_id":   manager_id,
+                            "display_name": display_name,
+                            "team_key":     team_key,
+                            "team_id":      team_id,
+                            "team_name":    t.get("name"),
+                            "guid":         guid,
+                            "nickname":     nickname,
+                            "is_comanager": is_comanager,
+                            "logo_url":     team_logo,
+                            "team_url":     t.get("url"),
+                        })
 
                 managers.sort(key=lambda m: int(m["team_id"]) if str(m["team_id"]).isdigit() else 0)
 
@@ -874,16 +874,29 @@ def _build_nba_results_for_season(yr: str, query, league_key: str) -> dict:
         ts  = _extract_team_standings(t)
         ot  = _extract_outcome_totals(ts)
 
-        # Manager identity
+        # Manager identity — use primary manager's guid (is_comanager=0 preferred)
         managers_raw = t.get("managers", {})
         if isinstance(managers_raw, list):
-            mgr_wrapper = managers_raw[0] if managers_raw else {}
+            mgr_wrappers = managers_raw
+        elif isinstance(managers_raw, dict):
+            mgr_wrappers = [managers_raw] if "manager" in managers_raw else list(managers_raw.values())
         else:
-            mgr_wrapper = managers_raw
-        mgr  = mgr_wrapper.get("manager", mgr_wrapper) if isinstance(mgr_wrapper, dict) else {}
-        guid = mgr.get("guid")
+            mgr_wrappers = []
 
-        identity   = _get_nba_manager_identity(guid)
+        # Prefer the primary manager (no is_comanager flag); fall back to first in list
+        primary_mgr = {}
+        for mw in mgr_wrappers:
+            m = mw.get("manager", mw) if isinstance(mw, dict) else {}
+            if not bool(int(m.get("is_comanager", 0) or 0)):
+                primary_mgr = m
+                break
+        if not primary_mgr and mgr_wrappers:
+            first = mgr_wrappers[0]
+            primary_mgr = first.get("manager", first) if isinstance(first, dict) else {}
+
+        guid = primary_mgr.get("guid")
+
+        identity   = _get_nba_manager_identity(manager_guid=guid)
         manager_id = identity["manager_id"] if identity else team_key  # fallback until map populated
 
         # Logo
@@ -1281,6 +1294,82 @@ def download_nba_results():
         return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
     except HTTPException:
         raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/data/results/debug-scoreboard")
+def debug_nba_scoreboard(
+    year: str = Query(default="2025"),
+    week: int = Query(default=1, description="Week number to inspect"),
+):
+    """
+    Returns the raw scoreboard response for one week, showing exactly how
+    Yahoo structures the team stats for category leagues.
+
+    Use this to diagnose why category stats are all zeros in results.json.
+
+    Usage:
+        GET /basketball/league/data/results/debug-scoreboard?year=2025&week=1
+        GET /basketball/league/data/results/debug-scoreboard?year=2025&week=5
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.fantasy.league_service import _convert_to_dict
+
+        league_key = _league_key_for_season(year)
+        query      = get_query(league_key)
+        sb_raw     = query.get_league_scoreboard_by_week(week)
+        sb_dict    = _convert_to_dict(sb_raw)
+
+        # Pull first matchup and first team to show the full nested shape
+        matchups = sb_dict.get("matchups", []) if isinstance(sb_dict, dict) else \
+                   (sb_dict if isinstance(sb_dict, list) else [])
+
+        first_matchup_raw = matchups[0] if matchups else None
+        first_matchup     = first_matchup_raw.get("matchup", first_matchup_raw) \
+                            if isinstance(first_matchup_raw, dict) else {}
+
+        teams_m = first_matchup.get("teams", [])
+        if isinstance(teams_m, dict):
+            teams_m = list(teams_m.values())
+
+        first_team_wrapper = teams_m[0] if teams_m else {}
+        first_team         = first_team_wrapper.get("team", first_team_wrapper) \
+                             if isinstance(first_team_wrapper, dict) else {}
+
+        # Try to extract stats using our current function
+        extracted_stats = _extract_team_category_stats(first_team)
+
+        # Show all keys at each nesting level so we can trace the right path
+        def _top_keys(obj, depth=2):
+            if depth == 0 or not isinstance(obj, dict):
+                return str(type(obj).__name__)
+            return {k: _top_keys(v, depth - 1) for k, v in list(obj.items())[:10]}
+
+        return {
+            "year":              year,
+            "week":              week,
+            "league_key":        league_key,
+            "scoreboard_top_keys":   list(sb_dict.keys()) if isinstance(sb_dict, dict) else str(type(sb_dict)),
+            "num_matchups":          len(matchups),
+            "first_matchup_keys":    list(first_matchup.keys()),
+            "teams_type":            str(type(teams_m)),
+            "num_teams_in_matchup":  len(teams_m),
+            "first_team_wrapper_keys": list(first_team_wrapper.keys()) if isinstance(first_team_wrapper, dict) else [],
+            "first_team_keys":       list(first_team.keys()),
+            # The exact nested structure around team_stats
+            "team_stats_raw":        first_team.get("team_stats"),
+            "team_points_raw":       first_team.get("team_points"),
+            # What our extractor currently pulls out (all zeros = path is wrong)
+            "extracted_stats_by_stat_id": extracted_stats,
+            # Full first team object for manual inspection (truncated)
+            "first_team_full": _top_keys(first_team, depth=3),
+            "note": (
+                "If 'extracted_stats_by_stat_id' is empty or all None, "
+                "the 'team_stats_raw' field above shows the actual path. "
+                "Look for stat_id values 5,8,10,12,15,16,17,18,19 in there."
+            ),
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

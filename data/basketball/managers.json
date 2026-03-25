@@ -1,0 +1,141 @@
+{
+  "total_seasons": 1,
+  "years": [
+    "2025"
+  ],
+  "data": {
+    "2025": {
+      "year": 2025,
+      "league_key": "466.l.38685",
+      "league_id": "38685",
+      "league_name": "Real Bros",
+      "url": "https://basketball.fantasysports.yahoo.com/nba/38685",
+      "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/f67ff22d0e8ab44c62a1535227fb568b04882dca24f0ee16d697652993aa04fb.jpg",
+      "num_teams": 10,
+      "season": 2025,
+      "is_finished": true,
+      "managers": [
+        {
+          "manager_id": null,
+          "display_name": "SamK",
+          "team_key": "466.l.38685.t.1",
+          "team_id": "1",
+          "team_name": "Dunc Surf",
+          "guid": "UOOBQORBBE2LMHDZWZLYLCPRB4",
+          "nickname": "SamK",
+          "is_comanager": false,
+          "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56484197391_2dd921.jpg",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/1"
+        },
+        {
+          "manager_id": null,
+          "display_name": "Brett",
+          "team_key": "466.l.38685.t.2",
+          "team_id": "2",
+          "team_name": "BsBeast",
+          "guid": "SGNLESVHGYNBPYNDR6L54TF4GA",
+          "nickname": "Brett",
+          "is_comanager": false,
+          "logo_url": "https://s.yimg.com/ep/cx/blendr/v2/image-hot-dog-png_1721176248469.png",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/2"
+        },
+        {
+          "manager_id": null,
+          "display_name": "Eric Von Rat",
+          "team_key": "466.l.38685.t.3",
+          "team_id": "3",
+          "team_name": "Shooters on the IL",
+          "guid": "MTVXSYU5OITG3ONCVR3IWSN5Q4",
+          "nickname": "Eric Von Rat",
+          "is_comanager": false,
+          "logo_url": "https://s.yimg.com/ep/cx/blendr/v2/image-fairy-1-png_1729555238917.png",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/3"
+        },
+        {
+          "manager_id": null,
+          "display_name": "Nick",
+          "team_key": "466.l.38685.t.4",
+          "team_id": "4",
+          "team_name": "Nasty Boys",
+          "guid": "R3A36ONORIMVBZREKQYF4IAPQ4",
+          "nickname": "Nick",
+          "is_comanager": false,
+          "logo_url": "https://s.yimg.com/cv/apiv2/default/nba/nba_9.png",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/4"
+        },
+        {
+          "manager_id": null,
+          "display_name": "John",
+          "team_key": "466.l.38685.t.5",
+          "team_id": "5",
+          "team_name": "Tequila Mockingbird",
+          "guid": "TEYJ76XYU5CMXPSE4JDVN4J2YM",
+          "nickname": "John",
+          "is_comanager": false,
+          "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/37770184162_8186f9.jpg",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/5"
+        },
+        {
+          "manager_id": null,
+          "display_name": "Nick",
+          "team_key": "466.l.38685.t.6",
+          "team_id": "6",
+          "team_name": "Tonga Ballas",
+          "guid": "VWU7L7UTIJPHCKFCW5RMQ44BRI",
+          "nickname": "Nick",
+          "is_comanager": false,
+          "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/89de12df5734d3c669c6781dbe39f593318f701be502ebff560ef1a1009b1e2d.jpg",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/6"
+        },
+        {
+          "manager_id": null,
+          "display_name": "Dean",
+          "team_key": "466.l.38685.t.7",
+          "team_id": "7",
+          "team_name": "Greek Freak Off",
+          "guid": "4BACI3WLYXRF2UTVMMR2OA75AU",
+          "nickname": "Dean",
+          "is_comanager": false,
+          "logo_url": "https://s.yimg.com/ep/cx/blendr/v2/image-crown-png_1721174269843.png",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/7"
+        },
+        {
+          "manager_id": null,
+          "display_name": "Nicholas",
+          "team_key": "466.l.38685.t.8",
+          "team_id": "8",
+          "team_name": "Kawhi's Sugar Baby",
+          "guid": "5NOEDPXWKEFDO3LHGG5THAWXMQ",
+          "nickname": "Nicholas",
+          "is_comanager": false,
+          "logo_url": "https://s.yimg.com/ep/cx/blendr/v2/image-whistle-png_1721253858858.png",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/8"
+        },
+        {
+          "manager_id": null,
+          "display_name": "Ray L",
+          "team_key": "466.l.38685.t.9",
+          "team_id": "9",
+          "team_name": "Sashi On Top",
+          "guid": "RXHQAU6D6I7L6AATYCA7EIFEIM",
+          "nickname": "Ray L",
+          "is_comanager": false,
+          "logo_url": "https://s.yimg.com/ep/cx/blendr/v2/image-avatar-ball-9-120-x-png_1728591464196.png",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/9"
+        },
+        {
+          "manager_id": null,
+          "display_name": "Brian",
+          "team_key": "466.l.38685.t.10",
+          "team_id": "10",
+          "team_name": "Juntao Ming",
+          "guid": "IQHD5CED7LQZAJP3ISPARVVDDQ",
+          "nickname": "Brian",
+          "is_comanager": false,
+          "logo_url": "https://s.yimg.com/ep/cx/blendr/v2/image-coatof-arms-png_1721175496298.png",
+          "team_url": "https://basketball.fantasysports.yahoo.com/nba/38685/10"
+        }
+      ]
+    }
+  }
+}

@@ -567,24 +567,45 @@ def _extract_player_from_yfpy(pw: dict) -> dict:
     """
     Extract player info from a YFPY player entry.
 
-    Handles both wrapped {"player": {...}} and flat {name, transaction_data, ...}
-    shapes.  Key fixes vs old inline _extract_player:
-      - name is always {"full": "..."} in YFPY — never a plain string at top level
-      - transaction_data is always a LIST — take [0]
-    """
-    p = pw.get("player", pw) if isinstance(pw, dict) else {}
+    YFPY enriches objects with _extracted_data, _index, _keys alongside real fields.
+    Fields live BOTH in _extracted_data AND at the top level — top level takes precedence.
 
+    Handles:
+      - {"player": {...}}  wrapped shape
+      - flat {player_key, name, transaction_data, ...} shape
+      - _extracted_data wrapper at any nesting level
+      - transaction_data as dict (not list) — Yahoo API returns it as a single dict
+      - name as {"full": "..."} nested dict
+    """
+    def _unwrap_yfpy(obj: dict) -> dict:
+        """Merge _extracted_data fields with top-level fields; top-level wins."""
+        if not isinstance(obj, dict):
+            return obj
+        base = dict(obj.get("_extracted_data", {})) if isinstance(obj.get("_extracted_data"), dict) else {}
+        for k, v in obj.items():
+            if k not in ("_extracted_data", "_index", "_keys"):
+                base[k] = v
+        return base
+
+    # Unwrap outer level, then check for "player" wrapper
+    pw_flat = _unwrap_yfpy(pw) if isinstance(pw, dict) else {}
+    p_raw   = pw_flat.get("player", pw_flat)
+    p       = _unwrap_yfpy(p_raw) if isinstance(p_raw, dict) else pw_flat
+
+    # Resolve name — may be a nested dict or YFPY object
     name_raw = p.get("name", {})
     if isinstance(name_raw, dict):
-        name = name_raw.get("full") or p.get("full_name") or "Unknown"
+        name_flat = _unwrap_yfpy(name_raw)
+        name = name_flat.get("full") or p.get("full_name") or "Unknown"
     else:
         name = p.get("full_name") or str(name_raw) or "Unknown"
 
-    td_raw = p.get("transaction_data", [])
+    # Resolve transaction_data — Yahoo returns a single dict (not a list)
+    td_raw = p.get("transaction_data")
     if isinstance(td_raw, list):
-        td = td_raw[0] if td_raw else {}
+        td = _unwrap_yfpy(td_raw[0]) if td_raw else {}
     elif isinstance(td_raw, dict):
-        td = td_raw
+        td = _unwrap_yfpy(td_raw)
     else:
         td = {}
 
@@ -600,34 +621,95 @@ def _unwrap_picks_raw(draft_raw, convert_fn) -> list:
     """
     Safely extract a flat list of pick dicts from a YFPY draft response.
 
-    Fixes the bug where _convert_to_dict collapses a list into
-    {"0": pick, "1": pick, ...} and the old fallback grabbed only [0].
+    YFPY enriches each draft_result object with _extracted_data, _index, _keys
+    alongside the real fields (pick, round, cost, team_key, player_key) at the
+    top level.  We try every known shape in order and return the first non-empty result.
+
+    Known shapes from live API:
+      A) YFPY object → __dict__ has "draft_results" key → list of enriched pick dicts
+      B) convert_fn(raw) → {"draft_results": [list]}   → named key extraction
+      C) convert_fn(raw) → {"0": pick, "1": pick, ...} → numbered-key dict
+      D) raw is already a list of pick dicts
+      E) YFPY object is directly iterable, yielding pick objects
     """
-    if isinstance(draft_raw, list):
-        return draft_raw
+    def _is_pick(d: dict) -> bool:
+        """Check whether a dict looks like a draft pick (has the core fields)."""
+        return isinstance(d, dict) and (
+            "player_key" in d or "team_key" in d or
+            ("_extracted_data" in d and isinstance(d["_extracted_data"], dict) and
+             ("player_key" in d["_extracted_data"] or "team_key" in d["_extracted_data"]))
+        )
 
-    converted = convert_fn(draft_raw)
+    def _flatten_pick(d: dict) -> dict:
+        """
+        Normalize an enriched YFPY pick dict.
+        Fields live at the top level AND in _extracted_data — top level takes precedence.
+        """
+        if not isinstance(d, dict):
+            return {}
+        # Merge _extracted_data first, then override with top-level fields
+        base = dict(d.get("_extracted_data", {})) if isinstance(d.get("_extracted_data"), dict) else {}
+        for k, v in d.items():
+            if k not in ("_extracted_data", "_index", "_keys"):
+                base[k] = v
+        return base
 
-    if isinstance(converted, list):
-        return converted
+    # Shape D — raw is already a flat list
+    if isinstance(draft_raw, list) and draft_raw:
+        return [_flatten_pick(i) if isinstance(i, dict) else i for i in draft_raw]
+
+    # Shape A — YFPY object with __dict__
+    if hasattr(draft_raw, "__dict__"):
+        raw_dict = draft_raw.__dict__
+        for key in ("draft_results", "picks", "draft_result"):
+            val = raw_dict.get(key)
+            if isinstance(val, list) and val:
+                return [_flatten_pick(i) if isinstance(i, dict) else i for i in val]
+            if isinstance(val, dict):
+                inner = list(val.values())
+                if inner and any(_is_pick(x) for x in inner):
+                    return [_flatten_pick(i) if isinstance(i, dict) else i for i in inner]
+
+    # Shape E — iterable YFPY object
+    if not isinstance(draft_raw, (list, dict)) and hasattr(draft_raw, "__iter__"):
+        try:
+            items = [convert_fn(i) if not isinstance(i, dict) else i for i in draft_raw]
+            if items and any(_is_pick(x) for x in items):
+                return [_flatten_pick(i) for i in items]
+        except Exception:
+            pass
+
+    # Convert to dict for shapes B and C
+    try:
+        converted = convert_fn(draft_raw)
+    except Exception:
+        return []
+
+    if isinstance(converted, list) and converted:
+        return [_flatten_pick(i) if isinstance(i, dict) else i for i in converted]
 
     if not isinstance(converted, dict):
         return []
 
-    # Explicit named keys
+    # Shape B — named key
     for key in ("draft_results", "picks", "draft_result"):
         val = converted.get(key)
         if isinstance(val, list) and val:
-            return val
+            return [_flatten_pick(i) if isinstance(i, dict) else i for i in val]
+        if isinstance(val, dict):
+            inner = list(val.values())
+            if inner and any(_is_pick(x) for x in inner):
+                return [_flatten_pick(i) if isinstance(i, dict) else i for i in inner]
 
-    # Numbered-key dict {"0": ..., "1": ...} — sort and unpack
+    # Shape C — numbered-key dict {"0": pick, "1": pick, ...}
     keys = list(converted.keys())
     if keys and all(str(k).isdigit() for k in keys):
-        return [converted[k] for k in sorted(keys, key=lambda x: int(x))]
+        items = [converted[k] for k in sorted(keys, key=lambda x: int(x))]
+        return [_flatten_pick(i) if isinstance(i, dict) else i for i in items]
 
-    # Last resort — any values that look like picks
-    return [v for v in converted.values()
-            if isinstance(v, dict) and ("player_key" in v or "team_key" in v)]
+    # Last resort — any top-level values that look like picks
+    candidates = [v for v in converted.values() if _is_pick(v)]
+    return [_flatten_pick(i) for i in candidates]
 
 
 # ===========================================================================
@@ -1337,11 +1419,22 @@ def build_transactions(
                 tx_dict = _convert_to_dict(query.get_league_transactions())
                 tx_list = tx_dict if isinstance(tx_dict, list) else tx_dict.get("transactions", [])
 
+                def _unwrap_yfpy_obj(obj: dict) -> dict:
+                    """Merge _extracted_data into top level; top-level keys win."""
+                    if not isinstance(obj, dict):
+                        return obj or {}
+                    base = dict(obj.get("_extracted_data", {})) if isinstance(obj.get("_extracted_data"), dict) else {}
+                    for k, v in obj.items():
+                        if k not in ("_extracted_data", "_index", "_keys"):
+                            base[k] = v
+                    return base
+
                 trades = []
                 moves  = []
 
                 for item in tx_list:
-                    tx     = item if isinstance(item, dict) else {}
+                    # Unwrap _extracted_data on the transaction itself
+                    tx     = _unwrap_yfpy_obj(item if isinstance(item, dict) else {})
                     ttype  = tx.get("type", "")
                     status = tx.get("status", "")
                     if status != "successful":
@@ -1356,10 +1449,11 @@ def build_transactions(
                         faab_int = None
 
                     # ----------------------------------------------------------
-                    # Normalize players_raw to a flat list.
-                    # YFPY can return:
-                    #   list → [{"player": {...}}, ...]  OR  [{flat player}, ...]
-                    #   dict → {"0": {...}, "1": ...}    (numbered keys)
+                    # Normalize players_raw to a flat list of dicts.
+                    # YFPY shapes seen in live data:
+                    #   list  → [{"player": {...}}, ...]   (wrapped)
+                    #   list  → [{flat player with _extracted_data}, ...]
+                    #   dict  → {"0": {...}, "1": ...}     (numbered keys)
                     # ----------------------------------------------------------
                     players_raw = tx.get("players", [])
                     if isinstance(players_raw, dict):
@@ -1659,7 +1753,13 @@ def build_drafts(
 
 @router.get("/data/drafts/debug")
 def debug_draft_raw(year: str = Query(default="2025")):
-    """Returns raw YFPY draft response before parsing. Use to diagnose pick extraction issues."""
+    """
+    Returns raw YFPY draft response before parsing.
+    Use this to diagnose why picks are empty in drafts.json.
+
+    Look at 'raw_type', 'raw_dict_keys', and 'raw_repr_excerpt' to understand
+    what shape YFPY is returning and which unwrap path to fix.
+    """
     try:
         from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
         from services.yahoo_service import get_query
@@ -1670,14 +1770,53 @@ def debug_draft_raw(year: str = Query(default="2025")):
         converted  = _convert_to_dict(raw)
         picks_raw  = _unwrap_picks_raw(raw, _convert_to_dict)
 
+        # Inspect the raw object deeply
+        raw_dict_keys = []
+        raw_dict_sample = {}
+        if hasattr(raw, "__dict__"):
+            raw_dict_keys = list(raw.__dict__.keys())
+            # Sample first value of each key
+            for k in raw_dict_keys[:8]:
+                v = raw.__dict__[k]
+                raw_dict_sample[k] = {
+                    "type": str(type(v).__name__),
+                    "len": len(v) if hasattr(v, "__len__") else None,
+                    "preview": str(v)[:200] if not isinstance(v, (dict, list)) else (
+                        list(v.keys())[:5] if isinstance(v, dict) else str(v)[:200]
+                    ),
+                }
+
+        # If converted is a dict, show its key structure
+        converted_structure = {}
+        if isinstance(converted, dict):
+            for k, v in list(converted.items())[:10]:
+                converted_structure[k] = {
+                    "type": str(type(v).__name__),
+                    "len": len(v) if hasattr(v, "__len__") else None,
+                }
+
         return {
-            "raw_type":          str(type(raw)),
-            "converted_type":    str(type(converted)),
-            "raw_is_list":       isinstance(raw, list),
-            "raw_len":           len(raw) if hasattr(raw, "__len__") else None,
-            "unwrapped_len":     len(picks_raw),
-            "first_raw":         raw[0] if isinstance(raw, list) and raw else str(raw)[:300],
-            "first_converted":   picks_raw[0] if picks_raw else None,
+            "year":                  year,
+            "league_key":            league_key,
+            "raw_type":              str(type(raw)),
+            "raw_is_list":           isinstance(raw, list),
+            "raw_is_dict":           isinstance(raw, dict),
+            "raw_has_dict":          hasattr(raw, "__dict__"),
+            "raw_has_iter":          hasattr(raw, "__iter__"),
+            "raw_len":               len(raw) if hasattr(raw, "__len__") else None,
+            "raw_dict_keys":         raw_dict_keys,
+            "raw_dict_sample":       raw_dict_sample,
+            "raw_repr_excerpt":      repr(raw)[:500],
+            "converted_type":        str(type(converted)),
+            "converted_structure":   converted_structure,
+            "unwrapped_len":         len(picks_raw),
+            "first_pick_raw":        str(raw[0])[:300] if isinstance(raw, list) and raw else None,
+            "first_pick_unwrapped":  picks_raw[0] if picks_raw else None,
+            "note": (
+                "If unwrapped_len is 0: check raw_dict_keys for 'draft_results' or similar. "
+                "If raw is a YFPY object, the picks are likely in raw.__dict__['draft_results']. "
+                "Report back the full output of this endpoint to fix _unwrap_picks_raw."
+            ),
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

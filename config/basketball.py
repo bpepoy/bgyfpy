@@ -44,15 +44,91 @@ NBA_MANUAL_SEASON_MAPPING = {
 # TODO: populate with Real Bros manager GUIDs and team keys after running:
 # GET /league/explore/nba-season/466.l.38685
 #
-# Format mirrors MANAGER_IDENTITY_MAP in fantasy.py:
-# "manager_id": {
-#     "display_name": "...",
-#     "guid": "...",
-#     "team_keys": ["466.l.38685.t.1", ...]
-# }
-
+# Manager identity mapping across nba seasons
 NBA_MANAGER_IDENTITY_MAP: dict = {
-    # Populated after exploring the league data
+    "amboy": {
+        "display_name": "Amboy",
+        "guid": "TEYJ76XYU5CMXPSE4JDVN4J2YM",
+        "team_keys": [
+            "466.l.38685.t.5"
+        ]
+    },
+    "brian": {
+        "display_name": "Brian",
+        "guid": "IQHD5CED7LQZAJP3ISPARVVDDQ",
+        "team_keys": [
+            "466.l.38685.t.10"
+        ]
+    },
+    "dean": {
+        "display_name": "Dean",
+        "guid": "4BACI3WLYXRF2UTVMMR2OA75AU",
+        "team_keys": [
+            "466.l.38685.t.7"
+        ]
+    },
+    "kroppe": {
+        "display_name": "Kroppe",
+        "guid": "VWU7L7UTIJPHCKFCW5RMQ44BRI",
+        "team_keys": [
+            "466.l.38685.t.6"
+        ]
+    },
+    "eric": {
+        "display_name": "Eric",
+        "guid": "MTVXSYU5OITG3ONCVR3IWSN5Q4",
+        "team_keys": [
+            "466.l.38685.t.3"
+        ]
+    },
+    "jezak": {
+        "display_name": "Jezak",
+        "guid": "R3A36ONORIMVBZREKQYF4IAPQ4",
+        "team_keys": [
+            "466.l.38685.t.4"
+        ]
+    },
+    "brett": {
+        "display_name": "Brett",
+        "guid": "SGNLESVHGYNBPYNDR6L54TF4GA",
+        "team_keys": [
+            "466.l.38685.t.2"
+        ]
+    },
+    "kyle": {
+        "display_name": "Kyle",
+        "guid": "53ELOA5F2IAFZAHFCILHZX2IZY",
+        "team_keys": [
+        ]
+    },
+    "ray": {
+        "display_name": "Ray",
+        "guid": "RXHQAU6D6I7L6AATYCA7EIFEIM",
+        "team_keys": [
+            # TODO: add correct NBA team_key — 175.l.492325.t.5 was a football league key
+        ]
+    },
+    "nick": {
+        "display_name": "Nick",
+        "guid": "5NOEDPXWKEFDO3LHGG5THAWXMQ",
+        "team_keys": [
+            "466.l.38685.t.8"
+        ]
+    },
+    "sam": {
+        "display_name": "Sam",
+        "guid": "UOOBQORBBE2LMHDZWZLYLCPRB4",
+        "team_keys": [
+            "466.l.38685.t.1"
+        ]
+    },
+    "zef": {
+        "display_name": "Zef",
+        "guid": "3JYXPSSMU2OOSZEZYREF43ATIQ",
+        "team_keys": [
+            "466.l.38685.t.10"
+        ]
+    }
 }
 
 # ---------------------------------------------------------------------------
