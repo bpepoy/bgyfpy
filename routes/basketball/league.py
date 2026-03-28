@@ -192,11 +192,17 @@ def _team_id_from_key(team_key: str) -> str:
 
 def _get_all_nba_season_keys() -> dict:
     """
-    Returns a dict of {season_start_year: league_key} for all known NBA seasons.
-    Tries each game_id from NBA_GAME_IDS against the fixed league_id.
-    Results are cached in data/basketball/season_keys.json to avoid redundant API calls.
+    Returns a dict of {display_year_str: league_key} for all known NBA seasons.
+
+    Resolution order:
+      1. data/basketball/season_keys.json — written by /explore/discover-seasons
+      2. NBA_GAME_IDS fallback — constructs keys as "{game_id}.l.{NBA_LEAGUE_ID}"
+
+    Running /explore/discover-seasons is optional — it just confirms which keys
+    are valid and saves them for faster lookups. All build-all endpoints work
+    without it as long as NBA_GAME_IDS contains the relevant seasons.
     """
-    import os, json
+    import os
 
     cache_path = _get_data_path("season_keys.json")
     if os.path.exists(cache_path):
@@ -204,7 +210,12 @@ def _get_all_nba_season_keys() -> dict:
         if cached:
             return cached
 
-    return {}  # Return empty — populate via /explore/discover-seasons
+    # Fallback: construct keys from NBA_GAME_IDS so build-all works without
+    # ever needing to run discover-seasons
+    return {
+        str(yr): f"{game_id}.l.{NBA_LEAGUE_ID}"
+        for yr, game_id in NBA_GAME_IDS.items()
+    }
 
 
 def _league_key_for_season(year: int | str) -> str:
@@ -345,19 +356,16 @@ def get_nba_seasons():
 @router.get("/explore/discover-seasons")
 def discover_nba_seasons(save: bool = Query(default=True, description="Save results to season_keys.json")):
     """
-    Discovers all Real Bros NBA seasons by trying each known game_id against
-    the configured league_id. Saves confirmed results to data/basketball/season_keys.json.
+    Validates which Real Bros NBA season keys are confirmed accessible, and saves
+    results to data/basketball/season_keys.json.
 
-    Verification logic
-    ------------------
-    A season is confirmed as "our league" ONLY if the returned league_id from the
-    API exactly matches NBA_LEAGUE_ID. Name-based matching is intentionally NOT used
-    because public Yahoo leagues hide real names as "Yahoo Public XXXXX".
+    This endpoint is OPTIONAL — all build-all endpoints work without it by falling
+    back to NBA_GAME_IDS. Run discover-seasons only when:
+      - Bootstrapping a fresh deployment (confirms which keys are valid)
+      - Adding a new season (update NBA_GAME_IDS first, then re-run)
+      - Diagnosing why a season key isn't working
 
-    Common false-positive causes:
-    - Same league_id exists under a different game_id but belongs to a different league
-    - A stale or reused league_id from years ago
-    Both are caught because the returned league_id must exactly equal NBA_LEAGUE_ID.
+    Verification: a season is confirmed only if the API returns league_id == NBA_LEAGUE_ID.
 
     Usage:
         GET /basketball/league/explore/discover-seasons
@@ -1118,11 +1126,7 @@ def build_nba_managers(
         existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         season_keys = _get_all_nba_season_keys()
-        if not season_keys:
-            raise HTTPException(
-                status_code=400,
-                detail="No season keys cached. Run GET /basketball/league/explore/discover-seasons first.",
-            )
+        # season_keys always populated from NBA_GAME_IDS fallback if cache missing
 
         all_years    = sorted(season_keys.keys())
         target_years = [year] if year else all_years
@@ -1272,6 +1276,22 @@ def download_nba_managers():
 # ===========================================================================
 # Data generation — results.json
 # ===========================================================================
+
+def _empty_cat_accumulators() -> dict:
+    """
+    Zero-filled per-category accumulator for one team's season bucket.
+    Fields: wins/losses/ties, score_for_sum, score_against_sum, score_weeks.
+    """
+    return {
+        abbr: {
+            "wins": 0, "losses": 0, "ties": 0,
+            "score_for_sum": 0.0,
+            "score_against_sum": 0.0,
+            "score_weeks": 0,
+        }
+        for abbr in NBA_STAT_ABBRS
+    }
+
 
 def _extract_team_category_stats(team_obj: dict) -> dict:
     """
@@ -1743,11 +1763,7 @@ def build_nba_results(
         existing    = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
         season_keys = _get_all_nba_season_keys()
 
-        if not season_keys:
-            raise HTTPException(
-                status_code=400,
-                detail="No season keys cached. Run GET /basketball/league/explore/discover-seasons first.",
-            )
+        # season_keys always populated from NBA_GAME_IDS fallback if cache missing
 
         all_years    = sorted(season_keys.keys())
         target_years = [year] if year else all_years
@@ -1935,8 +1951,7 @@ def build_nba_transactions(
         existing    = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
         season_keys = _get_all_nba_season_keys()
 
-        if not season_keys:
-            raise HTTPException(status_code=400, detail="No season keys cached. Run discover-seasons first.")
+        # season_keys always populated from NBA_GAME_IDS fallback if cache missing
 
         all_years    = sorted(season_keys.keys())
         target_years = [year] if year else all_years
@@ -2150,8 +2165,7 @@ def build_nba_drafts(
         existing    = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
         season_keys = _get_all_nba_season_keys()
 
-        if not season_keys:
-            raise HTTPException(status_code=400, detail="No season keys cached. Run discover-seasons first.")
+        # season_keys always populated from NBA_GAME_IDS fallback if cache missing
 
         all_years    = sorted(season_keys.keys())
         target_years = [year] if year else all_years
