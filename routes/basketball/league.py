@@ -122,6 +122,74 @@ def _year_sort(d: dict) -> dict:
     return dict(sorted(d.items(), key=lambda x: int(x[0]) if str(x[0]).isdigit() else -1, reverse=True))
 
 
+def _get_first_team_key(query, league_key: str) -> str | None:
+    """
+    Retrieve the team_key of the first team in the league.
+
+    Tries multiple extraction paths because YFPY wraps teams differently
+    depending on which endpoint and version is used:
+      - list of {"team": {...}} wrappers
+      - list of flat team dicts
+      - dict with "teams" key
+      - numbered dict {"0": team, "1": team, ...}
+
+    Falls back to constructing t.1 from the league_key if all else fails,
+    since t.1 always exists in a 12-team league.
+    """
+    from services.fantasy.league_service import _convert_to_dict
+    try:
+        raw        = query.get_league_teams()
+        teams_dict = _convert_to_dict(raw)
+
+        # Unwrap outer container
+        if isinstance(teams_dict, dict):
+            candidates = teams_dict.get("teams") or list(teams_dict.values())
+        elif isinstance(teams_dict, list):
+            candidates = teams_dict
+        else:
+            candidates = []
+
+        # Numbered dict {"0": team, ...} — flatten values
+        if isinstance(candidates, dict):
+            candidates = list(candidates.values())
+
+        for item in candidates:
+            if not isinstance(item, dict):
+                continue
+            # Try both wrapped {"team": {...}} and flat
+            team = item.get("team", item)
+            if isinstance(team, dict):
+                tk = team.get("team_key") or team.get("key")
+                if tk and ".t." in str(tk):
+                    return str(tk)
+            # Numbered inner dict
+            if isinstance(item, dict) and not item.get("team"):
+                for v in item.values():
+                    if isinstance(v, dict):
+                        tk = v.get("team_key") or v.get("key")
+                        if tk and ".t." in str(tk):
+                            return str(tk)
+    except Exception:
+        pass
+
+    # Hard fallback — construct t.1 from league_key (e.g. "466.l.38685" → "466.l.38685.t.1")
+    if league_key and ".l." in league_key:
+        return f"{league_key}.t.1"
+    return None
+
+
+def _team_id_from_key(team_key: str) -> str:
+    """
+    Extract the numeric team_id from a full team_key.
+    "466.l.38685.t.5" → "5"
+    If already numeric, return as-is.
+    """
+    if team_key and ".t." in team_key:
+        return team_key.split(".t.")[-1]
+    return team_key
+
+
+
 def _get_all_nba_season_keys() -> dict:
     """
     Returns a dict of {season_start_year: league_key} for all known NBA seasons.
@@ -560,17 +628,15 @@ def explore_nba_team_matchups(
         query      = get_query(league_key)
 
         if not team_key:
-            teams_dict = _convert_to_dict(query.get_league_teams())
-            teams_list = _extract_teams_list(teams_dict)
-            first      = teams_list[0] if teams_list else {}
-            first_team = first.get("team", first) if isinstance(first, dict) else {}
-            team_key   = first_team.get("team_key")
+            team_key = _get_first_team_key(query, league_key)
 
-        matchups_raw = _convert_to_dict(query.get_team_matchups(team_key))
+        team_id      = _team_id_from_key(team_key)
+        matchups_raw = _convert_to_dict(query.get_team_matchups(team_id))
 
         return {
             "year":        year,
             "team_key":    team_key,
+            "team_id":     team_id,
             "league_key":  league_key,
             "raw":         matchups_raw,
             "note": (
@@ -609,32 +675,51 @@ def explore_nba_team_stats_week(
         query      = get_query(league_key)
 
         if not team_key:
-            teams_dict = _convert_to_dict(query.get_league_teams())
-            teams_list = _extract_teams_list(teams_dict)
-            first      = teams_list[0] if teams_list else {}
-            first_team = first.get("team", first) if isinstance(first, dict) else {}
-            team_key   = first_team.get("team_key")
+            team_key = _get_first_team_key(query, league_key)
 
-        stats_raw = _convert_to_dict(query.get_team_stats_by_week(team_key, week))
+        # YFPY get_team_stats_by_week expects the short numeric team_id, not the full key
+        team_id = _team_id_from_key(team_key)
 
-        # Also extract using our current function to compare
-        extracted = _extract_team_category_stats(
-            stats_raw if isinstance(stats_raw, dict) else {}
-        )
-
-        return {
-            "year":                year,
-            "week":                week,
-            "team_key":            team_key,
-            "league_key":          league_key,
-            "raw":                 stats_raw,
-            "extracted_by_stat_id": extracted,
-            "note": (
-                "extracted_by_stat_id shows what _extract_team_category_stats() pulls out. "
-                "If all None/empty, the nesting path in raw differs from what we expect — "
-                "look at raw to find the correct path to stat values."
-            ),
+        results = {
+            "year": year, "week": week,
+            "team_key": team_key, "team_id": team_id, "league_key": league_key,
         }
+
+        # Path A — get_team_stats_by_week (may return raw category values)
+        try:
+            stats_raw = _convert_to_dict(query.get_team_stats_by_week(team_id, week))
+            results["stats_by_week_raw"]       = stats_raw
+            results["stats_by_week_extracted"] = _extract_team_category_stats(
+                stats_raw if isinstance(stats_raw, dict) else {}
+            )
+        except Exception as e:
+            results["stats_by_week_error"] = str(e)[:200]
+
+        # Path B — get_team_matchups (alternative; includes per-week category breakdown)
+        try:
+            matchups_raw  = _convert_to_dict(query.get_team_matchups(team_id))
+            matchups_list = matchups_raw if isinstance(matchups_raw, list) else \
+                            matchups_raw.get("matchups", []) if isinstance(matchups_raw, dict) else []
+            # Find the matchup for the requested week
+            week_matchup = None
+            for m in matchups_list:
+                mw = m.get("matchup", m) if isinstance(m, dict) else {}
+                if int(mw.get("week") or 0) == week:
+                    week_matchup = mw
+                    break
+            results["team_matchups_week_entry"] = week_matchup
+            results["team_matchups_total"]      = len(matchups_list)
+            results["team_matchups_sample"]     = matchups_list[:1] if matchups_list else []
+        except Exception as e:
+            results["team_matchups_error"] = str(e)[:200]
+
+        results["note"] = (
+            "YFPY passes team_id (numeric) not full team_key to stat endpoints. "
+            "stats_by_week_raw → look for stat values nested under team_stats or stats. "
+            "team_matchups_week_entry → alternative source; may include stat_winners per category. "
+            "If both are empty, raw category values may only be available via individual player stats."
+        )
+        return results
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -664,18 +749,16 @@ def explore_nba_team_roster_week(
         query      = get_query(league_key)
 
         if not team_key:
-            teams_dict = _convert_to_dict(query.get_league_teams())
-            teams_list = _extract_teams_list(teams_dict)
-            first      = teams_list[0] if teams_list else {}
-            first_team = first.get("team", first) if isinstance(first, dict) else {}
-            team_key   = first_team.get("team_key")
+            team_key = _get_first_team_key(query, league_key)
 
-        roster_raw = _convert_to_dict(query.get_team_roster_by_week(team_key, week))
+        team_id    = _team_id_from_key(team_key)
+        roster_raw = _convert_to_dict(query.get_team_roster_by_week(team_id, week))
 
         return {
             "year":       year,
             "week":       week,
             "team_key":   team_key,
+            "team_id":    team_id,
             "league_key": league_key,
             "raw":        roster_raw,
             "note": (
@@ -714,19 +797,18 @@ def explore_nba_player_stats(
 
         # Discover a player_key if none provided
         if not player_key:
-            teams_dict = _convert_to_dict(query.get_league_teams())
-            teams_list = _extract_teams_list(teams_dict)
-            first      = teams_list[0] if teams_list else {}
-            first_team = first.get("team", first) if isinstance(first, dict) else {}
-            team_key   = first_team.get("team_key")
+            team_key = _get_first_team_key(query, league_key)
             if team_key:
-                roster_raw  = _convert_to_dict(query.get_team_roster_by_week(team_key, 1))
-                players_raw = roster_raw if isinstance(roster_raw, list) else \
-                              roster_raw.get("players", []) if isinstance(roster_raw, dict) else []
-                if players_raw:
-                    first_p   = players_raw[0]
-                    first_p   = first_p.get("player", first_p) if isinstance(first_p, dict) else {}
-                    player_key = first_p.get("player_key")
+                try:
+                    roster_raw  = _convert_to_dict(query.get_team_roster_by_week(team_key, 1))
+                    players_raw = roster_raw if isinstance(roster_raw, list) else \
+                                  roster_raw.get("players", []) if isinstance(roster_raw, dict) else []
+                    if players_raw:
+                        first_p    = players_raw[0]
+                        first_p    = first_p.get("player", first_p) if isinstance(first_p, dict) else {}
+                        player_key = first_p.get("player_key")
+                except Exception:
+                    pass
 
         if not player_key:
             return {"error": "Could not determine a player_key to fetch. Pass ?player_key= explicitly."}
@@ -841,14 +923,14 @@ def explore_nba_matchup_category_detail(
         query      = get_query(league_key)
 
         if not team_key:
-            teams_dict = _convert_to_dict(query.get_league_teams())
-            teams_list = _extract_teams_list(teams_dict)
-            first      = teams_list[0] if teams_list else {}
-            first_team = first.get("team", first) if isinstance(first, dict) else {}
-            team_key   = first_team.get("team_key")
+            team_key = _get_first_team_key(query, league_key)
+
+        # YFPY stat/matchup endpoints want the numeric id, not the full qualified key
+        team_id = _team_id_from_key(team_key)
 
         result = {
-            "year": year, "week": week, "team_key": team_key, "league_key": league_key
+            "year": year, "week": week,
+            "team_key": team_key, "team_id": team_id, "league_key": league_key,
         }
 
         # 1. Scoreboard for this week — shows all matchups + category totals
@@ -891,21 +973,28 @@ def explore_nba_matchup_category_detail(
         except Exception as e:
             result["scoreboard_error"] = str(e)
 
-        # 2. Direct team stats for this week
+        # 2. Direct team stats for this week (pass numeric team_id)
         try:
             result["team_stats_direct"] = _convert_to_dict(
-                query.get_team_stats_by_week(team_key, week)
+                query.get_team_stats_by_week(team_id, week)
             )
         except Exception as e:
             result["team_stats_direct_error"] = str(e)
 
-        # 3. Team matchups (all weeks) to confirm schedule shape
+        # 3. Team matchups — pass numeric team_id; may include per-category breakdown
         try:
-            tm_raw = _convert_to_dict(query.get_team_matchups(team_key))
+            tm_raw = _convert_to_dict(query.get_team_matchups(team_id))
             matchups_list = tm_raw if isinstance(tm_raw, list) else \
                             tm_raw.get("matchups", []) if isinstance(tm_raw, dict) else []
-            result["team_matchups_count"]    = len(matchups_list)
-            result["team_matchups_week_sample"] = matchups_list[:2] if matchups_list else []
+            # Find this week's entry
+            week_entry = next(
+                (m.get("matchup", m) for m in matchups_list
+                 if isinstance(m, dict) and int((m.get("matchup", m) or {}).get("week") or 0) == week),
+                None
+            )
+            result["team_matchups_count"]        = len(matchups_list)
+            result["team_matchups_this_week"]    = week_entry
+            result["team_matchups_week_sample"]  = matchups_list[:1] if matchups_list else []
         except Exception as e:
             result["team_matchups_error"] = str(e)
 
