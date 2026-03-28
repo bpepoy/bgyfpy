@@ -1924,9 +1924,135 @@ def debug_nba_scoreboard(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ===========================================================================
-# Data generation — transactions.json
-# ===========================================================================
+@router.get("/data/results/debug-matchup-pipeline")
+def debug_nba_matchup_pipeline(
+    year: str     = Query(default="2025"),
+    team_key: str = Query(default="466.l.38685.t.5", description="Full team key"),
+):
+    """
+    Traces exactly what _build_nba_results_for_season sees when processing
+    one team's matchups — shows whether stat_winners and team_stats are
+    being extracted correctly after all the _extracted_data unwrapping.
+
+    Usage:
+        GET /basketball/league/data/results/debug-matchup-pipeline?year=2025&team_key=466.l.38685.t.5
+    """
+    try:
+        from services.yahoo_service import get_query
+        from services.fantasy.league_service import _convert_to_dict
+
+        league_key = _league_key_for_season(year)
+        query      = get_query(league_key)
+        team_id    = _team_id_from_key(team_key)
+
+        matchups_raw  = _convert_to_dict(query.get_team_matchups(team_id))
+
+        # Determine what type and shape we got back
+        raw_type = str(type(matchups_raw))
+        if isinstance(matchups_raw, list):
+            matchups_list = matchups_raw
+        elif isinstance(matchups_raw, dict):
+            matchups_list = matchups_raw.get("matchups", [])
+            if not matchups_list:
+                # Try values if it's a numbered dict or has a single key
+                for k, v in matchups_raw.items():
+                    if isinstance(v, list) and v:
+                        matchups_list = v
+                        break
+        else:
+            matchups_list = []
+
+        if not matchups_list:
+            return {
+                "error": "matchups_list is empty after conversion",
+                "raw_type": raw_type,
+                "raw_keys": list(matchups_raw.keys()) if isinstance(matchups_raw, dict) else None,
+                "raw_preview": str(matchups_raw)[:500],
+            }
+
+        # Take the first matchup and trace every unwrap step
+        first_raw = matchups_list[0] if matchups_list else {}
+
+        # Step 1: what keys exist at the top level?
+        top_keys = list(first_raw.keys()) if isinstance(first_raw, dict) else []
+
+        # Step 2: what does _extracted_data contain?
+        extracted_data = first_raw.get("_extracted_data", {}) if isinstance(first_raw, dict) else {}
+        extracted_keys = list(extracted_data.keys()) if isinstance(extracted_data, dict) else []
+
+        # Step 3: apply the same merge the build pipeline does
+        m_data  = extracted_data if extracted_data else first_raw
+        matchup = {**m_data}
+        for k, v in first_raw.items():
+            if k not in ("_extracted_data", "_index", "_keys"):
+                matchup[k] = v
+
+        merged_keys = list(matchup.keys())
+
+        # Step 4: what does stat_winners look like after merge?
+        sw_raw = matchup.get("stat_winners", [])
+        if isinstance(sw_raw, dict):
+            sw_raw = list(sw_raw.values())
+
+        stat_id_to_abbr = {s["id"]: s["abbr"] for s in NBA_STAT_CATEGORIES}
+        parsed_winners = []
+        for sw_item in (sw_raw or []):
+            sw = sw_item.get("stat_winner", sw_item) if isinstance(sw_item, dict) else {}
+            sid  = str(sw.get("stat_id") or "")
+            abbr = stat_id_to_abbr.get(sid)
+            parsed_winners.append({
+                "stat_id": sid, "abbr": abbr,
+                "winner_team_key": sw.get("winner_team_key"),
+                "lookup_worked": abbr is not None,
+            })
+
+        # Step 5: what do teams look like after merge?
+        teams_raw = matchup.get("teams", [])
+        if isinstance(teams_raw, dict):
+            teams_raw = list(teams_raw.values())
+
+        teams_summary = []
+        for tw in teams_raw:
+            tm_raw  = tw.get("team", tw) if isinstance(tw, dict) else {}
+            tm_data = tm_raw.get("_extracted_data", tm_raw) if "_extracted_data" in tm_raw else tm_raw
+            tk      = tm_data.get("team_key") or tm_raw.get("team_key", "unknown")
+            stats   = _extract_stats_from_team_matchup(tm_data)
+            teams_summary.append({
+                "team_key":       tk,
+                "is_my_team":     tk == team_key,
+                "team_stats_keys": list(tm_data.get("team_stats", {}).keys()) if isinstance(tm_data.get("team_stats"), dict) else "missing",
+                "extracted_stats": stats,
+                "stats_count":    len(stats),
+            })
+
+        return {
+            "year":             year,
+            "team_key":         team_key,
+            "team_id":          team_id,
+            "total_matchups":   len(matchups_list),
+            "raw_type":         raw_type,
+            "first_item_top_keys":       top_keys,
+            "first_item_extracted_keys": extracted_keys,
+            "first_item_merged_keys":    merged_keys,
+            "stat_winners_count":        len(sw_raw) if sw_raw else 0,
+            "stat_winners_parsed":       parsed_winners,
+            "teams_in_matchup":          len(teams_raw),
+            "teams_summary":             teams_summary,
+            "week":              matchup.get("week"),
+            "is_playoffs":       matchup.get("is_playoffs"),
+            "winner_team_key":   matchup.get("winner_team_key"),
+            "diagnosis": (
+                "If stat_winners_parsed shows lookup_worked=false: stat_id mismatch. "
+                "If teams_summary shows extracted_stats empty: team_stats path is wrong. "
+                "If total_matchups=0: matchups_list extraction path failed. "
+                "If is_my_team=false for both teams: team_key comparison is wrong."
+            ),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 
 @router.get("/data/transactions/build-all")
 def build_nba_transactions(
