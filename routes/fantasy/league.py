@@ -1046,6 +1046,7 @@ def _build_results_for_season(yr: str, query, league_key: str) -> dict:
 
         season_data[manager_id] = {
             "team_key":  team_key,
+            "team_id":   team_key.split(".t.")[-1] if ".t." in team_key else None,
             "team_name": t.get("name"),
             "logo_url":  _extract_logo_url(t),
             "_rs": {
@@ -1313,10 +1314,29 @@ def results_status():
 def download_results():
     """Returns current results.json for local save."""
     try:
-        data = _load_json(_get_data_path("results.json"))
-        if not data:
+        raw = _load_json(_get_data_path("results.json"))
+        if not raw:
             raise HTTPException(status_code=404, detail="results.json not found.")
-        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+
+        # Detect legacy double-wrapped shape: {"total_seasons": N, "years": [...], "data": {...}}
+        # If the file was previously saved by an old download endpoint that wrapped before writing,
+        # unwrap it so we return and re-save just the year-keyed data dict.
+        if "data" in raw and "total_seasons" in raw and "years" in raw:
+            data = raw["data"]
+            # Also check if _that_ is double-wrapped (shouldn't be, but be safe)
+            if "data" in data and "total_seasons" in data:
+                data = data["data"]
+        else:
+            data = raw
+
+        # Only keep year-keyed entries
+        data = {k: v for k, v in data.items() if str(k).isdigit()}
+
+        return {
+            "total_seasons": len(data),
+            "years":         sorted(data.keys(), reverse=True),
+            "data":          data,
+        }
     except HTTPException:
         raise
     except Exception as e:
@@ -1417,7 +1437,29 @@ def build_transactions(
                 week_map   = _build_week_map(query, yr)
 
                 tx_dict = _convert_to_dict(query.get_league_transactions())
-                tx_list = tx_dict if isinstance(tx_dict, list) else tx_dict.get("transactions", [])
+
+                # YFPY can return transactions in several shapes:
+                #   list  → already a flat list
+                #   dict  → {"transactions": [...]} named key
+                #   dict  → {"0": tx, "1": tx, ...} numbered keys
+                #   dict  → with _extracted_data wrapping
+                if isinstance(tx_dict, list):
+                    tx_list = tx_dict
+                elif isinstance(tx_dict, dict):
+                    tx_list = tx_dict.get("transactions", [])
+                    if not tx_list:
+                        # Try numbered dict
+                        keys = list(tx_dict.keys())
+                        if keys and all(str(k).isdigit() for k in keys):
+                            tx_list = [tx_dict[k] for k in sorted(keys, key=lambda x: int(x))]
+                        elif not tx_list:
+                            # Try any list-valued key
+                            for v in tx_dict.values():
+                                if isinstance(v, list) and v:
+                                    tx_list = v
+                                    break
+                else:
+                    tx_list = []
 
                 def _unwrap_yfpy_obj(obj: dict) -> dict:
                     """Merge _extracted_data into top level; top-level keys win."""
@@ -1605,14 +1647,315 @@ def debug_transactions_raw(year: str = Query(default="2025")):
         raw        = query.get_league_transactions()
         converted  = _convert_to_dict(raw)
 
-        tx_list = converted if isinstance(converted, list) else converted.get("transactions", [])
-        sample  = tx_list[:2] if tx_list else []
+        # Show all extraction paths
+        extracted_as_list   = converted if isinstance(converted, list) else []
+        extracted_named_key = converted.get("transactions", []) if isinstance(converted, dict) else []
+        keys                = list(converted.keys()) if isinstance(converted, dict) else []
+        numbered_keys       = all(str(k).isdigit() for k in keys) if keys else False
+        extracted_numbered  = [converted[k] for k in sorted(keys, key=lambda x: int(x))] \
+                              if numbered_keys else []
+
+        best_list = extracted_as_list or extracted_named_key or extracted_numbered
+        sample    = best_list[:2] if best_list else []
 
         return {
-            "raw_type":       str(type(raw)),
-            "converted_type": str(type(converted)),
-            "total_count":    len(tx_list) if hasattr(tx_list, "__len__") else "N/A",
-            "sample_items":   sample,
+            "raw_type":              str(type(raw)),
+            "converted_type":        str(type(converted)),
+            "converted_top_keys":    keys[:10],
+            "count_as_list":         len(extracted_as_list),
+            "count_named_key":       len(extracted_named_key),
+            "count_numbered_keys":   len(extracted_numbered),
+            "best_count":            len(best_list),
+            "sample_items":          sample,
+            "note": "best_count > 0 means transactions were found. If 0, check raw_type.",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Data generation — matchups.json
+# ===========================================================================
+
+@router.get("/data/matchups/build-all")
+def build_matchups(
+    skip_existing: bool = Query(default=True),
+    year: str          = Query(default=None, description="Single year e.g. '2025', or omit for all"),
+    force_clean: bool  = Query(default=False),
+):
+    """
+    Generates matchups.json — weekly scoreboard data per season.
+
+    Shape per season:
+        {"2025": {"weeks": [{"week": 1, "matchups": [...]}, ...]}}
+
+    Per matchup:
+        {
+          "week": int,
+          "week_start": "YYYY-MM-DD",
+          "week_end":   "YYYY-MM-DD",
+          "is_playoffs": bool,
+          "is_consolation": bool,
+          "winner_manager": str,
+          "loser_manager":  str,
+          "is_tied": bool,
+          "teams": [
+            {
+              "manager_id":    str,
+              "team_key":      str,
+              "team_name":     str,
+              "points":        float,
+              "projected":     float,
+              "is_winner":     bool,
+            }, ...
+          ]
+        }
+
+    Usage:
+        GET /league/data/matchups/build-all
+        GET /league/data/matchups/build-all?year=2025
+        GET /league/data/matchups/build-all?force_clean=true
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_all_seasons, get_league_key_for_season, _convert_to_dict,
+        )
+        from services.yahoo_service import get_query
+        from config import get_manager_identity
+
+        path     = _get_data_path("matchups.json")
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+
+        seasons_data = get_all_seasons(force_refresh=True)
+        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
+        target_years = [year] if year else all_years
+        results      = {"success": [], "skipped": [], "failed": {}}
+
+        for yr in target_years:
+            if skip_existing and yr in existing and existing[yr]:
+                results["skipped"].append(int(yr))
+                continue
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                try:
+                    settings_dict = _convert_to_dict(query.get_league_settings())
+                    playoff_start = int(settings_dict.get("playoff_start_week") or 15)
+                    end_week      = int(settings_dict.get("end_week") or 17)
+                except Exception:
+                    playoff_start, end_week = 15, 17
+
+                weeks_out = []
+
+                for week in range(1, end_week + 1):
+                    try:
+                        sb_dict  = _convert_to_dict(query.get_league_scoreboard_by_week(week))
+
+                        # Handle YFPY's various response shapes
+                        if isinstance(sb_dict, list):
+                            matchups_raw = sb_dict
+                        elif isinstance(sb_dict, dict):
+                            matchups_raw = sb_dict.get("matchups", [])
+                            if not matchups_raw:
+                                keys = list(sb_dict.keys())
+                                if keys and all(str(k).isdigit() for k in keys):
+                                    matchups_raw = [sb_dict[k] for k in sorted(keys, key=lambda x: int(x))]
+                        else:
+                            matchups_raw = []
+
+                        week_matchups = []
+                        for m in matchups_raw:
+                            matchup = m.get("matchup", m) if isinstance(m, dict) else {}
+
+                            # Unwrap _extracted_data if present
+                            if "_extracted_data" in matchup:
+                                ed = matchup["_extracted_data"]
+                                if isinstance(ed, dict):
+                                    merged = {**ed}
+                                    for k, v in matchup.items():
+                                        if k not in ("_extracted_data", "_index", "_keys"):
+                                            merged[k] = v
+                                    matchup = merged
+
+                            week_num       = int(matchup.get("week") or week)
+                            week_start     = matchup.get("week_start")
+                            week_end       = matchup.get("week_end")
+                            is_playoffs    = bool(int(matchup.get("is_playoffs",    0) or 0))
+                            is_consolation = bool(int(matchup.get("is_consolation", 0) or 0))
+                            is_tied        = bool(int(matchup.get("is_tied",        0) or 0))
+                            winner_tk      = matchup.get("winner_team_key") or ""
+
+                            teams_m = matchup.get("teams", [])
+                            if isinstance(teams_m, dict):
+                                teams_m = list(teams_m.values())
+
+                            teams_out      = []
+                            winner_manager = None
+                            loser_manager  = None
+
+                            for tw in teams_m:
+                                tm = tw.get("team", tw) if isinstance(tw, dict) else {}
+
+                                # Unwrap _extracted_data on team object
+                                if "_extracted_data" in tm:
+                                    ed = tm["_extracted_data"]
+                                    if isinstance(ed, dict):
+                                        merged = {**ed}
+                                        for k, v in tm.items():
+                                            if k not in ("_extracted_data", "_index", "_keys"):
+                                                merged[k] = v
+                                        tm = merged
+
+                                tk   = tm.get("team_key", "")
+                                name = tm.get("name", "")
+
+                                pts  = float(
+                                    (tm.get("team_points") or {}).get("total") or
+                                    tm.get("points") or 0
+                                )
+                                proj = float(
+                                    (tm.get("team_projected_points") or {}).get("total") or
+                                    tm.get("projected_points") or 0
+                                )
+
+                                identity   = get_manager_identity(team_key=tk)
+                                manager_id = identity["manager_id"] if identity else tk
+                                is_winner  = (tk == winner_tk) and not is_tied
+
+                                if is_winner:
+                                    winner_manager = manager_id
+                                elif not is_tied:
+                                    loser_manager = manager_id
+
+                                teams_out.append({
+                                    "manager_id": manager_id,
+                                    "team_key":   tk,
+                                    "team_id":    tk.split(".t.")[-1] if ".t." in tk else None,
+                                    "team_name":  name,
+                                    "points":     round(pts,  2),
+                                    "projected":  round(proj, 2),
+                                    "is_winner":  is_winner,
+                                })
+
+                            week_matchups.append({
+                                "week":            week_num,
+                                "week_start":      week_start,
+                                "week_end":        week_end,
+                                "is_playoffs":     is_playoffs,
+                                "is_consolation":  is_consolation,
+                                "is_tied":         is_tied,
+                                "winner_manager":  winner_manager,
+                                "loser_manager":   loser_manager,
+                                "teams":           teams_out,
+                            })
+
+                        if week_matchups:
+                            weeks_out.append({"week": week, "matchups": week_matchups})
+
+                    except Exception:
+                        continue  # skip individual weeks that fail
+
+                existing[yr] = {
+                    "year":          int(yr),
+                    "playoff_start": playoff_start,
+                    "end_week":      end_week,
+                    "total_weeks":   len(weeks_out),
+                    "weeks":         weeks_out,
+                }
+                results["success"].append(int(yr))
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        sorted_data = _year_sort(existing)
+        _write_json(path, sorted_data)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "next_step":       "GET /league/data/matchups/download to save locally",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/matchups/status")
+def matchups_status():
+    """Shows which years are in matchups.json."""
+    try:
+        path = _get_data_path("matchups.json")
+        data = _load_json(path)
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            season = data[yr]
+            weeks  = season.get("weeks", [])
+            total_matchups = sum(len(w.get("matchups", [])) for w in weeks)
+            summary.append({
+                "year":           int(yr),
+                "total_weeks":    season.get("total_weeks", len(weeks)),
+                "total_matchups": total_matchups,
+                "playoff_start":  season.get("playoff_start"),
+            })
+        return {"total_seasons": len(data), "seasons": summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/matchups/download")
+def download_matchups():
+    """Returns current matchups.json for local save."""
+    try:
+        data = _load_json(_get_data_path("matchups.json"))
+        if not data:
+            raise HTTPException(status_code=404, detail="matchups.json not found. Run build-all first.")
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/matchups/debug")
+def debug_matchups_raw(
+    year: str = Query(default="2025"),
+    week: int = Query(default=1),
+):
+    """
+    Returns raw scoreboard for one week. Use to confirm field paths before rebuilding.
+
+    Usage:
+        GET /league/data/matchups/debug?year=2025&week=1
+    """
+    try:
+        from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
+        from services.yahoo_service import get_query
+
+        league_key   = get_league_key_for_season(year)
+        query        = get_query(league_key)
+        sb_raw       = query.get_league_scoreboard_by_week(week)
+        sb_dict      = _convert_to_dict(sb_raw)
+
+        matchups_raw = []
+        if isinstance(sb_dict, list):
+            matchups_raw = sb_dict
+        elif isinstance(sb_dict, dict):
+            matchups_raw = sb_dict.get("matchups", [])
+
+        first = matchups_raw[0] if matchups_raw else {}
+
+        return {
+            "year":             year,
+            "week":             week,
+            "converted_type":   str(type(sb_dict)),
+            "converted_keys":   list(sb_dict.keys()) if isinstance(sb_dict, dict) else [],
+            "matchup_count":    len(matchups_raw),
+            "first_matchup":    first,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
