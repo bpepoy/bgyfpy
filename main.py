@@ -24,7 +24,6 @@ from routes.fantasy.yahoo import router as yahoo_router
 from routes.explore import router as explore_router
 from routes.basketball.league import router as basketball_league_router
 from routes.fantasy.views import router as fantasy_views_router
-app.include_router(fantasy_views_router)
 import os
 
 app = FastAPI(
@@ -54,7 +53,8 @@ app.include_router(fantasy_league_router)
 app.include_router(fantasy_teams_router)
 app.include_router(explore_router)
 app.include_router(yahoo_router)
-app.include_router(basketball_league_router)   # ← NEW
+app.include_router(basketball_league_router)
+app.include_router(fantasy_views_router)
 
 
 @app.get("/")
