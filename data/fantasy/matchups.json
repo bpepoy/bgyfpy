@@ -1,0 +1,2591 @@
+{
+  "total_seasons": 1,
+  "years": [
+    "2025"
+  ],
+  "data": {
+    "2025": {
+      "year": 2025,
+      "playoff_start": 16,
+      "end_week": 17,
+      "total_weeks": 17,
+      "weeks": [
+        {
+          "week": 1,
+          "matchups": [
+            {
+              "week": 1,
+              "week_start": "2025-09-04",
+              "week_end": "2025-09-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "zef",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 76.5,
+                  "projected": 104.16,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 84.6,
+                  "projected": 112.86,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 1,
+              "week_start": "2025-09-04",
+              "week_end": "2025-09-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 93.35,
+                  "projected": 113.21,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 118.95,
+                  "projected": 113.72,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 1,
+              "week_start": "2025-09-04",
+              "week_end": "2025-09-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 85.95,
+                  "projected": 114.94,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 124.3,
+                  "projected": 126.33,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 1,
+              "week_start": "2025-09-04",
+              "week_end": "2025-09-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "nick",
+              "teams": [
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 103.8,
+                  "projected": 116.55,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 131.75,
+                  "projected": 124.43,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 1,
+              "week_start": "2025-09-04",
+              "week_end": "2025-09-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jake",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 100.1,
+                  "projected": 122.86,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 116.75,
+                  "projected": 113.39,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 2,
+          "matchups": [
+            {
+              "week": 2,
+              "week_start": "2025-09-09",
+              "week_end": "2025-09-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 106.8,
+                  "projected": 112.57,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 91.1,
+                  "projected": 91.88,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "week_start": "2025-09-09",
+              "week_end": "2025-09-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 90.3,
+                  "projected": 112.6,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 135.9,
+                  "projected": 117.57,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "week_start": "2025-09-09",
+              "week_end": "2025-09-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 154.85,
+                  "projected": 122.9,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 97.2,
+                  "projected": 121.13,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "week_start": "2025-09-09",
+              "week_end": "2025-09-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "nick",
+              "teams": [
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 101.05,
+                  "projected": 118.44,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 113.3,
+                  "projected": 126.96,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 2,
+              "week_start": "2025-09-09",
+              "week_end": "2025-09-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jake",
+              "loser_manager": "rob",
+              "teams": [
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 99.2,
+                  "projected": 127.21,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 124.05,
+                  "projected": 120.26,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 3,
+          "matchups": [
+            {
+              "week": 3,
+              "week_start": "2025-09-16",
+              "week_end": "2025-09-22",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 126.95,
+                  "projected": 112.38,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 94.25,
+                  "projected": 106.44,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "week_start": "2025-09-16",
+              "week_end": "2025-09-22",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "nick",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 91.8,
+                  "projected": 117.95,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 128.9,
+                  "projected": 116,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "week_start": "2025-09-16",
+              "week_end": "2025-09-22",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "frank",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 99.95,
+                  "projected": 101.75,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 106.4,
+                  "projected": 118.89,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "week_start": "2025-09-16",
+              "week_end": "2025-09-22",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 138.1,
+                  "projected": 117.24,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 102.45,
+                  "projected": 118.19,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 3,
+              "week_start": "2025-09-16",
+              "week_end": "2025-09-22",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "jake",
+              "teams": [
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 118.55,
+                  "projected": 124.98,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 117.8,
+                  "projected": 118.7,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 4,
+          "matchups": [
+            {
+              "week": 4,
+              "week_start": "2025-09-23",
+              "week_end": "2025-09-29",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "nick",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 152.2,
+                  "projected": 114.55,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 107.8,
+                  "projected": 98.76,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "week_start": "2025-09-23",
+              "week_end": "2025-09-29",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jordan",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 119.2,
+                  "projected": 108.94,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 89.95,
+                  "projected": 111.79,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "week_start": "2025-09-23",
+              "week_end": "2025-09-29",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jake",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 96.75,
+                  "projected": 105.32,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 98.05,
+                  "projected": 117.36,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "week_start": "2025-09-23",
+              "week_end": "2025-09-29",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "joey",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 150.1,
+                  "projected": 101.48,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 148.55,
+                  "projected": 123.13,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 4,
+              "week_start": "2025-09-23",
+              "week_end": "2025-09-29",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "rob",
+              "teams": [
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 140.1,
+                  "projected": 120.16,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 106.5,
+                  "projected": 121.22,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 5,
+          "matchups": [
+            {
+              "week": 5,
+              "week_start": "2025-09-30",
+              "week_end": "2025-10-06",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 111.45,
+                  "projected": 90.58,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 99.4,
+                  "projected": 111.3,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "week_start": "2025-09-30",
+              "week_end": "2025-10-06",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 104.3,
+                  "projected": 106.03,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 150.25,
+                  "projected": 115.36,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "week_start": "2025-09-30",
+              "week_end": "2025-10-06",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 113,
+                  "projected": 97.55,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 121.75,
+                  "projected": 105.8,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "week_start": "2025-09-30",
+              "week_end": "2025-10-06",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jake",
+              "loser_manager": "nick",
+              "teams": [
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 104.1,
+                  "projected": 108.47,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 117.8,
+                  "projected": 107.98,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 5,
+              "week_start": "2025-09-30",
+              "week_end": "2025-10-06",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "joey",
+              "teams": [
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 147.35,
+                  "projected": 121.49,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 128.15,
+                  "projected": 112.66,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 6,
+          "matchups": [
+            {
+              "week": 6,
+              "week_start": "2025-10-07",
+              "week_end": "2025-10-13",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "jake",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 113.95,
+                  "projected": 100.85,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 113.35,
+                  "projected": 113.84,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "week_start": "2025-10-07",
+              "week_end": "2025-10-13",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 97.5,
+                  "projected": 94.58,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 142.1,
+                  "projected": 117.56,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "week_start": "2025-10-07",
+              "week_end": "2025-10-13",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 84.55,
+                  "projected": 102.5,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 145.45,
+                  "projected": 122.27,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "week_start": "2025-10-07",
+              "week_end": "2025-10-13",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "nick",
+              "loser_manager": "frank",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 101.3,
+                  "projected": 106.82,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 103.05,
+                  "projected": 109.47,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 6,
+              "week_start": "2025-10-07",
+              "week_end": "2025-10-13",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 91.9,
+                  "projected": 100.91,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 101.75,
+                  "projected": 122.34,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 7,
+          "matchups": [
+            {
+              "week": 7,
+              "week_start": "2025-10-14",
+              "week_end": "2025-10-20",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "rob",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 135.3,
+                  "projected": 109.65,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 127,
+                  "projected": 112.79,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 7,
+              "week_start": "2025-10-14",
+              "week_end": "2025-10-20",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jordan",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 141.9,
+                  "projected": 99.75,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 95.85,
+                  "projected": 102.78,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 7,
+              "week_start": "2025-10-14",
+              "week_end": "2025-10-20",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jake",
+              "loser_manager": "frank",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 77.9,
+                  "projected": 90.89,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 122.65,
+                  "projected": 115.86,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 7,
+              "week_start": "2025-10-14",
+              "week_end": "2025-10-20",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "nick",
+              "teams": [
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 131,
+                  "projected": 100.62,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 145.7,
+                  "projected": 119.41,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 7,
+              "week_start": "2025-10-14",
+              "week_end": "2025-10-20",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "kyle",
+              "loser_manager": "joey",
+              "teams": [
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 116.65,
+                  "projected": 114.19,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 119,
+                  "projected": 90.94,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 8,
+          "matchups": [
+            {
+              "week": 8,
+              "week_start": "2025-10-21",
+              "week_end": "2025-10-27",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "zef",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 71.3,
+                  "projected": 87.95,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 104.2,
+                  "projected": 98.81,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 8,
+              "week_start": "2025-10-21",
+              "week_end": "2025-10-27",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jordan",
+              "loser_manager": "nick",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 109.4,
+                  "projected": 90.45,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 107.95,
+                  "projected": 99.75,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 8,
+              "week_start": "2025-10-21",
+              "week_end": "2025-10-27",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "kyle",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 124.4,
+                  "projected": 106.93,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 133.05,
+                  "projected": 106.58,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 8,
+              "week_start": "2025-10-21",
+              "week_end": "2025-10-27",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jake",
+              "loser_manager": "brian",
+              "teams": [
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 136.25,
+                  "projected": 113.9,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 151.45,
+                  "projected": 107.55,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 8,
+              "week_start": "2025-10-21",
+              "week_end": "2025-10-27",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "joey",
+              "teams": [
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 98.55,
+                  "projected": 108.29,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 102.55,
+                  "projected": 108.34,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 9,
+          "matchups": [
+            {
+              "week": 9,
+              "week_start": "2025-10-28",
+              "week_end": "2025-11-03",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "zef",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 110.8,
+                  "projected": 105.39,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 175.65,
+                  "projected": 114.82,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 9,
+              "week_start": "2025-10-28",
+              "week_end": "2025-11-03",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jake",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 107.3,
+                  "projected": 101.93,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 107.9,
+                  "projected": 124.53,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 9,
+              "week_start": "2025-10-28",
+              "week_end": "2025-11-03",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 89.35,
+                  "projected": 88.52,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 89.85,
+                  "projected": 86.96,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 9,
+              "week_start": "2025-10-28",
+              "week_end": "2025-11-03",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "frank",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 98.1,
+                  "projected": 109.39,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 132,
+                  "projected": 126.14,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 9,
+              "week_start": "2025-10-28",
+              "week_end": "2025-11-03",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "nick",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 125.2,
+                  "projected": 106.49,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 103.2,
+                  "projected": 109.39,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 10,
+          "matchups": [
+            {
+              "week": 10,
+              "week_start": "2025-11-04",
+              "week_end": "2025-11-10",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "brian",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 111.4,
+                  "projected": 109.32,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 101.3,
+                  "projected": 114.52,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 10,
+              "week_start": "2025-11-04",
+              "week_end": "2025-11-10",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 80.75,
+                  "projected": 101.83,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 122,
+                  "projected": 106.64,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 10,
+              "week_start": "2025-11-04",
+              "week_end": "2025-11-10",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 89.3,
+                  "projected": 106.57,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 152.4,
+                  "projected": 127.26,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 10,
+              "week_start": "2025-11-04",
+              "week_end": "2025-11-10",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "nick",
+              "teams": [
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 130.75,
+                  "projected": 123.87,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 136.4,
+                  "projected": 117.23,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 10,
+              "week_start": "2025-11-04",
+              "week_end": "2025-11-10",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jake",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 117.6,
+                  "projected": 114.1,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 160.9,
+                  "projected": 120.01,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 11,
+          "matchups": [
+            {
+              "week": 11,
+              "week_start": "2025-11-11",
+              "week_end": "2025-11-17",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "blake",
+              "loser_manager": "zef",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 83,
+                  "projected": 108.77,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 89,
+                  "projected": 101.39,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 11,
+              "week_start": "2025-11-11",
+              "week_end": "2025-11-17",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 79.85,
+                  "projected": 114.85,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 125.55,
+                  "projected": 116.1,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 11,
+              "week_start": "2025-11-11",
+              "week_end": "2025-11-17",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 126.25,
+                  "projected": 115.79,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 114.95,
+                  "projected": 118.29,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 11,
+              "week_start": "2025-11-11",
+              "week_end": "2025-11-17",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "nick",
+              "loser_manager": "joey",
+              "teams": [
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 138.25,
+                  "projected": 122.36,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 110.25,
+                  "projected": 127.89,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 11,
+              "week_start": "2025-11-11",
+              "week_end": "2025-11-17",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "jake",
+              "teams": [
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 102.2,
+                  "projected": 116.88,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 86.65,
+                  "projected": 112.02,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 12,
+          "matchups": [
+            {
+              "week": 12,
+              "week_start": "2025-11-18",
+              "week_end": "2025-11-24",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 126.05,
+                  "projected": 111.8,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 118.05,
+                  "projected": 100.59,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 12,
+              "week_start": "2025-11-18",
+              "week_end": "2025-11-24",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "nick",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 100.5,
+                  "projected": 112.26,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 178.25,
+                  "projected": 132.93,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 12,
+              "week_start": "2025-11-18",
+              "week_end": "2025-11-24",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "frank",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 94.35,
+                  "projected": 122.12,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 111.95,
+                  "projected": 115.32,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 12,
+              "week_start": "2025-11-18",
+              "week_end": "2025-11-24",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 129.7,
+                  "projected": 122.4,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 100.85,
+                  "projected": 110.45,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 12,
+              "week_start": "2025-11-18",
+              "week_end": "2025-11-24",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "jake",
+              "teams": [
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 100.35,
+                  "projected": 106.97,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 93.55,
+                  "projected": 117.2,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 13,
+          "matchups": [
+            {
+              "week": 13,
+              "week_start": "2025-11-25",
+              "week_end": "2025-12-01",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "nick",
+              "loser_manager": "zef",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 102,
+                  "projected": 119.07,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 114.7,
+                  "projected": 122.39,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 13,
+              "week_start": "2025-11-25",
+              "week_end": "2025-12-01",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jordan",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 100.85,
+                  "projected": 111.96,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 100.45,
+                  "projected": 120.32,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 13,
+              "week_start": "2025-11-25",
+              "week_end": "2025-12-01",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "jake",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 95.05,
+                  "projected": 112.71,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 122.3,
+                  "projected": 127.42,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 13,
+              "week_start": "2025-11-25",
+              "week_end": "2025-12-01",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "joey",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 132.8,
+                  "projected": 112.81,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 123.85,
+                  "projected": 120.52,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 13,
+              "week_start": "2025-11-25",
+              "week_end": "2025-12-01",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "rob",
+              "teams": [
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 102.3,
+                  "projected": 134.26,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 86.45,
+                  "projected": 119.15,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 14,
+          "matchups": [
+            {
+              "week": 14,
+              "week_start": "2025-12-02",
+              "week_end": "2025-12-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "kyle",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 105.2,
+                  "projected": 112.48,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 85.45,
+                  "projected": 104.64,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 14,
+              "week_start": "2025-12-02",
+              "week_end": "2025-12-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "rob",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 112.2,
+                  "projected": 114.74,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 112.95,
+                  "projected": 121.75,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 14,
+              "week_start": "2025-12-02",
+              "week_end": "2025-12-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "blake",
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 86.4,
+                  "projected": 103.54,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 141.65,
+                  "projected": 119.35,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 14,
+              "week_start": "2025-12-02",
+              "week_end": "2025-12-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "nick",
+              "loser_manager": "jake",
+              "teams": [
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 84.9,
+                  "projected": 119.24,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 68.8,
+                  "projected": 122.12,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 14,
+              "week_start": "2025-12-02",
+              "week_end": "2025-12-08",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "brian",
+              "teams": [
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 102.8,
+                  "projected": 92.5,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 145.65,
+                  "projected": 130.81,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 15,
+          "matchups": [
+            {
+              "week": 15,
+              "week_start": "2025-12-09",
+              "week_end": "2025-12-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "jake",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 127,
+                  "projected": 117.96,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 115.3,
+                  "projected": 119.48,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 15,
+              "week_start": "2025-12-09",
+              "week_end": "2025-12-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 69.95,
+                  "projected": 112.28,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 102.75,
+                  "projected": 119.23,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 15,
+              "week_start": "2025-12-09",
+              "week_end": "2025-12-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": true,
+              "winner_manager": null,
+              "loser_manager": null,
+              "teams": [
+                {
+                  "manager_id": "blake",
+                  "team_key": "461.l.501623.t.3",
+                  "team_id": "3",
+                  "team_name": "The Tightest End",
+                  "points": 109.25,
+                  "projected": 78.05,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 109.25,
+                  "projected": 128.49,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 15,
+              "week_start": "2025-12-09",
+              "week_end": "2025-12-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "nick",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 157.5,
+                  "projected": 117.45,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 127.95,
+                  "projected": 121.36,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 15,
+              "week_start": "2025-12-09",
+              "week_end": "2025-12-15",
+              "is_playoffs": false,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "kyle",
+              "loser_manager": "rob",
+              "teams": [
+                {
+                  "manager_id": "kyle",
+                  "team_key": "461.l.501623.t.8",
+                  "team_id": "8",
+                  "team_name": "Dööfus Du Sol",
+                  "points": 171.9,
+                  "projected": 110.2,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 115.4,
+                  "projected": 118.64,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 16,
+          "matchups": [
+            {
+              "week": 16,
+              "week_start": "2025-12-16",
+              "week_end": "2025-12-22",
+              "is_playoffs": true,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "zef",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 135.85,
+                  "projected": 118.14,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 138.8,
+                  "projected": 123.19,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 16,
+              "week_start": "2025-12-16",
+              "week_end": "2025-12-22",
+              "is_playoffs": true,
+              "is_consolation": true,
+              "is_tied": false,
+              "winner_manager": "jordan",
+              "loser_manager": "joey",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 157.65,
+                  "projected": 115.59,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 75.2,
+                  "projected": 116.63,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 16,
+              "week_start": "2025-12-16",
+              "week_end": "2025-12-22",
+              "is_playoffs": true,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "frank",
+              "loser_manager": "rob",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 158.8,
+                  "projected": 112.26,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 107.95,
+                  "projected": 103.12,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 16,
+              "week_start": "2025-12-16",
+              "week_end": "2025-12-22",
+              "is_playoffs": true,
+              "is_consolation": true,
+              "is_tied": false,
+              "winner_manager": "nick",
+              "loser_manager": "jake",
+              "teams": [
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 134.55,
+                  "projected": 123.93,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 67.35,
+                  "projected": 121.23,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "week": 17,
+          "matchups": [
+            {
+              "week": 17,
+              "week_start": "2025-12-23",
+              "week_end": "2025-12-29",
+              "is_playoffs": true,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "zef",
+              "loser_manager": "rob",
+              "teams": [
+                {
+                  "manager_id": "zef",
+                  "team_key": "461.l.501623.t.1",
+                  "team_id": "1",
+                  "team_name": "Amon IR",
+                  "points": 120.45,
+                  "projected": 119.73,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "rob",
+                  "team_key": "461.l.501623.t.9",
+                  "team_id": "9",
+                  "team_name": "Our Buddy Works with a Mouse",
+                  "points": 103.25,
+                  "projected": 121.32,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "week": 17,
+              "week_start": "2025-12-23",
+              "week_end": "2025-12-29",
+              "is_playoffs": true,
+              "is_consolation": true,
+              "is_tied": false,
+              "winner_manager": "nick",
+              "loser_manager": "jordan",
+              "teams": [
+                {
+                  "manager_id": "jordan",
+                  "team_key": "461.l.501623.t.2",
+                  "team_id": "2",
+                  "team_name": "Scam Kattebo",
+                  "points": 108.65,
+                  "projected": 126.01,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "nick",
+                  "team_key": "461.l.501623.t.5",
+                  "team_id": "5",
+                  "team_name": "Foopa Franks",
+                  "points": 114.7,
+                  "projected": 111.59,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 17,
+              "week_start": "2025-12-23",
+              "week_end": "2025-12-29",
+              "is_playoffs": true,
+              "is_consolation": false,
+              "is_tied": false,
+              "winner_manager": "brian",
+              "loser_manager": "frank",
+              "teams": [
+                {
+                  "manager_id": "frank",
+                  "team_key": "461.l.501623.t.4",
+                  "team_id": "4",
+                  "team_name": "The Mayor",
+                  "points": 78.1,
+                  "projected": 118.4,
+                  "is_winner": false
+                },
+                {
+                  "manager_id": "brian",
+                  "team_key": "461.l.501623.t.6",
+                  "team_id": "6",
+                  "team_name": "Frank Black",
+                  "points": 142.2,
+                  "projected": 135.21,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "week": 17,
+              "week_start": "2025-12-23",
+              "week_end": "2025-12-29",
+              "is_playoffs": true,
+              "is_consolation": true,
+              "is_tied": false,
+              "winner_manager": "joey",
+              "loser_manager": "jake",
+              "teams": [
+                {
+                  "manager_id": "joey",
+                  "team_key": "461.l.501623.t.7",
+                  "team_id": "7",
+                  "team_name": "Bri Inch Nails",
+                  "points": 107.3,
+                  "projected": 114.54,
+                  "is_winner": true
+                },
+                {
+                  "manager_id": "jake",
+                  "team_key": "461.l.501623.t.10",
+                  "team_id": "10",
+                  "team_name": "Schindler’s Kicks",
+                  "points": 75.9,
+                  "projected": 90.72,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

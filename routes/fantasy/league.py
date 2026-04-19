@@ -1517,8 +1517,10 @@ def build_transactions(
                         tradee_tk = str(tx.get("tradee_team_key") or "")
                         ti_a = get_manager_identity(team_key=trader_tk)
                         ti_b = get_manager_identity(team_key=tradee_tk)
-                        mgr_a = ti_a["manager_id"] if ti_a else trader_tk
-                        mgr_b = ti_b["manager_id"] if ti_b else tradee_tk
+                        mgr_a      = ti_a["manager_id"]   if ti_a else trader_tk
+                        mgr_a_name = ti_a["display_name"] if ti_a else trader_tk
+                        mgr_b      = ti_b["manager_id"]   if ti_b else tradee_tk
+                        mgr_b_name = ti_b["display_name"] if ti_b else tradee_tk
 
                         a_received, b_received = [], []
                         for pw in players_raw:
@@ -1531,12 +1533,14 @@ def build_transactions(
                                 b_received.append(entry)
 
                         trades.append({
-                            "week":       _date_to_week(date_str, week_map),
-                            "date":       date_str,
-                            "manager_a":  mgr_a,
-                            "manager_b":  mgr_b,
-                            "a_received": a_received,
-                            "b_received": b_received,
+                            "week":           _date_to_week(date_str, week_map),
+                            "date":           date_str,
+                            "manager_a":      mgr_a,
+                            "manager_a_name": mgr_a_name,
+                            "manager_b":      mgr_b,
+                            "manager_b_name": mgr_b_name,
+                            "a_received":     a_received,
+                            "b_received":     b_received,
                         })
 
                     elif is_move:
@@ -1562,17 +1566,19 @@ def build_transactions(
                                 team_key = str(pi["td"].get("source_team_key") or "")
                                 break
 
-                        identity = get_manager_identity(team_key=team_key) if team_key else None
-                        manager  = identity["manager_id"] if identity else team_key
+                        identity     = get_manager_identity(team_key=team_key) if team_key else None
+                        manager      = identity["manager_id"]   if identity else team_key
+                        manager_name = identity["display_name"] if identity else team_key
 
                         if added or dropped:
                             moves.append({
-                                "week":     _date_to_week(date_str, week_map),
-                                "date":     date_str,
-                                "manager":  manager,
-                                "added":    added,
-                                "dropped":  dropped,
-                                "faab_bid": faab_int,
+                                "week":         _date_to_week(date_str, week_map),
+                                "date":         date_str,
+                                "manager":      manager,
+                                "display_name": manager_name,
+                                "added":        added,
+                                "dropped":      dropped,
+                                "faab_bid":     faab_int,
                             })
 
                 existing[yr] = {
@@ -1791,8 +1797,10 @@ def build_matchups(
                                 teams_m = list(teams_m.values())
 
                             teams_out      = []
-                            winner_manager = None
-                            loser_manager  = None
+                            winner_manager      = None
+                            winner_display_name = None
+                            loser_manager       = None
+                            loser_display_name  = None
 
                             for tw in teams_m:
                                 tm = tw.get("team", tw) if isinstance(tw, dict) else {}
@@ -1820,34 +1828,40 @@ def build_matchups(
                                 )
 
                                 identity   = get_manager_identity(team_key=tk)
-                                manager_id = identity["manager_id"] if identity else tk
+                                manager_id = identity["manager_id"]   if identity else tk
+                                disp_name  = identity["display_name"] if identity else tk
                                 is_winner  = (tk == winner_tk) and not is_tied
 
                                 if is_winner:
-                                    winner_manager = manager_id
+                                    winner_manager      = manager_id
+                                    winner_display_name = disp_name
                                 elif not is_tied:
-                                    loser_manager = manager_id
+                                    loser_manager      = manager_id
+                                    loser_display_name = disp_name
 
                                 teams_out.append({
-                                    "manager_id": manager_id,
-                                    "team_key":   tk,
-                                    "team_id":    tk.split(".t.")[-1] if ".t." in tk else None,
-                                    "team_name":  name,
-                                    "points":     round(pts,  2),
-                                    "projected":  round(proj, 2),
-                                    "is_winner":  is_winner,
+                                    "manager_id":   manager_id,
+                                    "display_name": disp_name,
+                                    "team_key":     tk,
+                                    "team_id":      tk.split(".t.")[-1] if ".t." in tk else None,
+                                    "team_name":    name,
+                                    "points":       round(pts,  2),
+                                    "projected":    round(proj, 2),
+                                    "is_winner":    is_winner,
                                 })
 
                             week_matchups.append({
-                                "week":            week_num,
-                                "week_start":      week_start,
-                                "week_end":        week_end,
-                                "is_playoffs":     is_playoffs,
-                                "is_consolation":  is_consolation,
-                                "is_tied":         is_tied,
-                                "winner_manager":  winner_manager,
-                                "loser_manager":   loser_manager,
-                                "teams":           teams_out,
+                                "week":                week_num,
+                                "week_start":          week_start,
+                                "week_end":            week_end,
+                                "is_playoffs":         is_playoffs,
+                                "is_consolation":      is_consolation,
+                                "is_tied":             is_tied,
+                                "winner_manager":      winner_manager,
+                                "winner_display_name": winner_display_name,
+                                "loser_manager":       loser_manager,
+                                "loser_display_name":  loser_display_name,
+                                "teams":               teams_out,
                             })
 
                         if week_matchups:
@@ -2204,6 +2218,187 @@ def download_drafts():
         data = _load_json(_get_data_path("drafts.json"))
         if not data:
             raise HTTPException(status_code=404, detail="drafts.json not found.")
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Data generation — rules.json
+# ===========================================================================
+
+@router.get("/data/rules/build-all")
+def build_rules(
+    skip_existing: bool = Query(default=True),
+    year: str          = Query(default=None),
+    force_clean: bool  = Query(default=False),
+):
+    """
+    Generates rules.json — league settings and scoring rules per season.
+
+    Shape per season:
+        {
+          "year": int,
+          "league_key": str,
+          "draft_type": "auction" | "snake",
+          "num_teams": int,
+          "playoff_teams": int,
+          "playoff_start_week": int,
+          "end_week": int,
+          "uses_faab": bool,
+          "waiver_type": str,
+          "trade_deadline": str,
+          "scoring_type": "head" | "rotisserie",
+          "roster_positions": [...],
+          "stat_categories": [{"stat_id", "name", "abbr", "sort_order"}]
+        }
+
+    Usage:
+        GET /league/data/rules/build-all
+        GET /league/data/rules/build-all?year=2025
+        GET /league/data/rules/build-all?force_clean=true
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_all_seasons, get_league_key_for_season, _convert_to_dict, _safe_get,
+        )
+        from services.yahoo_service import get_query
+
+        path     = _get_data_path("rules.json")
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+
+        seasons_data = get_all_seasons(force_refresh=True)
+        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
+        target_years = [year] if year else all_years
+        results      = {"success": [], "skipped": [], "failed": {}}
+
+        for yr in target_years:
+            if skip_existing and yr in existing and existing[yr]:
+                results["skipped"].append(int(yr))
+                continue
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                s = _convert_to_dict(query.get_league_settings())
+
+                # Roster positions
+                rp_raw = s.get("roster_positions", [])
+                if isinstance(rp_raw, dict):
+                    rp_raw = list(rp_raw.values())
+                roster_positions = []
+                for rp in (rp_raw or []):
+                    r = rp.get("roster_position", rp) if isinstance(rp, dict) else {}
+                    if "_extracted_data" in r:
+                        ed = r["_extracted_data"]
+                        if isinstance(ed, dict):
+                            r = {**ed, **{k: v for k, v in r.items() if k not in ("_extracted_data", "_index", "_keys")}}
+                    pos   = r.get("position") or r.get("abbreviation")
+                    count = int(r.get("count") or r.get("position_count") or 1)
+                    is_starting = bool(int(r.get("is_starting_position") or 0))
+                    if pos:
+                        roster_positions.append({
+                            "position":    pos,
+                            "count":       count,
+                            "is_starting": is_starting,
+                        })
+
+                # Stat categories
+                sc_raw = s.get("stat_categories", {})
+                if isinstance(sc_raw, dict):
+                    sc_raw = sc_raw.get("stats", []) or list(sc_raw.values())
+                stat_categories = []
+                for sc in (sc_raw or []):
+                    stat = sc.get("stat", sc) if isinstance(sc, dict) else {}
+                    if "_extracted_data" in stat:
+                        ed = stat["_extracted_data"]
+                        if isinstance(ed, dict):
+                            stat = {**ed, **{k: v for k, v in stat.items() if k not in ("_extracted_data", "_index", "_keys")}}
+                    sid  = stat.get("stat_id")
+                    name = stat.get("name") or stat.get("display_name")
+                    abbr = stat.get("abbr") or stat.get("abbreviation")
+                    enabled = bool(int(stat.get("enabled") or 0))
+                    sort    = int(stat.get("sort_order") or 1)
+                    if sid and name:
+                        stat_categories.append({
+                            "stat_id":    sid,
+                            "name":       name,
+                            "abbr":       abbr,
+                            "sort_order": sort,
+                            "enabled":    enabled,
+                        })
+
+                existing[yr] = {
+                    "year":               int(yr),
+                    "league_key":         league_key,
+                    "draft_type":         "auction" if bool(int(s.get("is_auction_draft") or 0)) else "snake",
+                    "num_teams":          int(s.get("num_teams") or s.get("max_teams") or 10),
+                    "playoff_teams":      int(s.get("num_playoff_teams") or 4),
+                    "playoff_start_week": int(s.get("playoff_start_week") or 15),
+                    "end_week":           int(s.get("end_week") or 17),
+                    "uses_faab":          bool(int(s.get("uses_faab") or 0)),
+                    "faab_budget":        int(s.get("faab_budget") or 100) if bool(int(s.get("uses_faab") or 0)) else None,
+                    "waiver_type":        s.get("waiver_type"),
+                    "waiver_rule":        s.get("waiver_rule"),
+                    "trade_deadline":     s.get("trade_end_date"),
+                    "trade_ratify_type":  s.get("trade_ratify_type"),
+                    "scoring_type":       s.get("scoring_type") or "head",
+                    "roster_positions":   roster_positions,
+                    "stat_categories":    stat_categories,
+                }
+                results["success"].append(int(yr))
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        sorted_data = _year_sort(existing)
+        _write_json(path, sorted_data)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "next_step":       "GET /league/data/rules/download to save locally",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/rules/status")
+def rules_status():
+    """Shows which years are in rules.json."""
+    try:
+        path = _get_data_path("rules.json")
+        data = _load_json(path)
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            s = data[yr]
+            summary.append({
+                "year":          int(yr),
+                "draft_type":    s.get("draft_type"),
+                "playoff_teams": s.get("playoff_teams"),
+                "uses_faab":     s.get("uses_faab"),
+                "stat_count":    len(s.get("stat_categories", [])),
+                "roster_slots":  sum(r.get("count", 1) for r in s.get("roster_positions", [])),
+            })
+        return {"total_seasons": len(data), "seasons": summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/rules/download")
+def download_rules():
+    """Returns current rules.json for local save."""
+    try:
+        data = _load_json(_get_data_path("rules.json"))
+        if not data:
+            raise HTTPException(status_code=404, detail="rules.json not found. Run build-all first.")
         return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
     except HTTPException:
         raise
