@@ -22,7 +22,9 @@ from routes.fantasy.league import router as fantasy_league_router
 from routes.fantasy.teams import router as fantasy_teams_router
 from routes.fantasy.yahoo import router as yahoo_router
 from routes.explore import router as explore_router
-from routes.basketball.league import router as basketball_league_router   # ← NEW
+from routes.basketball.league import router as basketball_league_router
+from routes.fantasy.views import router as fantasy_views_router
+app.include_router(fantasy_views_router)
 import os
 
 app = FastAPI(

@@ -1045,10 +1045,11 @@ def _build_results_for_season(yr: str, query, league_key: str) -> dict:
         pa     = float(ts.get("points_against") or 0)
 
         season_data[manager_id] = {
-            "team_key":  team_key,
-            "team_id":   team_key.split(".t.")[-1] if ".t." in team_key else None,
-            "team_name": t.get("name"),
-            "logo_url":  _extract_logo_url(t),
+            "team_key":     team_key,
+            "team_id":      team_key.split(".t.")[-1] if ".t." in team_key else None,
+            "display_name": identity["display_name"] if identity else manager_id,
+            "team_name":    t.get("name"),
+            "logo_url":     _extract_logo_url(t),
             "_rs": {
                 "wins": wins, "losses": losses, "ties": ties, "games": games,
                 "pf": pf, "pa": pa, "proj_pf": 0.0, "proj_pa": 0.0,
@@ -1473,117 +1474,121 @@ def build_transactions(
 
                 trades = []
                 moves  = []
+                item_errors = []
 
                 for item in tx_list:
-                    # Unwrap _extracted_data on the transaction itself
-                    tx     = _unwrap_yfpy_obj(item if isinstance(item, dict) else {})
-                    ttype  = tx.get("type", "")
-                    status = tx.get("status", "")
-                    if status != "successful":
-                        continue
-
-                    ts       = tx.get("timestamp")
-                    date_str = _ts_to_date(ts)
-                    faab     = tx.get("faab_bid")
                     try:
-                        faab_int = int(faab) if faab is not None else None
-                    except (TypeError, ValueError):
-                        faab_int = None
+                        # Unwrap _extracted_data on the transaction itself
+                        tx     = _unwrap_yfpy_obj(item if isinstance(item, dict) else {})
+                        ttype  = tx.get("type", "")
+                        status = tx.get("status", "")
+                        if status != "successful":
+                            continue
 
-                    # ----------------------------------------------------------
-                    # Normalize players_raw to a flat list of dicts.
-                    # YFPY shapes seen in live data:
-                    #   list  → [{"player": {...}}, ...]   (wrapped)
-                    #   list  → [{flat player with _extracted_data}, ...]
-                    #   dict  → {"0": {...}, "1": ...}     (numbered keys)
-                    # ----------------------------------------------------------
-                    players_raw = tx.get("players", [])
-                    if isinstance(players_raw, dict):
-                        if all(str(k).isdigit() for k in players_raw.keys()):
-                            players_raw = [players_raw[k]
-                                           for k in sorted(players_raw, key=lambda x: int(x))]
-                        else:
-                            players_raw = list(players_raw.values())
+                        ts       = tx.get("timestamp")
+                        date_str = _ts_to_date(ts)
+                        faab     = tx.get("faab_bid")
+                        try:
+                            faab_int = int(faab) if faab is not None else None
+                        except (TypeError, ValueError):
+                            faab_int = None
 
-                    # Normalise ttype — YFPY uses several spellings
-                    ttype_norm  = ttype.lower().replace(" ", "_")
-                    is_trade    = ttype_norm == "trade"
-                    is_move     = ttype_norm in (
-                        "add", "drop", "add/drop", "waiver", "free_agent",
-                    )
-
-                    if is_trade:
-                        trader_tk = str(tx.get("trader_team_key") or "")
-                        tradee_tk = str(tx.get("tradee_team_key") or "")
-                        ti_a = get_manager_identity(team_key=trader_tk)
-                        ti_b = get_manager_identity(team_key=tradee_tk)
-                        mgr_a      = ti_a["manager_id"]   if ti_a else trader_tk
-                        mgr_a_name = ti_a["display_name"] if ti_a else trader_tk
-                        mgr_b      = ti_b["manager_id"]   if ti_b else tradee_tk
-                        mgr_b_name = ti_b["display_name"] if ti_b else tradee_tk
-
-                        a_received, b_received = [], []
-                        for pw in players_raw:
-                            pi      = _extract_player_from_yfpy(pw)
-                            dest_tk = str(pi["td"].get("destination_team_key") or "")
-                            entry   = {"name": pi["name"], "position": pi["position"], "player_key": pi["player_key"]}
-                            if dest_tk == trader_tk:
-                                a_received.append(entry)
+                        players_raw = tx.get("players", [])
+                        if isinstance(players_raw, dict):
+                            if all(str(k).isdigit() for k in players_raw.keys()):
+                                players_raw = [players_raw[k]
+                                               for k in sorted(players_raw, key=lambda x: int(x))]
                             else:
-                                b_received.append(entry)
+                                players_raw = list(players_raw.values())
 
-                        trades.append({
-                            "week":           _date_to_week(date_str, week_map),
-                            "date":           date_str,
-                            "manager_a":      mgr_a,
-                            "manager_a_name": mgr_a_name,
-                            "manager_b":      mgr_b,
-                            "manager_b_name": mgr_b_name,
-                            "a_received":     a_received,
-                            "b_received":     b_received,
-                        })
+                        ttype_norm  = ttype.lower().replace(" ", "_")
+                        is_trade    = ttype_norm == "trade"
+                        is_move     = ttype_norm in (
+                            "add", "drop", "add/drop", "waiver", "free_agent",
+                        )
 
-                    elif is_move:
-                        added, dropped = [], []
-                        for pw in players_raw:
-                            pi        = _extract_player_from_yfpy(pw)
-                            move_type = (pi["td"].get("type") or "").lower()
-                            entry     = {"name": pi["name"], "position": pi["position"], "player_key": pi["player_key"]}
-                            if move_type == "add":
-                                added.append({**entry, "source_type": pi["td"].get("source_type", "")})
-                            elif move_type == "drop":
-                                dropped.append(entry)
-
-                        # Resolve manager: prefer destination of first add
-                        team_key = None
-                        for pw in players_raw:
-                            pi = _extract_player_from_yfpy(pw)
-                            mt = (pi["td"].get("type") or "").lower()
-                            if mt == "add":
-                                team_key = str(pi["td"].get("destination_team_key") or "")
-                                break
-                            elif mt == "drop":
-                                team_key = str(pi["td"].get("source_team_key") or "")
-                                break
-
-                        identity     = get_manager_identity(team_key=team_key) if team_key else None
-                        manager      = identity["manager_id"]   if identity else team_key
-                        manager_name = identity["display_name"] if identity else team_key
-
-                        if added or dropped:
-                            moves.append({
-                                "week":         _date_to_week(date_str, week_map),
-                                "date":         date_str,
-                                "manager":      manager,
-                                "display_name": manager_name,
-                                "added":        added,
-                                "dropped":      dropped,
-                                "faab_bid":     faab_int,
+                        if is_trade:
+                            trader_tk = str(tx.get("trader_team_key") or "")
+                            tradee_tk = str(tx.get("tradee_team_key") or "")
+                            ti_a = get_manager_identity(team_key=trader_tk)
+                            ti_b = get_manager_identity(team_key=tradee_tk)
+                            mgr_a      = ti_a["manager_id"]   if ti_a else trader_tk
+                            mgr_a_name = ti_a["display_name"] if ti_a else trader_tk
+                            mgr_b      = ti_b["manager_id"]   if ti_b else tradee_tk
+                            mgr_b_name = ti_b["display_name"] if ti_b else tradee_tk
+    
+                            a_received, b_received = [], []
+                            for pw in players_raw:
+                                pi      = _extract_player_from_yfpy(pw)
+                                dest_tk = str(pi["td"].get("destination_team_key") or "")
+                                entry   = {"name": pi["name"], "position": pi["position"], "player_key": pi["player_key"]}
+                                if dest_tk == trader_tk:
+                                    a_received.append(entry)
+                                else:
+                                    b_received.append(entry)
+    
+                            trades.append({
+                                "week":           _date_to_week(date_str, week_map),
+                                "date":           date_str,
+                                "manager_a":      mgr_a,
+                                "manager_a_name": mgr_a_name,
+                                "manager_b":      mgr_b,
+                                "manager_b_name": mgr_b_name,
+                                "a_received":     a_received,
+                                "b_received":     b_received,
                             })
+    
+                        elif is_move:
+                            added, dropped = [], []
+                            for pw in players_raw:
+                                pi        = _extract_player_from_yfpy(pw)
+                                move_type = (pi["td"].get("type") or "").lower()
+                                entry     = {"name": pi["name"], "position": pi["position"], "player_key": pi["player_key"]}
+                                if move_type == "add":
+                                    added.append({**entry, "source_type": pi["td"].get("source_type", "")})
+                                elif move_type == "drop":
+                                    dropped.append(entry)
+    
+                            # Resolve manager: prefer destination of first add
+                            team_key = None
+                            for pw in players_raw:
+                                pi = _extract_player_from_yfpy(pw)
+                                mt = (pi["td"].get("type") or "").lower()
+                                if mt == "add":
+                                    team_key = str(pi["td"].get("destination_team_key") or "")
+                                    break
+                                elif mt == "drop":
+                                    team_key = str(pi["td"].get("source_team_key") or "")
+                                    break
+    
+                            identity     = get_manager_identity(team_key=team_key) if team_key else None
+                            manager      = identity["manager_id"]   if identity else team_key
+                            manager_name = identity["display_name"] if identity else team_key
+    
+                            if added or dropped:
+                                moves.append({
+                                    "week":         _date_to_week(date_str, week_map),
+                                    "date":         date_str,
+                                    "manager":      manager,
+                                    "display_name": manager_name,
+                                    "added":        added,
+                                    "dropped":      dropped,
+                                    "faab_bid":     faab_int,
+                                })
+    
+                    except Exception as item_err:
+                        item_errors.append(str(item_err)[:120])
+                        continue
 
                 existing[yr] = {
                     "trades": sorted(trades, key=lambda x: (x.get("week") or 99, x.get("date") or "")),
                     "moves":  sorted(moves,  key=lambda x: (x.get("week") or 99, x.get("date") or "")),
+                    "_build_stats": {
+                        "total_items":  len(tx_list),
+                        "trades_found": len(trades),
+                        "moves_found":  len(moves),
+                        "item_errors":  item_errors[:10],  # first 10 errors only
+                    },
                 }
                 results["success"].append(int(yr))
             except Exception as e:

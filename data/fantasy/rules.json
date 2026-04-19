@@ -1,0 +1,5958 @@
+{
+  "total_seasons": 19,
+  "years": [
+    "2025",
+    "2024",
+    "2023",
+    "2022",
+    "2021",
+    "2020",
+    "2019",
+    "2018",
+    "2017",
+    "2016",
+    "2015",
+    "2014",
+    "2013",
+    "2012",
+    "2011",
+    "2010",
+    "2009",
+    "2008",
+    "2007"
+  ],
+  "data": {
+    "2025": {
+      "year": 2025,
+      "league_key": "461.l.501623",
+      "draft_type": "auction",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 16,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2025-11-29",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 7,
+          "is_starting": false
+        },
+        {
+          "position": "IR",
+          "count": 1,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 67,
+          "name": "4th Down Stops",
+          "abbr": "4 Dwn Stops",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2024": {
+      "year": 2024,
+      "league_key": "449.l.150305",
+      "draft_type": "auction",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 16,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2024-11-30",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 7,
+          "is_starting": false
+        },
+        {
+          "position": "IR",
+          "count": 1,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 67,
+          "name": "4th Down Stops",
+          "abbr": "4 Dwn Stops",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2023": {
+      "year": 2023,
+      "league_key": "423.l.495176",
+      "draft_type": "auction",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 16,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2023-11-25",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 7,
+          "is_starting": false
+        },
+        {
+          "position": "IR",
+          "count": 1,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 67,
+          "name": "4th Down Stops",
+          "abbr": "4 Dwn Stops",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2022": {
+      "year": 2022,
+      "league_key": "414.l.392137",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 16,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2022-11-26",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 7,
+          "is_starting": false
+        },
+        {
+          "position": "IR",
+          "count": 1,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 67,
+          "name": "4th Down Stops",
+          "abbr": "4 Dwn Stops",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2021": {
+      "year": 2021,
+      "league_key": "406.l.768183",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 16,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2021-11-27",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 7,
+          "is_starting": false
+        },
+        {
+          "position": "IR",
+          "count": 1,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2020": {
+      "year": 2020,
+      "league_key": "399.l.129567",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2020-11-28",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 7,
+          "is_starting": false
+        },
+        {
+          "position": "IR",
+          "count": 2,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2019": {
+      "year": 2019,
+      "league_key": "390.l.322665",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2019-11-23",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 5,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2018": {
+      "year": 2018,
+      "league_key": "380.l.217545",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2018-11-17",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 5,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2017": {
+      "year": 2017,
+      "league_key": "371.l.472717",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2017-11-11",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2016": {
+      "year": 2016,
+      "league_key": "359.l.229979",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": "2016-11-19",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Receiving Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Receiving Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2015": {
+      "year": 2015,
+      "league_key": "348.l.125651",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": true,
+      "faab_budget": 100,
+      "waiver_type": "FWR",
+      "waiver_rule": "continuous",
+      "trade_deadline": null,
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Reception Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Reception Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 82,
+          "name": "Extra Point Returned",
+          "abbr": "XPR",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2014": {
+      "year": 2014,
+      "league_key": "331.l.37674",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": false,
+      "faab_budget": null,
+      "waiver_type": "R",
+      "waiver_rule": "all",
+      "trade_deadline": null,
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 8,
+          "name": "Rushing Attempts",
+          "abbr": "Att",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Reception Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Reception Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 78,
+          "name": "Targets",
+          "abbr": "Targets",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 30,
+          "name": "Point After Attempt Missed",
+          "abbr": "Miss",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2013": {
+      "year": 2013,
+      "league_key": "314.l.42504",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": false,
+      "faab_budget": null,
+      "waiver_type": "R",
+      "waiver_rule": "all",
+      "trade_deadline": "2013-11-15",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Reception Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Reception Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 30,
+          "name": "Point After Attempt Missed",
+          "abbr": "Miss",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2012": {
+      "year": 2012,
+      "league_key": "273.l.159744",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": false,
+      "faab_budget": null,
+      "waiver_type": "R",
+      "waiver_rule": "all",
+      "trade_deadline": "2012-11-16",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R/T",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Reception Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Reception Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 30,
+          "name": "Point After Attempt Missed",
+          "abbr": "Miss",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2011": {
+      "year": 2011,
+      "league_key": "257.l.208499",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": false,
+      "faab_budget": null,
+      "waiver_type": "R",
+      "waiver_rule": "all",
+      "trade_deadline": "2011-11-18",
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Reception Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Reception Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 30,
+          "name": "Point After Attempt Missed",
+          "abbr": "Miss",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2010": {
+      "year": 2010,
+      "league_key": "242.l.162179",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": false,
+      "faab_budget": null,
+      "waiver_type": "R",
+      "waiver_rule": "all",
+      "trade_deadline": null,
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Reception Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Reception Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 30,
+          "name": "Point After Attempt Missed",
+          "abbr": "Miss",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2009": {
+      "year": 2009,
+      "league_key": "222.l.727137",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": false,
+      "faab_budget": null,
+      "waiver_type": "R",
+      "waiver_rule": "all",
+      "trade_deadline": null,
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "W/R",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Reception Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Reception Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 30,
+          "name": "Point After Attempt Missed",
+          "abbr": "Miss",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2008": {
+      "year": 2008,
+      "league_key": "199.l.394479",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": false,
+      "faab_budget": null,
+      "waiver_type": "R",
+      "waiver_rule": "all",
+      "trade_deadline": null,
+      "trade_ratify_type": "commish",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 3,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Reception Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Reception Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 30,
+          "name": "Point After Attempt Missed",
+          "abbr": "Miss",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    },
+    "2007": {
+      "year": 2007,
+      "league_key": "175.l.492325",
+      "draft_type": "snake",
+      "num_teams": 10,
+      "playoff_teams": 4,
+      "playoff_start_week": 15,
+      "end_week": 17,
+      "uses_faab": false,
+      "faab_budget": null,
+      "waiver_type": "R",
+      "waiver_rule": "all",
+      "trade_deadline": null,
+      "trade_ratify_type": "vote",
+      "scoring_type": "head",
+      "roster_positions": [
+        {
+          "position": "QB",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "WR",
+          "count": 3,
+          "is_starting": true
+        },
+        {
+          "position": "RB",
+          "count": 2,
+          "is_starting": true
+        },
+        {
+          "position": "TE",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "K",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "DEF",
+          "count": 1,
+          "is_starting": true
+        },
+        {
+          "position": "BN",
+          "count": 6,
+          "is_starting": false
+        }
+      ],
+      "stat_categories": [
+        {
+          "stat_id": 2,
+          "name": "Completions",
+          "abbr": "Comp",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 4,
+          "name": "Passing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 5,
+          "name": "Passing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 6,
+          "name": "Interceptions",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 7,
+          "name": "Sacks",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 9,
+          "name": "Rushing Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 10,
+          "name": "Rushing Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 11,
+          "name": "Receptions",
+          "abbr": "Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 12,
+          "name": "Reception Yards",
+          "abbr": "Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 13,
+          "name": "Reception Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 15,
+          "name": "Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 16,
+          "name": "2-Point Conversions",
+          "abbr": "2-PT",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 17,
+          "name": "Fumbles",
+          "abbr": "Tot",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 18,
+          "name": "Fumbles Lost",
+          "abbr": "Lost",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 57,
+          "name": "Offensive Fumble Return TD",
+          "abbr": "Off Fumb TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 19,
+          "name": "Field Goals 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 20,
+          "name": "Field Goals 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 21,
+          "name": "Field Goals 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 22,
+          "name": "Field Goals 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 23,
+          "name": "Field Goals 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 24,
+          "name": "Field Goals Missed 0-19 Yards",
+          "abbr": "0-19 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 25,
+          "name": "Field Goals Missed 20-29 Yards",
+          "abbr": "20-29 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 26,
+          "name": "Field Goals Missed 30-39 Yards",
+          "abbr": "30-39 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 27,
+          "name": "Field Goals Missed 40-49 Yards",
+          "abbr": "40-49 Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 28,
+          "name": "Field Goals Missed 50+ Yards",
+          "abbr": "50+ Yds",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 29,
+          "name": "Point After Attempt Made",
+          "abbr": "Made",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 30,
+          "name": "Point After Attempt Missed",
+          "abbr": "Miss",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 31,
+          "name": "Points Allowed",
+          "abbr": "Pts vs.",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 32,
+          "name": "Sack",
+          "abbr": "Sack",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 33,
+          "name": "Interception",
+          "abbr": "Int",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 34,
+          "name": "Fumble Recovery",
+          "abbr": "Fum Rec",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 35,
+          "name": "Touchdown",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 36,
+          "name": "Safety",
+          "abbr": "Safe",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 37,
+          "name": "Block Kick",
+          "abbr": "Blk Kick",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 49,
+          "name": "Kickoff and Punt Return Touchdowns",
+          "abbr": "TD",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 50,
+          "name": "Points Allowed 0 points",
+          "abbr": "0 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 51,
+          "name": "Points Allowed 1-6 points",
+          "abbr": "1-6 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 52,
+          "name": "Points Allowed 7-13 points",
+          "abbr": "7-13 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 53,
+          "name": "Points Allowed 14-20 points",
+          "abbr": "14-20 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 54,
+          "name": "Points Allowed 21-27 points",
+          "abbr": "21-27 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 55,
+          "name": "Points Allowed 28-34 points",
+          "abbr": "28-34 Pts",
+          "sort_order": 1,
+          "enabled": true
+        },
+        {
+          "stat_id": 56,
+          "name": "Points Allowed 35+ points",
+          "abbr": "35+ Pts",
+          "sort_order": 1,
+          "enabled": true
+        }
+      ]
+    }
+  }
+}
