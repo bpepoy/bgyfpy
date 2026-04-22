@@ -28,6 +28,7 @@
         "brian": {
           "team_key": "461.l.501623.t.6",
           "team_id": "6",
+          "display_name": "Brian",
           "team_name": "Frank Black",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/42f73d0c5897324f09f698616129be7f2963f1d6b63bbe13f02b784470dad449.png",
           "regular_season": {
@@ -76,6 +77,7 @@
         "frank": {
           "team_key": "461.l.501623.t.4",
           "team_id": "4",
+          "display_name": "Frank",
           "team_name": "The Mayor",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/b4eb9fa110de555c90f8770262726a7a94051bbee319474d84bd1c7c2d00c970.jpg",
           "regular_season": {
@@ -124,6 +126,7 @@
         "zef": {
           "team_key": "461.l.501623.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "Amon IR",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/ab0a0dc4a4549545c438ddf307656907028d5539890598d48309f40727c26ae9.png",
           "regular_season": {
@@ -172,6 +175,7 @@
         "rob": {
           "team_key": "461.l.501623.t.9",
           "team_id": "9",
+          "display_name": "Rob",
           "team_name": "Our Buddy Works with a Mouse",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/308fe8b04ff3ccad56183737d02c32cb66129e9ec9aa34e41994c97cefb35370.jpg",
           "regular_season": {
@@ -220,6 +224,7 @@
         "nick": {
           "team_key": "461.l.501623.t.5",
           "team_id": "5",
+          "display_name": "Nick",
           "team_name": "Foopa Franks",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/241f4adcde750222f96e4634284da46fd4e05f91022e10fde2b6c4fa4317887a.jpg",
           "regular_season": {
@@ -250,6 +255,7 @@
         "jordan": {
           "team_key": "461.l.501623.t.2",
           "team_id": "2",
+          "display_name": "Jordan",
           "team_name": "Scam Kattebo",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/1b11aaa55bd2d0a89f9e7cd7d322555a1d5096739cb4778c3d55f0aff2357c97.jpg",
           "regular_season": {
@@ -280,6 +286,7 @@
         "joey": {
           "team_key": "461.l.501623.t.7",
           "team_id": "7",
+          "display_name": "Joey",
           "team_name": "Bri Inch Nails",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/4c864e3c3d83aed33f7717abd2e23b534295d65d089cf02d44fc503238fc2e6c.jpg",
           "regular_season": {
@@ -310,6 +317,7 @@
         "jake": {
           "team_key": "461.l.501623.t.10",
           "team_id": "10",
+          "display_name": "Jake",
           "team_name": "Schindler’s Kicks",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9f23c96094ddb61587bd7f94efae8846ccbbcbd85323d699b434394b3b288cac.jpg",
           "regular_season": {
@@ -340,6 +348,7 @@
         "kyle": {
           "team_key": "461.l.501623.t.8",
           "team_id": "8",
+          "display_name": "Kyle",
           "team_name": "Dööfus Du Sol",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/78077643a788b8cf7c4434008b5036189c6ed24136544f227efcb85c7ada1e7e.jpg",
           "regular_season": {
@@ -370,6 +379,7 @@
         "blake": {
           "team_key": "461.l.501623.t.3",
           "team_id": "3",
+          "display_name": "Blake",
           "team_name": "The Tightest End",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/fbc4c7a28b49ef946520e5e91de0934998749f12cb5af3d732d9d128e805be59.png",
           "regular_season": {
@@ -405,6 +415,7 @@
         "frank": {
           "team_key": "449.l.150305.t.4",
           "team_id": "4",
+          "display_name": "Frank",
           "team_name": "Fupa Dončić",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/de134eb65a9ffc7b1d39865dd926b8853c989d7c5231d9b017157ad157640023.jpg",
           "regular_season": {
@@ -453,6 +464,7 @@
         "joey": {
           "team_key": "449.l.150305.t.7",
           "team_id": "7",
+          "display_name": "Joey",
           "team_name": "Blake of Tarth",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/a7acf49c3ab1eab7dd09edd87cf439d1926f893a57e4a8c5c585718143a67051.jpg",
           "regular_season": {
@@ -501,6 +513,7 @@
         "brian": {
           "team_key": "449.l.150305.t.6",
           "team_id": "6",
+          "display_name": "Brian",
           "team_name": "Nostrilly Assaulted",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/b5645116388ae98ffaa4972cff21e7f644935ee2b20f03daf03b19f47ef75ea3.jpg",
           "regular_season": {
@@ -549,6 +562,7 @@
         "nick": {
           "team_key": "449.l.150305.t.5",
           "team_id": "5",
+          "display_name": "Nick",
           "team_name": "Something About Maren",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/a9f73b715b434d9a4ccfcf35469150e2c2ed6189015b8b44f45946b658a66a99.jpg",
           "regular_season": {
@@ -597,6 +611,7 @@
         "kyle": {
           "team_key": "449.l.150305.t.8",
           "team_id": "8",
+          "display_name": "Kyle",
           "team_name": "Male Gadot",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/3a0c3817705d1ea917bda2a1dbaa23d47fb317c98d83d0597b137c870621ff4e.jpg",
           "regular_season": {
@@ -627,6 +642,7 @@
         "zef": {
           "team_key": "449.l.150305.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "Z DIDDY",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/555f03d2be89e8522b27ba0f95fec8d8fe67bf743dd2fe2baa62fa4b05050ac1.jpg",
           "regular_season": {
@@ -657,6 +673,7 @@
         "jake": {
           "team_key": "449.l.150305.t.10",
           "team_id": "10",
+          "display_name": "Jake",
           "team_name": "Jäçøb",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/98d2d4729c146ac337c45dd1735aa0f1816f6d5f1ce0f9837830667e399548f5.jpg",
           "regular_season": {
@@ -687,6 +704,7 @@
         "blake": {
           "team_key": "449.l.150305.t.3",
           "team_id": "3",
+          "display_name": "Blake",
           "team_name": "Cranker Crankfield",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/00fb7a2895234e9006b07483064b7b61e686089fa5bd5e3d530b513ab07cf08b.jpg",
           "regular_season": {
@@ -717,6 +735,7 @@
         "rob": {
           "team_key": "449.l.150305.t.9",
           "team_id": "9",
+          "display_name": "Rob",
           "team_name": "Robert California",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/179b0b7ec4e2037e80b42f45d8ccfeb517150d81eaa5a4d3141decdb7220af7c.jpg",
           "regular_season": {
@@ -747,6 +766,7 @@
         "jordan": {
           "team_key": "449.l.150305.t.2",
           "team_id": "2",
+          "display_name": "Jordan",
           "team_name": "Scam Blakers",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/ab13f9d139887a86d11b8a179f1e401d30936ce5f3a94d2d3bd8496b8ee3a37f.jpg",
           "regular_season": {
@@ -782,6 +802,7 @@
         "nick": {
           "team_key": "423.l.495176.t.5",
           "team_id": "5",
+          "display_name": "Nick",
           "team_name": "The Equalizer",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/8d9b1c27fc75cd706eca8d405628b1c9888ce4984836df775a8d02ca3cde64bf.jpg",
           "regular_season": {
@@ -830,6 +851,7 @@
         "brian": {
           "team_key": "423.l.495176.t.6",
           "team_id": "6",
+          "display_name": "Brian",
           "team_name": "Shark Frank",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/81ed4906cf1e69831beaf4e2bb8f9aa5673b4dc223662462021cbedd435b0c56.png",
           "regular_season": {
@@ -878,6 +900,7 @@
         "zef": {
           "team_key": "423.l.495176.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "The Uncut Gem",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/4075ca4eeb60bdb48d153ab9d1e621d68f583f2725c8b0fabbb70a855cc9f1ce.jpg",
           "regular_season": {
@@ -926,6 +949,7 @@
         "kyle": {
           "team_key": "423.l.495176.t.8",
           "team_id": "8",
+          "display_name": "Kyle",
           "team_name": "Brandon Cringe",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/2731bb2642e8b8a46575b656975e1723a065fc8bc01bc34ac846ffdff97b3773.png",
           "regular_season": {
@@ -974,6 +998,7 @@
         "blake": {
           "team_key": "423.l.495176.t.3",
           "team_id": "3",
+          "display_name": "Blake",
           "team_name": "Team Bean",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/83ea772a7cf19fad57431af1029ab80de42f0752f476a74d2edb7c2005a7d8e6.png",
           "regular_season": {
@@ -1004,6 +1029,7 @@
         "jake": {
           "team_key": "423.l.495176.t.9",
           "team_id": "9",
+          "display_name": "Jake",
           "team_name": "Ethically Non-Monogamous",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/9f8dd8d7926de68c75e6f525b8bd5ffc8d28c6ebc9b73ed10176f84dd42db339.jpg",
           "regular_season": {
@@ -1034,6 +1060,7 @@
         "jordan": {
           "team_key": "423.l.495176.t.2",
           "team_id": "2",
+          "display_name": "Jordan",
           "team_name": "Blank Space",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/87b6df89ba08ca560379702f7b0818d1cccbf303b9d9033adad297a2e0e14f6f.jpg",
           "regular_season": {
@@ -1064,6 +1091,7 @@
         "frank": {
           "team_key": "423.l.495176.t.4",
           "team_id": "4",
+          "display_name": "Frank",
           "team_name": "DreamBoyBondage",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/faeb4468303301bff110b61eef205da4876aba65d733ddad96c90d91ba1646f3.png",
           "regular_season": {
@@ -1094,6 +1122,7 @@
         "rob": {
           "team_key": "423.l.495176.t.10",
           "team_id": "10",
+          "display_name": "Rob",
           "team_name": "ROBBENHEIMER",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/85ea6790c195d42aa0c5c956388a0963e8678157db27ab623faae12f9617e17c.jpg",
           "regular_season": {
@@ -1124,6 +1153,7 @@
         "joey": {
           "team_key": "423.l.495176.t.7",
           "team_id": "7",
+          "display_name": "Joey",
           "team_name": "Joeh Biden",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/a04405ddf37f468d94cd1935a7cd854d317487990fafcf1a4afd34e72555baf5.png",
           "regular_season": {
@@ -1159,6 +1189,7 @@
         "brian": {
           "team_key": "414.l.392137.t.6",
           "team_id": "6",
+          "display_name": "Brian",
           "team_name": "The JOEHst of Kyiv",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/a454f289f2c477feababfbc9fb93c8735afcb9b5cb796ff7a512b153b43bf554.jpg",
           "regular_season": {
@@ -1207,6 +1238,7 @@
         "jordan": {
           "team_key": "414.l.392137.t.2",
           "team_id": "2",
+          "display_name": "Jordan",
           "team_name": "Scam Akers",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/6e17b430b336cd998d93fadbcb0e3721ea4f9ba1107bbe18bb556d957c799089.jpg",
           "regular_season": {
@@ -1255,6 +1287,7 @@
         "zef": {
           "team_key": "414.l.392137.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "GRIMBOEH",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/4870266ad5b135badda47b7f4ad36cbc8a9fa2b1c14b4d4628e59024df9a6ce7.jpg",
           "regular_season": {
@@ -1303,6 +1336,7 @@
         "nick": {
           "team_key": "414.l.392137.t.5",
           "team_id": "5",
+          "display_name": "Nick",
           "team_name": "Reek of the Red Bedding",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/eff51618b482967a33b2baac850fdddf3116f651936204e9e886a88c13e643ae.jpg",
           "regular_season": {
@@ -1351,6 +1385,7 @@
         "joey": {
           "team_key": "414.l.392137.t.7",
           "team_id": "7",
+          "display_name": "Joey",
           "team_name": "Joeh'po Chico",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/c5f8c52db274e7e3f1d227eb95bb68d0c354675f6d7c6ffe8ba5ba90513d4f14.jpg",
           "regular_season": {
@@ -1381,6 +1416,7 @@
         "kyle": {
           "team_key": "414.l.392137.t.8",
           "team_id": "8",
+          "display_name": "Kyle",
           "team_name": "Grope John Paul II",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/f24ec47f73fdb16e53df435b2feec76420698183625293721839c403c9c84f90.jpg",
           "regular_season": {
@@ -1411,6 +1447,7 @@
         "rob": {
           "team_key": "414.l.392137.t.10",
           "team_id": "10",
+          "display_name": "Rob",
           "team_name": "FLEECED Haul",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/ac11a0602320437ab7242aedd7c907ff50ca2a1227d0838d088426f94de72063.jpg",
           "regular_season": {
@@ -1441,6 +1478,7 @@
         "blake": {
           "team_key": "414.l.392137.t.3",
           "team_id": "3",
+          "display_name": "Blake",
           "team_name": "CaptainStayFly",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/6d9c56454a42bca2a4cccf7990ec73c02173e9652a6a8408067d50b1754945af.jpg",
           "regular_season": {
@@ -1471,6 +1509,7 @@
         "jake": {
           "team_key": "414.l.392137.t.9",
           "team_id": "9",
+          "display_name": "Jake",
           "team_name": "Jumpin JAHOEshaphat!",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d5a6284e6378e5ab70be3181de0444b0998115d06394e846a6e5a2491d2b4372.jpg",
           "regular_season": {
@@ -1501,6 +1540,7 @@
         "frank": {
           "team_key": "414.l.392137.t.4",
           "team_id": "4",
+          "display_name": "Frank",
           "team_name": "Ass",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/f75b4ad041f0c0f709753bf630262528aa5a4b8643937cd8aac2ae187ee9ea53.jpg",
           "regular_season": {
@@ -1536,6 +1576,7 @@
         "frank": {
           "team_key": "406.l.768183.t.4",
           "team_id": "4",
+          "display_name": "Frank",
           "team_name": "Avocado JOEHst",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/2a34ccd66622067b962092be831b1c22457591fcf2d09142c99d55fcf49f468a.jpg",
           "regular_season": {
@@ -1584,6 +1625,7 @@
         "joey": {
           "team_key": "406.l.768183.t.7",
           "team_id": "7",
+          "display_name": "Joey",
           "team_name": "Joehkashi-69",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/0b88bbb8ba43e5781331f8e4f875518d249448cbfd7d68ab6d44a70df7ae8e8b.jpg",
           "regular_season": {
@@ -1632,6 +1674,7 @@
         "rob": {
           "team_key": "406.l.768183.t.10",
           "team_id": "10",
+          "display_name": "Rob",
           "team_name": "JockDoge Willink",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/11f554b3fefc6221d895b87ac90c907e3bfd74714e9f81f2de860eb00e8e7df0.png",
           "regular_season": {
@@ -1680,6 +1723,7 @@
         "jake": {
           "team_key": "406.l.768183.t.9",
           "team_id": "9",
+          "display_name": "Jake",
           "team_name": "Hedgerrin James",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/6c6e9bd5fc42a78212f0d23f19fc249d33b248f237e25a3de131d4689ca4d7bd.png",
           "regular_season": {
@@ -1728,6 +1772,7 @@
         "blake": {
           "team_key": "406.l.768183.t.3",
           "team_id": "3",
+          "display_name": "Blake",
           "team_name": "BJ The Realist",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/6d9c56454a42bca2a4cccf7990ec73c02173e9652a6a8408067d50b1754945af.jpg",
           "regular_season": {
@@ -1758,6 +1803,7 @@
         "brian": {
           "team_key": "406.l.768183.t.6",
           "team_id": "6",
+          "display_name": "Brian",
           "team_name": "Frank's MDMA Crunk Time Mind",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/c9afd9a07e67c2b5cd35ae07377be3589daac7e0769e977d4522ea4db225a9d3.png",
           "regular_season": {
@@ -1788,6 +1834,7 @@
         "jordan": {
           "team_key": "406.l.768183.t.2",
           "team_id": "2",
+          "display_name": "Jordan",
           "team_name": "Scam Newton",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/cbc3229ebda66533c9229c92fb85ba0556b01454c7457a1dfe12b2041d790875.png",
           "regular_season": {
@@ -1818,6 +1865,7 @@
         "nick": {
           "team_key": "406.l.768183.t.5",
           "team_id": "5",
+          "display_name": "Nick",
           "team_name": "Handcuffing Szn",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56480299891_8e43da.jpg",
           "regular_season": {
@@ -1848,6 +1896,7 @@
         "kyle": {
           "team_key": "406.l.768183.t.8",
           "team_id": "8",
+          "display_name": "Kyle",
           "team_name": "Joesonville Joeguars",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/b6fe34447c292908ecb1d96c80ae2776e242ee3195944ff14553c7a2da4489ba.jpg",
           "regular_season": {
@@ -1878,6 +1927,7 @@
         "zef": {
           "team_key": "406.l.768183.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "BDUSSY POOL PARTY",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/06a7fc6e287b4e4a990ee6a0f6067b38ad22af27d94eae9082a580d7b696a080.png",
           "regular_season": {
@@ -1913,6 +1963,7 @@
         "jordan": {
           "team_key": "399.l.129567.t.2",
           "team_id": "2",
+          "display_name": "Jordan",
           "team_name": "Scam Newton",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/cbc3229ebda66533c9229c92fb85ba0556b01454c7457a1dfe12b2041d790875.png",
           "regular_season": {
@@ -1961,6 +2012,7 @@
         "kyle": {
           "team_key": "399.l.129567.t.8",
           "team_id": "8",
+          "display_name": "Kyle",
           "team_name": "Joehciopath",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/092143576771448126abec6e54671bd940b2c61c61891b66e8d7096560eebef6.png",
           "regular_season": {
@@ -2009,6 +2061,7 @@
         "zef": {
           "team_key": "399.l.129567.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "GOD HATES FIGS",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/3fc3b071364d896f4fb5afd638fb192cf752e5a433c4e351d0106399e8f53584.jpg",
           "regular_season": {
@@ -2057,6 +2110,7 @@
         "nick": {
           "team_key": "399.l.129567.t.5",
           "team_id": "5",
+          "display_name": "Nick",
           "team_name": "Fupa Frank",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/241f4adcde750222f96e4634284da46fd4e05f91022e10fde2b6c4fa4317887a.jpg",
           "regular_season": {
@@ -2105,6 +2159,7 @@
         "blake": {
           "team_key": "399.l.129567.t.3",
           "team_id": "3",
+          "display_name": "Blake",
           "team_name": "Blaker Blakefield",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56473060215_de38e7.jpg",
           "regular_season": {
@@ -2135,6 +2190,7 @@
         "joey": {
           "team_key": "399.l.129567.t.7",
           "team_id": "7",
+          "display_name": "Joey",
           "team_name": "Joehkashi-69",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/0b88bbb8ba43e5781331f8e4f875518d249448cbfd7d68ab6d44a70df7ae8e8b.jpg",
           "regular_season": {
@@ -2165,6 +2221,7 @@
         "jake": {
           "team_key": "399.l.129567.t.9",
           "team_id": "9",
+          "display_name": "Jake",
           "team_name": "Steezus Christ",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/6905fbf9279f0633f3b976c597bece8db925466801c86506adafae38cd3e47a3.png",
           "regular_season": {
@@ -2195,6 +2252,7 @@
         "frank": {
           "team_key": "399.l.129567.t.4",
           "team_id": "4",
+          "display_name": "Frank",
           "team_name": "Old Dick Nick",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/1abf6d6bc917df41ea2e8df0e17f15e1ec30ba42a00fbbb8d51da322d0ec55a7.png",
           "regular_season": {
@@ -2225,6 +2283,7 @@
         "rob": {
           "team_key": "399.l.129567.t.10",
           "team_id": "10",
+          "display_name": "Rob",
           "team_name": "Footfarts",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/d6895866391bb19b2ccb9af6f34d0c95d7c56415419bb1e15daab8e7f9d9c275.jpg",
           "regular_season": {
@@ -2255,6 +2314,7 @@
         "brian": {
           "team_key": "399.l.129567.t.6",
           "team_id": "6",
+          "display_name": "Brian",
           "team_name": "FromSetback2Setback",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/5f2d64b0db4f6193d56d74651d3650a75302d1ebd753dcf5f9e90700e1053a69.jpg",
           "regular_season": {
@@ -2290,6 +2350,7 @@
         "blake": {
           "team_key": "390.l.322665.t.9",
           "team_id": "9",
+          "display_name": "Blake",
           "team_name": "Blaker Blakefield",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56473060215_de38e7.jpg",
           "regular_season": {
@@ -2338,6 +2399,7 @@
         "nick": {
           "team_key": "390.l.322665.t.5",
           "team_id": "5",
+          "display_name": "Nick",
           "team_name": "Nick Chugg",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56480299891_8e43da.jpg",
           "regular_season": {
@@ -2386,6 +2448,7 @@
         "joey": {
           "team_key": "390.l.322665.t.10",
           "team_id": "10",
+          "display_name": "Joey",
           "team_name": "Theon Greyjoy",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56486274691_9d83a2.jpg",
           "regular_season": {
@@ -2434,6 +2497,7 @@
         "zef": {
           "team_key": "390.l.322665.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "SOLE SEARCHING",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56511047423_ddcc22.jpg",
           "regular_season": {
@@ -2482,6 +2546,7 @@
         "kyle": {
           "team_key": "390.l.322665.t.7",
           "team_id": "7",
+          "display_name": "Kyle",
           "team_name": "Thirsty For Kirstie",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56477655171_4ad548.jpg",
           "regular_season": {
@@ -2512,6 +2577,7 @@
         "jake": {
           "team_key": "390.l.322665.t.3",
           "team_id": "3",
+          "display_name": "Jake",
           "team_name": "TJ Mockenson",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56477537451_4d73c7.jpg",
           "regular_season": {
@@ -2542,6 +2608,7 @@
         "frank": {
           "team_key": "390.l.322665.t.6",
           "team_id": "6",
+          "display_name": "Frank",
           "team_name": "Disco Inferno",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56478628745_cf5b80.jpg",
           "regular_season": {
@@ -2572,6 +2639,7 @@
         "jordan": {
           "team_key": "390.l.322665.t.8",
           "team_id": "8",
+          "display_name": "Jordan",
           "team_name": "Art Vandelay",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56482478931_e72157.jpg",
           "regular_season": {
@@ -2602,6 +2670,7 @@
         "brian": {
           "team_key": "390.l.322665.t.4",
           "team_id": "4",
+          "display_name": "Brian",
           "team_name": "Robbie White Clawson",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_2_b.png",
           "regular_season": {
@@ -2632,6 +2701,7 @@
         "rob": {
           "team_key": "390.l.322665.t.2",
           "team_id": "2",
+          "display_name": "Rob",
           "team_name": "Zeffrey Epstein",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/56506228723_e408ec.jpg",
           "regular_season": {
@@ -2667,6 +2737,7 @@
         "rob": {
           "team_key": "380.l.217545.t.2",
           "team_id": "2",
+          "display_name": "Rob",
           "team_name": "Sieg Kyle!",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/28626356667_ee7e11.jpg",
           "regular_season": {
@@ -2715,6 +2786,7 @@
         "kyle": {
           "team_key": "380.l.217545.t.7",
           "team_id": "7",
+          "display_name": "Kyle",
           "team_name": "MJDs SleepyTimeGrind",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/42682113530_f23792.jpg",
           "regular_season": {
@@ -2763,6 +2835,7 @@
         "blake": {
           "team_key": "380.l.217545.t.9",
           "team_id": "9",
+          "display_name": "Blake",
           "team_name": "Hue Jassman",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/29882506069_8ff5cb.jpg",
           "regular_season": {
@@ -2811,6 +2884,7 @@
         "zef": {
           "team_key": "380.l.217545.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "RIM JOB POOTER",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/44482975661_d8d2bc.jpg",
           "regular_season": {
@@ -2859,6 +2933,7 @@
         "brian": {
           "team_key": "380.l.217545.t.4",
           "team_id": "4",
+          "display_name": "Brian",
           "team_name": "Get Better Gang",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/31198648868_f23157.jpg",
           "regular_season": {
@@ -2889,6 +2964,7 @@
         "joey": {
           "team_key": "380.l.217545.t.10",
           "team_id": "10",
+          "display_name": "Joey",
           "team_name": "The Night King",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/39593121303_5a8e78.jpg",
           "regular_season": {
@@ -2919,6 +2995,7 @@
         "frank": {
           "team_key": "380.l.217545.t.6",
           "team_id": "6",
+          "display_name": "Frank",
           "team_name": "PAWGhunter69",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/43526383185_74d87e.jpg",
           "regular_season": {
@@ -2949,6 +3026,7 @@
         "sam": {
           "team_key": "380.l.217545.t.8",
           "team_id": "8",
+          "display_name": "Sam",
           "team_name": "Call Me By Robs Name",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/44228314961_bf86d7.jpg",
           "regular_season": {
@@ -2979,6 +3057,7 @@
         "nick": {
           "team_key": "380.l.217545.t.5",
           "team_id": "5",
+          "display_name": "Nick",
           "team_name": "The Crow",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/44481440825_3e6db5.jpg",
           "regular_season": {
@@ -3009,6 +3088,7 @@
         "jake": {
           "team_key": "380.l.217545.t.3",
           "team_id": "3",
+          "display_name": "Jake",
           "team_name": "LastSeasonOfChrist",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/44556562341_b5f903.jpg",
           "regular_season": {
@@ -3044,6 +3124,7 @@
         "zef": {
           "team_key": "371.l.472717.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "Titchell Boobtitsky",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/36592607600_a0ff04.jpg",
           "regular_season": {
@@ -3092,6 +3173,7 @@
         "blake": {
           "team_key": "371.l.472717.t.10",
           "team_id": "10",
+          "display_name": "Blake",
           "team_name": "Supposingly",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25999287319_dcd3c0.jpg",
           "regular_season": {
@@ -3140,6 +3222,7 @@
         "kyle": {
           "team_key": "371.l.472717.t.6",
           "team_id": "6",
+          "display_name": "Kyle",
           "team_name": "Lauren Said I Can",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/36471658483_653e79.jpg",
           "regular_season": {
@@ -3188,6 +3271,7 @@
         "joey": {
           "team_key": "371.l.472717.t.3",
           "team_id": "3",
+          "display_name": "Joey",
           "team_name": "Young and Reckless",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/23569280767_4271d8.jpg",
           "regular_season": {
@@ -3236,6 +3320,7 @@
         "frank": {
           "team_key": "371.l.472717.t.2",
           "team_id": "2",
+          "display_name": "Frank",
           "team_name": "FRANKsystems",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_4.png",
           "regular_season": {
@@ -3266,6 +3351,7 @@
         "jake": {
           "team_key": "371.l.472717.t.5",
           "team_id": "5",
+          "display_name": "Jake",
           "team_name": "Dieter von Khunth",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/36963882951_b6a449.jpg",
           "regular_season": {
@@ -3296,6 +3382,7 @@
         "rob": {
           "team_key": "371.l.472717.t.8",
           "team_id": "8",
+          "display_name": "Rob",
           "team_name": "daORBZ",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/36808811294_74be4f.jpg",
           "regular_season": {
@@ -3326,6 +3413,7 @@
         "sam": {
           "team_key": "371.l.472717.t.4",
           "team_id": "4",
+          "display_name": "Sam",
           "team_name": "Meg Said I Can't",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/35942949684_e8b95a.jpg",
           "regular_season": {
@@ -3356,6 +3444,7 @@
         "nick": {
           "team_key": "371.l.472717.t.9",
           "team_id": "9",
+          "display_name": "Nick",
           "team_name": "Don Juan Donato",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25182471932_375964875e.jpg",
           "regular_season": {
@@ -3386,6 +3475,7 @@
         "brian": {
           "team_key": "371.l.472717.t.7",
           "team_id": "7",
+          "display_name": "Brian",
           "team_name": "Dino's Chinos",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/23553078287_de6cc6.jpg",
           "regular_season": {
@@ -3421,6 +3511,7 @@
         "frank": {
           "team_key": "359.l.229979.t.2",
           "team_id": "2",
+          "display_name": "Frank",
           "team_name": "Team Alpha Male",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_4.png",
           "regular_season": {
@@ -3469,6 +3560,7 @@
         "sam": {
           "team_key": "359.l.229979.t.4",
           "team_id": "4",
+          "display_name": "Sam",
           "team_name": "Kylo Jenner",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/29286804646_d8dfe40149.jpg",
           "regular_season": {
@@ -3517,6 +3609,7 @@
         "zef": {
           "team_key": "359.l.229979.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "~~SerialVapist~~",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_3.png",
           "regular_season": {
@@ -3565,6 +3658,7 @@
         "rob": {
           "team_key": "359.l.229979.t.8",
           "team_id": "8",
+          "display_name": "Rob",
           "team_name": "Snillie Wead",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
           "regular_season": {
@@ -3613,6 +3707,7 @@
         "joey": {
           "team_key": "359.l.229979.t.3",
           "team_id": "3",
+          "display_name": "Joey",
           "team_name": "Deauxma",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_12.png",
           "regular_season": {
@@ -3643,6 +3738,7 @@
         "blake": {
           "team_key": "359.l.229979.t.10",
           "team_id": "10",
+          "display_name": "Blake",
           "team_name": "DJ BJ",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/29324911485_f973c2787e.jpg",
           "regular_season": {
@@ -3673,6 +3769,7 @@
         "jake": {
           "team_key": "359.l.229979.t.5",
           "team_id": "5",
+          "display_name": "Jake",
           "team_name": "Zef'sHazelParkHouse",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/28924337714_6c30bac385.jpg",
           "regular_season": {
@@ -3703,6 +3800,7 @@
         "kyle": {
           "team_key": "359.l.229979.t.6",
           "team_id": "6",
+          "display_name": "Kyle",
           "team_name": "Coby Femur",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/29350697282_04615aba8e.jpg",
           "regular_season": {
@@ -3733,6 +3831,7 @@
         "brian": {
           "team_key": "359.l.229979.t.7",
           "team_id": "7",
+          "display_name": "Brian",
           "team_name": "My Team Soaks",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/30802954095_288eb86237.jpg",
           "regular_season": {
@@ -3763,6 +3862,7 @@
         "nick": {
           "team_key": "359.l.229979.t.9",
           "team_id": "9",
+          "display_name": "Nick",
           "team_name": "Beti's Bitty",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_2.png",
           "regular_season": {
@@ -3798,6 +3898,7 @@
         "nick": {
           "team_key": "348.l.125651.t.9",
           "team_id": "9",
+          "display_name": "Nick",
           "team_name": "Ol' Kreaky Knees",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25245568281_72ae011f28.jpg",
           "regular_season": {
@@ -3846,6 +3947,7 @@
         "jake": {
           "team_key": "348.l.125651.t.5",
           "team_id": "5",
+          "display_name": "Jake",
           "team_name": "Blakelmore",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25247885871_07e7ede3e1.jpg",
           "regular_season": {
@@ -3894,6 +3996,7 @@
         "brian": {
           "team_key": "348.l.125651.t.7",
           "team_id": "7",
+          "display_name": "Brian",
           "team_name": "Cardiac Cats",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_10.png",
           "regular_season": {
@@ -3942,6 +4045,7 @@
         "zef": {
           "team_key": "348.l.125651.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "ReturnOfJoefar",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_3.png",
           "regular_season": {
@@ -3990,6 +4094,7 @@
         "rob": {
           "team_key": "348.l.125651.t.8",
           "team_id": "8",
+          "display_name": "Rob",
           "team_name": "CharlesInPain",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_5.png",
           "regular_season": {
@@ -4020,6 +4125,7 @@
         "blake": {
           "team_key": "348.l.125651.t.10",
           "team_id": "10",
+          "display_name": "Blake",
           "team_name": "iSkeetSkeetSkeetles",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25123034810_5908d4feea.jpg",
           "regular_season": {
@@ -4050,6 +4156,7 @@
         "kyle": {
           "team_key": "348.l.125651.t.6",
           "team_id": "6",
+          "display_name": "Kyle",
           "team_name": "Numbers Always Lie",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25223168212_20ea58c27a.jpg",
           "regular_season": {
@@ -4080,6 +4187,7 @@
         "frank": {
           "team_key": "348.l.125651.t.2",
           "team_id": "2",
+          "display_name": "Frank",
           "team_name": "Jafrankeon",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8.png",
           "regular_season": {
@@ -4110,6 +4218,7 @@
         "sam": {
           "team_key": "348.l.125651.t.4",
           "team_id": "4",
+          "display_name": "Sam",
           "team_name": "Just My Luck",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25337052275_f4df7f66c7.jpg",
           "regular_season": {
@@ -4140,6 +4249,7 @@
         "joey": {
           "team_key": "348.l.125651.t.3",
           "team_id": "3",
+          "display_name": "Joey",
           "team_name": "Detroit Lions",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_12.png",
           "regular_season": {
@@ -4175,6 +4285,7 @@
         "joey": {
           "team_key": "331.l.37674.t.4",
           "team_id": "4",
+          "display_name": "Joey",
           "team_name": "Bin Laden",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/24672974423_3db8d23392.jpg",
           "regular_season": {
@@ -4223,6 +4334,7 @@
         "kyle": {
           "team_key": "331.l.37674.t.9",
           "team_id": "9",
+          "display_name": "Kyle",
           "team_name": "Michael Sam Koelzer",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25323679995_5d2f762555.jpg",
           "regular_season": {
@@ -4271,6 +4383,7 @@
         "zef": {
           "team_key": "331.l.37674.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "Dickless In Seattle",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25206854982_2be04d02bc.jpg",
           "regular_season": {
@@ -4319,6 +4432,7 @@
         "nick": {
           "team_key": "331.l.37674.t.10",
           "team_id": "10",
+          "display_name": "Nick",
           "team_name": "I Got A Raging Kluwe",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25295353326_45d2b533ec.jpg",
           "regular_season": {
@@ -4367,6 +4481,7 @@
         "brian": {
           "team_key": "331.l.37674.t.6",
           "team_id": "6",
+          "display_name": "Brian",
           "team_name": "Cardiac Cats",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25202948911_63c78000e1.jpg",
           "regular_season": {
@@ -4397,6 +4512,7 @@
         "frank": {
           "team_key": "331.l.37674.t.2",
           "team_id": "2",
+          "display_name": "Frank",
           "team_name": "Frankhew Berry",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25233462931_4b94286605.jpg",
           "regular_season": {
@@ -4427,6 +4543,7 @@
         "rob": {
           "team_key": "331.l.37674.t.8",
           "team_id": "8",
+          "display_name": "Rob",
           "team_name": "Heart thRobz",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
           "regular_season": {
@@ -4457,6 +4574,7 @@
         "sam": {
           "team_key": "331.l.37674.t.5",
           "team_id": "5",
+          "display_name": "Sam",
           "team_name": "Feathered and Lethal",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25202973522_4da523e8c5.jpg",
           "regular_season": {
@@ -4487,6 +4605,7 @@
         "jake": {
           "team_key": "331.l.37674.t.3",
           "team_id": "3",
+          "display_name": "Jake",
           "team_name": "Shooter McGavin",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/24688567663_50e0701388.jpg",
           "regular_season": {
@@ -4517,6 +4636,7 @@
         "blake": {
           "team_key": "331.l.37674.t.7",
           "team_id": "7",
+          "display_name": "Blake",
           "team_name": "Hands Free Ejac",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25200257051_48ba1aa6bd.jpg",
           "regular_season": {
@@ -4552,6 +4672,7 @@
         "zef": {
           "team_key": "314.l.42504.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "bigfrankturda",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -4600,6 +4721,7 @@
         "jake": {
           "team_key": "314.l.42504.t.6",
           "team_id": "6",
+          "display_name": "Jake",
           "team_name": "El Cuñado",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/24921739729_9a2f34cff8.jpg",
           "regular_season": {
@@ -4648,6 +4770,7 @@
         "sam": {
           "team_key": "314.l.42504.t.5",
           "team_id": "5",
+          "display_name": "Sam",
           "team_name": "Brady Bunch",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/24673926004_a4fd8cef6c.jpg",
           "regular_season": {
@@ -4696,6 +4819,7 @@
         "joey": {
           "team_key": "314.l.42504.t.2",
           "team_id": "2",
+          "display_name": "Joey",
           "team_name": "Peyton and Company",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/24672974423_3db8d23392.jpg",
           "regular_season": {
@@ -4744,6 +4868,7 @@
         "frank": {
           "team_key": "314.l.42504.t.8",
           "team_id": "8",
+          "display_name": "Frank",
           "team_name": "Frankules",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/24673532574_5acff40ec5.jpg",
           "regular_season": {
@@ -4774,6 +4899,7 @@
         "nick": {
           "team_key": "314.l.42504.t.10",
           "team_id": "10",
+          "display_name": "Nick",
           "team_name": "The Handcuff King",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/24671313294_4b045cd928.jpg",
           "regular_season": {
@@ -4804,6 +4930,7 @@
         "brian": {
           "team_key": "314.l.42504.t.7",
           "team_id": "7",
+          "display_name": "Brian",
           "team_name": "Cardiac Cats",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25202948911_63c78000e1.jpg",
           "regular_season": {
@@ -4834,6 +4961,7 @@
         "rob": {
           "team_key": "314.l.42504.t.4",
           "team_id": "4",
+          "display_name": "Rob",
           "team_name": "The Robfathers",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
           "regular_season": {
@@ -4864,6 +4992,7 @@
         "blake": {
           "team_key": "314.l.42504.t.9",
           "team_id": "9",
+          "display_name": "Blake",
           "team_name": "Donkey Punchers",
           "logo_url": "https://yahoofantasysports-res.cloudinary.com/image/upload/t_s192sq/fantasy-logos/25200257051_48ba1aa6bd.jpg",
           "regular_season": {
@@ -4894,6 +5023,7 @@
         "kyle": {
           "team_key": "314.l.42504.t.3",
           "team_id": "3",
+          "display_name": "Kyle",
           "team_name": "In Russ I Bust",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -4929,6 +5059,7 @@
         "zef": {
           "team_key": "273.l.159744.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "Erdelshat My Pants",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -4977,6 +5108,7 @@
         "brian": {
           "team_key": "273.l.159744.t.7",
           "team_id": "7",
+          "display_name": "Brian",
           "team_name": "Silver Crush",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5025,6 +5157,7 @@
         "rob": {
           "team_key": "273.l.159744.t.9",
           "team_id": "9",
+          "display_name": "Rob",
           "team_name": "Demalition Man",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_4.png",
           "regular_season": {
@@ -5073,6 +5206,7 @@
         "sam": {
           "team_key": "273.l.159744.t.4",
           "team_id": "4",
+          "display_name": "Sam",
           "team_name": "Dirk Diggler",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_4.png",
           "regular_season": {
@@ -5121,6 +5255,7 @@
         "kyle": {
           "team_key": "273.l.159744.t.5",
           "team_id": "5",
+          "display_name": "Kyle",
           "team_name": "Jahvid's Brain",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5151,6 +5286,7 @@
         "joey": {
           "team_key": "273.l.159744.t.2",
           "team_id": "2",
+          "display_name": "Joey",
           "team_name": "Deauxma",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5181,6 +5317,7 @@
         "frank": {
           "team_key": "273.l.159744.t.10",
           "team_id": "10",
+          "display_name": "Frank",
           "team_name": "big frank murda",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5211,6 +5348,7 @@
         "jake": {
           "team_key": "273.l.159744.t.3",
           "team_id": "3",
+          "display_name": "Jake",
           "team_name": "Arian Brotherhood",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_5.png",
           "regular_season": {
@@ -5241,6 +5379,7 @@
         "nick": {
           "team_key": "273.l.159744.t.8",
           "team_id": "8",
+          "display_name": "Nick",
           "team_name": "Gooch Monkeys",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_7.png",
           "regular_season": {
@@ -5271,6 +5410,7 @@
         "blake": {
           "team_key": "273.l.159744.t.6",
           "team_id": "6",
+          "display_name": "Blake",
           "team_name": "Donkey Punchers",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5306,6 +5446,7 @@
         "joey": {
           "team_key": "257.l.208499.t.2",
           "team_id": "2",
+          "display_name": "Joey",
           "team_name": "Deauxma",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5354,6 +5495,7 @@
         "jake": {
           "team_key": "257.l.208499.t.3",
           "team_id": "3",
+          "display_name": "Jake",
           "team_name": "The 13th Apostle",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5402,6 +5544,7 @@
         "brian": {
           "team_key": "257.l.208499.t.6",
           "team_id": "6",
+          "display_name": "Brian",
           "team_name": "Silver Crush",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5450,6 +5593,7 @@
         "blake": {
           "team_key": "257.l.208499.t.7",
           "team_id": "7",
+          "display_name": "Blake",
           "team_name": "Donkey Punchers",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5498,6 +5642,7 @@
         "zef": {
           "team_key": "257.l.208499.t.1",
           "team_id": "1",
+          "display_name": "Zef",
           "team_name": "Beercules t('-' t)",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5528,6 +5673,7 @@
         "rob": {
           "team_key": "257.l.208499.t.5",
           "team_id": "5",
+          "display_name": "Rob",
           "team_name": "Slob on my Kolb",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_5.png",
           "regular_season": {
@@ -5558,6 +5704,7 @@
         "nick": {
           "team_key": "257.l.208499.t.8",
           "team_id": "8",
+          "display_name": "Nick",
           "team_name": "Kip's Decepticons",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8.png",
           "regular_season": {
@@ -5588,6 +5735,7 @@
         "sam": {
           "team_key": "257.l.208499.t.4",
           "team_id": "4",
+          "display_name": "Sam",
           "team_name": "NSFW Gifs",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_4.png",
           "regular_season": {
@@ -5618,6 +5766,7 @@
         "kyle": {
           "team_key": "257.l.208499.t.10",
           "team_id": "10",
+          "display_name": "Kyle",
           "team_name": "Montana Grizzlies",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5648,6 +5797,7 @@
         "raphi": {
           "team_key": "257.l.208499.t.9",
           "team_id": "9",
+          "display_name": "Raphi",
           "team_name": "ARYAN BROTHERHOOD",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5683,6 +5833,7 @@
         "blake": {
           "team_key": "242.l.162179.t.9",
           "team_id": "9",
+          "display_name": "Blake",
           "team_name": "Donkey Punchers",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5731,6 +5882,7 @@
         "zef": {
           "team_key": "242.l.162179.t.2",
           "team_id": "2",
+          "display_name": "Zef",
           "team_name": "The Donato Uppercut",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5779,6 +5931,7 @@
         "joey": {
           "team_key": "242.l.162179.t.6",
           "team_id": "6",
+          "display_name": "Joey",
           "team_name": "Deauxma",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5827,6 +5980,7 @@
         "kyle": {
           "team_key": "242.l.162179.t.1",
           "team_id": "1",
+          "display_name": "Kyle",
           "team_name": "Gator Don't Play",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5875,6 +6029,7 @@
         "jake": {
           "team_key": "242.l.162179.t.3",
           "team_id": "3",
+          "display_name": "Jake",
           "team_name": "Talk Shit Get Hit",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5905,6 +6060,7 @@
         "rob": {
           "team_key": "242.l.162179.t.10",
           "team_id": "10",
+          "display_name": "Rob",
           "team_name": "PimpinAintBrees'y",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_1.png",
           "regular_season": {
@@ -5935,6 +6091,7 @@
         "raphi": {
           "team_key": "242.l.162179.t.5",
           "team_id": "5",
+          "display_name": "Raphi",
           "team_name": "F.B.G.M.",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -5965,6 +6122,7 @@
         "nick": {
           "team_key": "242.l.162179.t.8",
           "team_id": "8",
+          "display_name": "Nick",
           "team_name": "Kip's Decepticons",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8.png",
           "regular_season": {
@@ -5995,6 +6153,7 @@
         "sam": {
           "team_key": "242.l.162179.t.4",
           "team_id": "4",
+          "display_name": "Sam",
           "team_name": "11 In Crocs",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6025,6 +6184,7 @@
         "brian": {
           "team_key": "242.l.162179.t.7",
           "team_id": "7",
+          "display_name": "Brian",
           "team_name": "Revis and Butthead",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6060,6 +6220,7 @@
         "zef": {
           "team_key": "222.l.727137.t.9",
           "team_id": "9",
+          "display_name": "Zef",
           "team_name": "Pretty Raphi",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6108,6 +6269,7 @@
         "blake": {
           "team_key": "222.l.727137.t.7",
           "team_id": "7",
+          "display_name": "Blake",
           "team_name": "MJDs CrunchTimeGrind",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_4.png",
           "regular_season": {
@@ -6156,6 +6318,7 @@
         "brian": {
           "team_key": "222.l.727137.t.4",
           "team_id": "4",
+          "display_name": "Brian",
           "team_name": "Cardiac Cats",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6204,6 +6367,7 @@
         "jake": {
           "team_key": "222.l.727137.t.10",
           "team_id": "10",
+          "display_name": "Jake",
           "team_name": "Jesus Resurrected",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6252,6 +6416,7 @@
         "nick": {
           "team_key": "222.l.727137.t.5",
           "team_id": "5",
+          "display_name": "Nick",
           "team_name": "Gooch Monkeys",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_2.png",
           "regular_season": {
@@ -6282,6 +6447,7 @@
         "joey": {
           "team_key": "222.l.727137.t.1",
           "team_id": "1",
+          "display_name": "Joey",
           "team_name": "a double s",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6312,6 +6478,7 @@
         "sam": {
           "team_key": "222.l.727137.t.6",
           "team_id": "6",
+          "display_name": "Sam",
           "team_name": "Scoreboardicus",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6342,6 +6509,7 @@
         "rob": {
           "team_key": "222.l.727137.t.8",
           "team_id": "8",
+          "display_name": "Rob",
           "team_name": "AnusJoustingPirates",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6372,6 +6540,7 @@
         "raphi": {
           "team_key": "222.l.727137.t.2",
           "team_id": "2",
+          "display_name": "Raphi",
           "team_name": "NegroDamus13",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6402,6 +6571,7 @@
         "kyle": {
           "team_key": "222.l.727137.t.3",
           "team_id": "3",
+          "display_name": "Kyle",
           "team_name": "The Bear Jew",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6437,6 +6607,7 @@
         "blake": {
           "team_key": "199.l.394479.t.3",
           "team_id": "3",
+          "display_name": "Blake",
           "team_name": "(  .  )(  .  )",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_4.png",
           "regular_season": {
@@ -6485,6 +6656,7 @@
         "kyle": {
           "team_key": "199.l.394479.t.5",
           "team_id": "5",
+          "display_name": "Kyle",
           "team_name": "michelle's taint",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_5.png",
           "regular_season": {
@@ -6533,6 +6705,7 @@
         "jake": {
           "team_key": "199.l.394479.t.6",
           "team_id": "6",
+          "display_name": "Jake",
           "team_name": "Simply Christ",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_5.png",
           "regular_season": {
@@ -6581,6 +6754,7 @@
         "reuben": {
           "team_key": "199.l.394479.t.2",
           "team_id": "2",
+          "display_name": "Reuben",
           "team_name": "WOW",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_2.png",
           "regular_season": {
@@ -6629,6 +6803,7 @@
         "zef": {
           "team_key": "199.l.394479.t.7",
           "team_id": "7",
+          "display_name": "Zef",
           "team_name": "8===============D",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6659,6 +6834,7 @@
         "joey": {
           "team_key": "199.l.394479.t.1",
           "team_id": "1",
+          "display_name": "Joey",
           "team_name": "Reubens a bitch",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6689,6 +6865,7 @@
         "rob": {
           "team_key": "199.l.394479.t.10",
           "team_id": "10",
+          "display_name": "Rob",
           "team_name": "ROBS",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_5.png",
           "regular_season": {
@@ -6719,6 +6896,7 @@
         "nick": {
           "team_key": "199.l.394479.t.4",
           "team_id": "4",
+          "display_name": "Nick",
           "team_name": "The Bromosexuals",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_2.png",
           "regular_season": {
@@ -6749,6 +6927,7 @@
         "brian": {
           "team_key": "199.l.394479.t.8",
           "team_id": "8",
+          "display_name": "Brian",
           "team_name": "Italian Stallion",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_10.png",
           "regular_season": {
@@ -6779,6 +6958,7 @@
         "raphi": {
           "team_key": "199.l.394479.t.9",
           "team_id": "9",
+          "display_name": "Raphi",
           "team_name": "Brahds Gift to Earf",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_5.png",
           "regular_season": {
@@ -6814,6 +6994,7 @@
         "george": {
           "team_key": "175.l.492325.t.7",
           "team_id": "7",
+          "display_name": "George",
           "team_name": "Da Bears",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8.png",
           "regular_season": {
@@ -6862,6 +7043,7 @@
         "jake": {
           "team_key": "175.l.492325.t.6",
           "team_id": "6",
+          "display_name": "Jake",
           "team_name": "Julius Peppers",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_3.png",
           "regular_season": {
@@ -6910,6 +7092,7 @@
         "danny": {
           "team_key": "175.l.492325.t.4",
           "team_id": "4",
+          "display_name": "Danny",
           "team_name": "I Crucified Cait",
           "logo_url": "https://s.yimg.com/dh/ap/fantasy/img/profile_96.png",
           "regular_season": {
@@ -6958,6 +7141,7 @@
         "nick": {
           "team_key": "175.l.492325.t.8",
           "team_id": "8",
+          "display_name": "Nick",
           "team_name": "Nclovin's Maddenites",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_2.png",
           "regular_season": {
@@ -7006,6 +7190,7 @@
         "zef": {
           "team_key": "175.l.492325.t.9",
           "team_id": "9",
+          "display_name": "Zef",
           "team_name": "ironchef of pndn vag",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_4.png",
           "regular_season": {
@@ -7036,6 +7221,7 @@
         "brian": {
           "team_key": "175.l.492325.t.1",
           "team_id": "1",
+          "display_name": "Brian",
           "team_name": "The Italian Stallion",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_10.png",
           "regular_season": {
@@ -7066,6 +7252,7 @@
         "blake": {
           "team_key": "175.l.492325.t.10",
           "team_id": "10",
+          "display_name": "Blake",
           "team_name": "oaklandraiders#1",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_4.png",
           "regular_season": {
@@ -7096,6 +7283,7 @@
         "matt": {
           "team_key": "175.l.492325.t.5",
           "team_id": "5",
+          "display_name": "Matt",
           "team_name": "Rooster",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_8.png",
           "regular_season": {
@@ -7126,6 +7314,7 @@
         "kyle": {
           "team_key": "175.l.492325.t.3",
           "team_id": "3",
+          "display_name": "Kyle",
           "team_name": "kb9124",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_5.png",
           "regular_season": {
@@ -7156,6 +7345,7 @@
         "joey": {
           "team_key": "175.l.492325.t.2",
           "team_id": "2",
+          "display_name": "Joey",
           "team_name": "No Vick = no NFL",
           "logo_url": "https://s.yimg.com/cv/apiv2/default/nfl/nfl_6.png",
           "regular_season": {

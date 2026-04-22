@@ -249,7 +249,7 @@ def manager_overview(name: str):
         if profile_image:
             break
 
-    # Career totals (regular season only, finished seasons)
+    # Career totals (regular season only from standings, finished seasons)
     total_wins = total_losses = total_ties = total_games = 0
     total_pf   = total_pa    = 0.0
     championships = 0
@@ -257,6 +257,10 @@ def manager_overview(name: str):
     seasons_played = 0
     playoffs_made  = 0
     avg_finish_sum = 0
+
+    # Playoff career totals (from results.json playoffs block)
+    pl_wins = pl_losses = pl_ties = pl_games = 0
+    pl_pf   = pl_pa    = 0.0
 
     season_summaries = []
 
@@ -290,6 +294,12 @@ def manager_overview(name: str):
                 last_places += 1
             if pl.get("made_playoffs"):
                 playoffs_made += 1
+                pl_wins   += pl.get("wins", 0)   or 0
+                pl_losses += pl.get("losses", 0) or 0
+                pl_ties   += pl.get("ties", 0)   or 0
+                pl_games  += (pl.get("wins", 0) or 0) + (pl.get("losses", 0) or 0) + (pl.get("ties", 0) or 0)
+                pl_pf     += pl.get("points_for", 0)     or 0
+                pl_pa     += pl.get("points_against", 0) or 0
 
         season_summaries.append({
             "year":         int(yr),
@@ -328,6 +338,18 @@ def manager_overview(name: str):
             "total_points_against": round(total_pa, 2),
             "avg_points_for":       round(total_pf / total_games, 2) if total_games else None,
             "avg_points_against":   round(total_pa / total_games, 2) if total_games else None,
+        },
+        "career_playoffs": {
+            "made_playoffs":  playoffs_made,
+            "wins":           pl_wins,
+            "losses":         pl_losses,
+            "ties":           pl_ties,
+            "games":          pl_games,
+            "win_pct":        round(pl_wins / pl_games, 4) if pl_games else None,
+            "total_points_for":     round(pl_pf, 2),
+            "total_points_against": round(pl_pa, 2),
+            "avg_points_for":       round(pl_pf / pl_games, 2) if pl_games else None,
+            "avg_points_against":   round(pl_pa / pl_games, 2) if pl_games else None,
         },
         "seasons": season_summaries,
     }
@@ -527,6 +549,12 @@ def manager_matchups(
                 is_playoffs    = matchup.get("is_playoffs", False)
                 is_consolation = matchup.get("is_consolation", False)
                 is_tied        = matchup.get("is_tied", False)
+
+                # Skip consolation bracket entirely — these are loser's playoffs
+                # for seeds 5-8 and do not count toward head-to-head records
+                if is_consolation:
+                    continue
+
                 is_true_playoff = is_playoffs and not is_consolation
 
                 bucket = "playoffs" if is_true_playoff else "regular_season"
@@ -611,6 +639,185 @@ def manager_matchups(
             "playoffs":       _fmt(all_pl),
         },
         "opponents": opponents,
+    }
+
+
+# ===========================================================================
+# GET /fantasy/matchups/{name1}/vs/{name2}
+# ===========================================================================
+
+@router.get("/matchups/{name1}/vs/{name2}")
+def head_to_head(
+    name1: str,
+    name2: str,
+    era: str = Query(default="all_time", description=(
+        "Era filter: all_time | darkness | sam_era | frank_era | jordan_era | auction_era"
+    )),
+):
+    """
+    Full head-to-head history between two managers.
+
+    Returns:
+      - Regular season W-L-T, avg PF/PA, avg diff
+      - Playoff W-L-T, avg PF/PA (true playoffs only, no consolation)
+      - Last 5 matchup record
+      - All matchups newest to oldest with winner, points, projected, diff
+    """
+    matchups_data = _year_keyed(_load("matchups.json"))
+    results       = _year_keyed(_load("results.json"))
+
+    if not matchups_data:
+        raise HTTPException(status_code=404, detail="matchups.json not found.")
+
+    era_def = ERAS.get(era)
+    if not era_def:
+        raise HTTPException(status_code=400, detail=f"Unknown era '{era}'. Valid: {list(ERAS.keys())}")
+
+    # Validate both managers exist
+    all_ids = _all_manager_ids(results)
+    if name1 not in all_ids:
+        raise HTTPException(status_code=404, detail=f"Manager '{name1}' not found.")
+    if name2 not in all_ids:
+        raise HTTPException(status_code=404, detail=f"Manager '{name2}' not found.")
+
+    display1 = _display_name(name1, results)
+    display2 = _display_name(name2, results)
+
+    def _acc():
+        return {"wins": 0, "losses": 0, "ties": 0, "games": 0,
+                "pf_sum": 0.0, "pa_sum": 0.0,
+                "proj_pf_sum": 0.0, "proj_pa_sum": 0.0, "proj_weeks": 0}
+
+    rs_totals = _acc()   # name1's perspective: pf = name1 pts, pa = name2 pts
+    pl_totals = _acc()
+    all_matchups = []    # every matchup newest→oldest
+
+    for yr in sorted(matchups_data.keys(), reverse=True):
+        if not (era_def["start"] <= int(yr) <= era_def["end"]):
+            continue
+        season = matchups_data[yr]
+
+        # Iterate weeks in reverse so all_matchups ends up newest first
+        for week_obj in reversed(season.get("weeks", [])):
+            for matchup in week_obj.get("matchups", []):
+                teams = matchup.get("teams", [])
+                if len(teams) != 2:
+                    continue
+
+                t1 = next((t for t in teams if t.get("manager_id") == name1), None)
+                t2 = next((t for t in teams if t.get("manager_id") == name2), None)
+                if not t1 or not t2:
+                    continue  # not a matchup between these two
+
+                is_playoffs    = matchup.get("is_playoffs", False)
+                is_consolation = matchup.get("is_consolation", False)
+                is_tied        = matchup.get("is_tied", False)
+
+                # Skip consolation games entirely
+                if is_consolation:
+                    continue
+
+                is_true_playoff = is_playoffs and not is_consolation
+                bucket = pl_totals if is_true_playoff else rs_totals
+
+                pts1  = t1.get("points", 0)    or 0
+                pts2  = t2.get("points", 0)    or 0
+                proj1 = t1.get("projected", 0) or 0
+                proj2 = t2.get("projected", 0) or 0
+
+                bucket["games"]   += 1
+                bucket["pf_sum"]   = round(bucket["pf_sum"]  + pts1, 2)
+                bucket["pa_sum"]   = round(bucket["pa_sum"]  + pts2, 2)
+
+                # Projected may be 0 for older seasons — only count when non-zero
+                if proj1 or proj2:
+                    bucket["proj_pf_sum"]  = round(bucket["proj_pf_sum"] + proj1, 2)
+                    bucket["proj_pa_sum"]  = round(bucket["proj_pa_sum"] + proj2, 2)
+                    bucket["proj_weeks"]  += 1
+
+                if is_tied:
+                    bucket["ties"]   += 1
+                elif t1.get("is_winner"):
+                    bucket["wins"]   += 1
+                else:
+                    bucket["losses"] += 1
+
+                # Determine winner display name
+                if is_tied:
+                    winner_name = None
+                elif t1.get("is_winner"):
+                    winner_name = display1
+                else:
+                    winner_name = display2
+
+                all_matchups.append({
+                    "year":           int(yr),
+                    "week":           matchup.get("week"),
+                    "week_start":     matchup.get("week_start"),
+                    "week_end":       matchup.get("week_end"),
+                    "is_playoffs":    is_playoffs,
+                    "is_tied":        is_tied,
+                    "winner":         winner_name,
+                    name1: {
+                        "manager_id":   name1,
+                        "display_name": display1,
+                        "team_name":    t1.get("team_name"),
+                        "points":       round(pts1, 2),
+                        "projected":    round(proj1, 2),
+                        "is_winner":    t1.get("is_winner", False),
+                    },
+                    name2: {
+                        "manager_id":   name2,
+                        "display_name": display2,
+                        "team_name":    t2.get("team_name"),
+                        "points":       round(pts2, 2),
+                        "projected":    round(proj2, 2),
+                        "is_winner":    t2.get("is_winner", False),
+                    },
+                    "point_diff":     round(pts1 - pts2, 2),
+                    "projected_diff": round(proj1 - proj2, 2) if (proj1 or proj2) else None,
+                })
+
+    def _fmt(acc: dict) -> dict:
+        g  = acc["games"]
+        pw = acc["proj_weeks"]
+        return {
+            "wins":    acc["wins"],
+            "losses":  acc["losses"],
+            "ties":    acc["ties"],
+            "games":   g,
+            "win_pct": round(acc["wins"] / g, 4) if g else None,
+            "avg_pf":  round(acc["pf_sum"] / g, 2) if g else None,
+            "avg_pa":  round(acc["pa_sum"] / g, 2) if g else None,
+            "avg_diff":round((acc["pf_sum"] - acc["pa_sum"]) / g, 2) if g else None,
+            "total_pf":acc["pf_sum"],
+            "total_pa":acc["pa_sum"],
+            "avg_projected_pf":  round(acc["proj_pf_sum"] / pw, 2) if pw else None,
+            "avg_projected_pa":  round(acc["proj_pa_sum"] / pw, 2) if pw else None,
+        }
+
+    # Last 5 matchups record (from all_matchups which is newest-first)
+    last5 = all_matchups[:5]
+    last5_wins   = sum(1 for m in last5 if m[name1]["is_winner"])
+    last5_losses = sum(1 for m in last5 if m[name2]["is_winner"])
+    last5_ties   = sum(1 for m in last5 if m["is_tied"])
+
+    return {
+        "manager_1":        {"manager_id": name1, "display_name": display1},
+        "manager_2":        {"manager_id": name2, "display_name": display2},
+        "era":              era,
+        "era_label":        era_def["label"],
+        "available_eras":   {k: v["label"] for k, v in ERAS.items()},
+        "total_matchups":   len(all_matchups),
+        "regular_season":   _fmt(rs_totals),
+        "playoffs":         _fmt(pl_totals),
+        "last_5": {
+            "wins":    last5_wins,
+            "losses":  last5_losses,
+            "ties":    last5_ties,
+            "matchups": last5,
+        },
+        "all_matchups": all_matchups,
     }
 
 
