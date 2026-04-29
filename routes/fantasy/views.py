@@ -7,12 +7,14 @@ No Yahoo API calls — fast, cacheable responses.
 
 URL prefix: /fantasy  (mounted in main.py)
 
+BRD sections: /fantasy/{name}, /fantasy/league, /fantasy/season, /fantasy/teams
+
 Endpoints
 ---------
-GET /fantasy/home                          — homepage summary
+GET /fantasy/league/home                  — homepage summary
 GET /fantasy/{name}/overview               — manager career overview
 GET /fantasy/{name}/results                — detailed season-by-season results
-GET /fantasy/{name}/matchups               — head-to-head record vs all opponents
+GET /fantasy/teams/matchups/{name}         — head-to-head record vs all opponents
 """
 
 from fastapi import APIRouter, HTTPException, Query
@@ -106,8 +108,8 @@ def _display_name(manager_id: str, results: dict) -> str:
 # GET /fantasy/home
 # ===========================================================================
 
-@router.get("/home")
-def fantasy_home():
+@router.get("/league/home")
+def league_home():
     """
     Homepage summary for the BlackGold app.
 
@@ -495,8 +497,8 @@ def manager_results(name: str):
 # GET /fantasy/{name}/matchups
 # ===========================================================================
 
-@router.get("/{name}/matchups")
-def manager_matchups(
+@router.get("/teams/matchups/{name}")
+def teams_matchups(
     name: str,
     era:  str = Query(default="all_time", description=(
         "Era filter: all_time | darkness | sam_era | frank_era | jordan_era | auction_era"
@@ -646,8 +648,8 @@ def manager_matchups(
 # GET /fantasy/matchups/{name1}/vs/{name2}
 # ===========================================================================
 
-@router.get("/matchups/{name1}/vs/{name2}")
-def head_to_head(
+@router.get("/teams/matchups/{name1}/vs/{name2}")
+def teams_matchups_vs(
     name1: str,
     name2: str,
     era: str = Query(default="all_time", description=(
@@ -825,8 +827,8 @@ def head_to_head(
 # GET /fantasy/managers  — list all known managers
 # ===========================================================================
 
-@router.get("/managers")
-def list_managers():
+@router.get("/league/managers")
+def league_managers():
     """
     Returns all manager IDs and display names that have appeared in any season.
     Useful for building navigation menus.
@@ -861,8 +863,8 @@ def list_managers():
 # GET /fantasy/seasons — season index
 # ===========================================================================
 
-@router.get("/seasons")
-def list_seasons():
+@router.get("/league/seasons")
+def league_seasons():
     """
     Returns all seasons with basic metadata.
     """

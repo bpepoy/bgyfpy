@@ -2522,3 +2522,650 @@ def download_punishment():
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+# ===========================================================================
+# Data generation — player_info.json
+# ===========================================================================
+
+@router.get("/data/player-info/build-all")
+def build_player_info(
+    skip_existing: bool = Query(default=True),
+    year: str          = Query(default=None),
+    force_clean: bool  = Query(default=False),
+    max_players: int   = Query(default=1000, description="Max players to fetch per season (25 per API call)"),
+):
+    """
+    Generates player_info.json — player metadata per season.
+
+    Fetches available players in pages of 25. Includes:
+      player_key, player_id, name, position, NFL team, bye week, headshot URL.
+
+    Shape: {"2025": {"total_players": N, "players": {"461.p.12345": {...}}}}
+
+    Usage:
+        GET /league/data/player-info/build-all?year=2025
+        GET /league/data/player-info/build-all?year=2025&max_players=500
+        GET /league/data/player-info/build-all?force_clean=true&year=2025
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_all_seasons, get_league_key_for_season, _convert_to_dict,
+        )
+        from services.yahoo_service import get_query
+        import time
+
+        path     = _get_data_path("player_info.json")
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+
+        seasons_data = get_all_seasons(force_refresh=True)
+        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
+        target_years = [year] if year else all_years
+        results      = {"success": [], "skipped": [], "failed": {}}
+
+        def _unwrap(obj):
+            if not isinstance(obj, dict): return obj
+            base = dict(obj.get("_extracted_data", {})) if isinstance(obj.get("_extracted_data"), dict) else {}
+            for k, v in obj.items():
+                if k not in ("_extracted_data", "_index", "_keys"): base[k] = v
+            return base
+
+        def _extract_player(p_raw: dict) -> dict | None:
+            """Extract clean player info from a YFPY player object."""
+            p = _unwrap(p_raw.get("player", p_raw) if isinstance(p_raw, dict) else p_raw)
+            pk = p.get("player_key") or p.get("key")
+            if not pk:
+                return None
+
+            name_raw = p.get("name", {})
+            if isinstance(name_raw, dict):
+                nf = _unwrap(name_raw)
+                full_name = nf.get("full") or p.get("full_name") or "Unknown"
+            else:
+                full_name = p.get("full_name") or str(name_raw) or "Unknown"
+
+            headshot = _unwrap(p.get("headshot", {})) if isinstance(p.get("headshot"), dict) else {}
+
+            return {
+                "player_key":      pk,
+                "player_id":       p.get("player_id"),
+                "name":            full_name,
+                "first_name":      p.get("first_name") or (full_name.split()[0] if full_name else None),
+                "last_name":       p.get("last_name")  or (full_name.split()[-1] if full_name else None),
+                "position":        p.get("display_position") or p.get("primary_position"),
+                "position_type":   p.get("position_type"),
+                "eligible_positions": p.get("eligible_positions") or [],
+                "nfl_team":        p.get("editorial_team_abbr"),
+                "nfl_team_full":   p.get("editorial_team_full_name"),
+                "uniform_number":  p.get("uniform_number"),
+                "headshot_url":    headshot.get("url") or p.get("headshot_url") or p.get("image_url"),
+                "status":          p.get("status"),
+                "injury_note":     p.get("injury_note"),
+                "is_undroppable":  bool(int(p.get("is_undroppable") or 0)),
+                "bye_week":        p.get("bye") or (
+                    list(_unwrap(p.get("bye_weeks", {})).values())[0]
+                    if isinstance(p.get("bye_weeks"), dict) and p.get("bye_weeks") else None
+                ),
+            }
+
+        for yr in target_years:
+            if skip_existing and yr in existing and existing[yr].get("players"):
+                results["skipped"].append(int(yr))
+                continue
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                players_dict: dict = {}
+                page_size    = 25
+                start        = 0
+                consecutive_empty = 0
+
+                while start < max_players:
+                    try:
+                        raw_page = query.get_league_players(
+                            player_count=page_size,
+                            player_start=start,
+                        )
+                        page = _convert_to_dict(raw_page)
+
+                        # Normalise to a list
+                        if isinstance(page, list):
+                            items = page
+                        elif isinstance(page, dict):
+                            items = page.get("players", []) or list(page.values())
+                            if isinstance(items, dict):
+                                items = list(items.values())
+                        else:
+                            items = []
+
+                        if not items:
+                            consecutive_empty += 1
+                            if consecutive_empty >= 2:
+                                break
+                            start += page_size
+                            continue
+
+                        consecutive_empty = 0
+                        for item in items:
+                            pi = _extract_player(item)
+                            if pi and pi.get("player_key"):
+                                players_dict[pi["player_key"]] = pi
+
+                        start += page_size
+                        # Brief pause to be kind to the API
+                        time.sleep(0.3)
+
+                    except Exception as page_err:
+                        # Stop paginating on error; save what we have
+                        break
+
+                existing[yr] = {
+                    "year":          int(yr),
+                    "total_players": len(players_dict),
+                    "players":       players_dict,
+                }
+                results["success"].append(int(yr))
+
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        sorted_data = _year_sort(existing)
+        _write_json(path, sorted_data)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "next_step":       "GET /league/data/player-info/download to save locally",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/player-info/status")
+def player_info_status():
+    """Shows player counts per year in player_info.json."""
+    try:
+        data = _load_json(_get_data_path("player_info.json"))
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        return {
+            "total_seasons": len(data),
+            "seasons": [
+                {"year": int(yr), "total_players": data[yr].get("total_players", 0)}
+                for yr in sorted(data.keys(), reverse=True)
+            ],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/player-info/download")
+def download_player_info():
+    """Returns current player_info.json for local save."""
+    try:
+        data = _load_json(_get_data_path("player_info.json"))
+        if not data:
+            raise HTTPException(status_code=404, detail="player_info.json not found. Run build-all first.")
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Data generation — rosters.json
+# ===========================================================================
+
+@router.get("/data/rosters/build-all")
+def build_rosters(
+    skip_existing: bool = Query(default=True),
+    year: str          = Query(default=None),
+    force_clean: bool  = Query(default=False),
+):
+    """
+    Generates rosters.json — each team's roster for every week of every season.
+
+    Shape:
+        {
+          "2025": {
+            "week_1": {
+              "brian": {
+                "team_key": "461.l.501623.t.4",
+                "players": [
+                  {
+                    "player_key": "461.p.12345",
+                    "player_id": 12345,
+                    "name": "Patrick Mahomes",
+                    "position": "QB",
+                    "selected_position": "QB",   ← actual slot (QB/WR/BN/IR etc.)
+                    "is_starting": true,
+                    "is_on_bench": false,
+                    "is_on_ir": false,
+                  }, ...
+                ]
+              }, ...
+            }, ...
+          }
+        }
+
+    ~3,230 API calls across all 19 seasons. Build one year at a time:
+        GET /league/data/rosters/build-all?year=2025
+        GET /league/data/rosters/build-all?year=2025&force_clean=true
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_all_seasons, get_league_key_for_season, _convert_to_dict,
+        )
+        from services.yahoo_service import get_query
+        from config import get_manager_identity
+        import time
+
+        path     = _get_data_path("rosters.json")
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+
+        seasons_data = get_all_seasons(force_refresh=True)
+        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
+        target_years = [year] if year else all_years
+        results      = {"success": [], "skipped": [], "failed": {}}
+
+        def _unwrap(obj):
+            if not isinstance(obj, dict): return obj
+            base = dict(obj.get("_extracted_data", {})) if isinstance(obj.get("_extracted_data"), dict) else {}
+            for k, v in obj.items():
+                if k not in ("_extracted_data", "_index", "_keys"): base[k] = v
+            return base
+
+        for yr in target_years:
+            if skip_existing and yr in existing and existing[yr]:
+                results["skipped"].append(int(yr))
+                continue
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                # Get league settings for week range + all team keys
+                settings_dict = _convert_to_dict(query.get_league_settings())
+                start_week    = int(settings_dict.get("start_week") or 1)
+                end_week      = int(settings_dict.get("end_week")   or 17)
+
+                teams_dict = _convert_to_dict(query.get_league_teams())
+                teams_raw  = teams_dict if isinstance(teams_dict, list) else \
+                             teams_dict.get("teams", []) if isinstance(teams_dict, dict) else []
+                if isinstance(teams_raw, dict):
+                    teams_raw = list(teams_raw.values())
+
+                # Collect team_keys for all teams
+                team_keys = []
+                for t in teams_raw:
+                    team = t.get("team", t) if isinstance(t, dict) else {}
+                    team = _unwrap(team)
+                    tk = team.get("team_key") or team.get("key")
+                    if tk:
+                        team_keys.append(tk)
+
+                season_rosters: dict = {}
+
+                for week in range(start_week, end_week + 1):
+                    week_key  = f"week_{week}"
+                    week_data: dict = {}
+
+                    for team_key in team_keys:
+                        try:
+                            roster_raw = _convert_to_dict(
+                                query.get_team_roster_by_week(
+                                    team_key.split(".t.")[-1], week
+                                )
+                            )
+
+                            # Normalise roster to list of player entries
+                            if isinstance(roster_raw, list):
+                                players_raw = roster_raw
+                            elif isinstance(roster_raw, dict):
+                                players_raw = roster_raw.get("players", []) or list(roster_raw.values())
+                                if isinstance(players_raw, dict):
+                                    players_raw = list(players_raw.values())
+                            else:
+                                players_raw = []
+
+                            players_out = []
+                            for pw in players_raw:
+                                p_wrap = _unwrap(pw)
+                                p_raw  = p_wrap.get("player", p_wrap)
+                                p      = _unwrap(p_raw) if isinstance(p_raw, dict) else p_wrap
+
+                                pk   = p.get("player_key")
+                                pid  = p.get("player_id")
+                                if not pk:
+                                    continue
+
+                                name_raw = p.get("name", {})
+                                if isinstance(name_raw, dict):
+                                    nf = _unwrap(name_raw)
+                                    name = nf.get("full") or p.get("full_name") or ""
+                                else:
+                                    name = p.get("full_name") or ""
+
+                                # selected_position tells us the actual slot
+                                sp_raw = p.get("selected_position", {})
+                                if isinstance(sp_raw, dict):
+                                    sp = _unwrap(sp_raw).get("position") or p.get("selected_position_value") or ""
+                                else:
+                                    sp = str(sp_raw or "")
+
+                                is_starting = sp not in ("BN", "IR", "IR+", "")
+                                is_on_bench = sp == "BN"
+                                is_on_ir    = sp in ("IR", "IR+")
+
+                                players_out.append({
+                                    "player_key":        pk,
+                                    "player_id":         pid,
+                                    "name":              name,
+                                    "position":          p.get("display_position") or p.get("primary_position"),
+                                    "selected_position": sp,
+                                    "is_starting":       is_starting,
+                                    "is_on_bench":       is_on_bench,
+                                    "is_on_ir":          is_on_ir,
+                                })
+
+                            identity   = get_manager_identity(team_key=team_key)
+                            manager_id = identity["manager_id"] if identity else team_key
+
+                            week_data[manager_id] = {
+                                "team_key":     team_key,
+                                "display_name": identity["display_name"] if identity else team_key,
+                                "players":      players_out,
+                            }
+
+                            time.sleep(0.2)  # gentle pacing
+
+                        except Exception:
+                            continue  # skip this team/week on error
+
+                    season_rosters[week_key] = week_data
+
+                existing[yr] = season_rosters
+                results["success"].append(int(yr))
+
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        sorted_data = _year_sort(existing)
+        _write_json(path, sorted_data)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "note":            "Build one year at a time to avoid rate limits: ?year=2025",
+            "next_step":       "GET /league/data/rosters/download to save locally",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/rosters/status")
+def rosters_status():
+    """Shows which years and weeks are in rosters.json."""
+    try:
+        data = _load_json(_get_data_path("rosters.json"))
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            weeks      = data[yr]
+            num_weeks  = len(weeks)
+            sample_wk  = next(iter(weeks.values()), {}) if weeks else {}
+            num_teams  = len(sample_wk)
+            summary.append({"year": int(yr), "weeks_built": num_weeks, "teams_per_week": num_teams})
+        return {"total_seasons": len(data), "seasons": summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/rosters/download")
+def download_rosters():
+    """Returns current rosters.json for local save."""
+    try:
+        data = _load_json(_get_data_path("rosters.json"))
+        if not data:
+            raise HTTPException(status_code=404, detail="rosters.json not found. Run build-all first.")
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Data generation — player_stats.json
+# ===========================================================================
+
+@router.get("/data/player-stats/build-all")
+def build_player_stats(
+    skip_existing: bool = Query(default=True),
+    year: str          = Query(default=None),
+    week: int          = Query(default=None, description="Single week to build (omit for all weeks in year)"),
+    force_clean: bool  = Query(default=False),
+):
+    """
+    Generates player_stats.json — weekly fantasy point totals per player per season.
+
+    Sources stats from rosters.json (must exist) to know which players to fetch.
+    Only fetches stats for players who were rostered at any point — not all ~1000+
+    available players, making this tractable.
+
+    Shape:
+        {
+          "2025": {
+            "week_1": {
+              "461.p.12345": {
+                "name": "Patrick Mahomes",
+                "position": "QB",
+                "nfl_team": "KC",
+                "fantasy_points": 34.5,
+                "stats": {
+                  "pass_yds": 312, "pass_td": 3, "interceptions": 1, ...
+                }
+              }, ...
+            }, ...
+          }
+        }
+
+    Build one year at a time, and optionally one week at a time:
+        GET /league/data/player-stats/build-all?year=2025
+        GET /league/data/player-stats/build-all?year=2025&week=1
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_all_seasons, get_league_key_for_season, _convert_to_dict,
+        )
+        from services.yahoo_service import get_query
+        import time
+
+        path          = _get_data_path("player_stats.json")
+        rosters_path  = _get_data_path("rosters.json")
+        existing      = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+        all_rosters   = _load_json(rosters_path)
+
+        if not all_rosters:
+            raise HTTPException(
+                status_code=400,
+                detail="rosters.json not found. Run GET /league/data/rosters/build-all first.",
+            )
+
+        seasons_data = get_all_seasons(force_refresh=True)
+        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
+        target_years = [year] if year else all_years
+        results      = {"success": [], "skipped": [], "failed": {}}
+
+        def _unwrap(obj):
+            if not isinstance(obj, dict): return obj
+            base = dict(obj.get("_extracted_data", {})) if isinstance(obj.get("_extracted_data"), dict) else {}
+            for k, v in obj.items():
+                if k not in ("_extracted_data", "_index", "_keys"): base[k] = v
+            return base
+
+        for yr in target_years:
+            roster_season = all_rosters.get(yr, {})
+            if not roster_season:
+                results["failed"][yr] = "No roster data — run rosters/build-all first"
+                continue
+
+            yr_stats = existing.get(yr, {})
+
+            # Determine weeks to build
+            settings_from_roster = list(roster_season.keys())  # ["week_1", "week_2", ...]
+            if week:
+                target_weeks = [f"week_{week}"]
+            else:
+                target_weeks = sorted(settings_from_roster, key=lambda x: int(x.split("_")[1]))
+
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                for week_key in target_weeks:
+                    if skip_existing and week_key in yr_stats and yr_stats[week_key]:
+                        continue
+
+                    week_num    = int(week_key.split("_")[1])
+                    week_roster = roster_season.get(week_key, {})
+
+                    # Collect all unique player_keys rostered this week
+                    rostered_keys: set = set()
+                    for mgr_data in week_roster.values():
+                        for p in mgr_data.get("players", []):
+                            pk = p.get("player_key")
+                            if pk:
+                                rostered_keys.add(pk)
+
+                    week_stats: dict = {}
+
+                    for pk in rostered_keys:
+                        try:
+                            # Get stats for this player this week
+                            raw = _convert_to_dict(
+                                query.get_player_stats_by_week(pk, week_num)
+                            )
+
+                            p = _unwrap(raw.get("player", raw) if isinstance(raw, dict) else raw)
+
+                            name_raw = p.get("name", {})
+                            if isinstance(name_raw, dict):
+                                nf = _unwrap(name_raw)
+                                name = nf.get("full") or p.get("full_name") or ""
+                            else:
+                                name = p.get("full_name") or ""
+
+                            # Fantasy points total
+                            pts_raw = _unwrap(p.get("player_points", {})) if isinstance(p.get("player_points"), dict) else {}
+                            fantasy_points = float(pts_raw.get("total") or p.get("player_points_value") or 0)
+
+                            # Raw stat breakdown
+                            stats_raw = p.get("player_stats", {}) or p.get("stats", {})
+                            if isinstance(stats_raw, dict):
+                                stats_raw = _unwrap(stats_raw)
+                                stat_list = stats_raw.get("stats", []) or []
+                            elif isinstance(stats_raw, list):
+                                stat_list = stats_raw
+                            else:
+                                stat_list = []
+
+                            if isinstance(stat_list, dict):
+                                stat_list = list(stat_list.values())
+
+                            stats_out: dict = {}
+                            for se in stat_list:
+                                stat = se.get("stat", se) if isinstance(se, dict) else {}
+                                stat = _unwrap(stat)
+                                sid  = stat.get("stat_id")
+                                val  = stat.get("value")
+                                if sid is not None and val not in (None, "", "-", "0"):
+                                    try:
+                                        stats_out[str(sid)] = float(val)
+                                    except (TypeError, ValueError):
+                                        pass
+
+                            week_stats[pk] = {
+                                "name":           name,
+                                "position":       p.get("display_position") or p.get("primary_position"),
+                                "nfl_team":       p.get("editorial_team_abbr"),
+                                "fantasy_points": fantasy_points,
+                                "stats":          stats_out,
+                            }
+
+                            time.sleep(0.15)  # rate limit pacing
+
+                        except Exception:
+                            continue  # skip individual player errors
+
+                    yr_stats[week_key] = week_stats
+
+                existing[yr] = yr_stats
+                results["success"].append(int(yr))
+
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        sorted_data = _year_sort(existing)
+        _write_json(path, sorted_data)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "note":            "Build one year+week at a time to avoid rate limits: ?year=2025&week=1",
+            "next_step":       "GET /league/data/player-stats/download to save locally",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/player-stats/status")
+def player_stats_status():
+    """Shows which years and weeks are in player_stats.json."""
+    try:
+        data = _load_json(_get_data_path("player_stats.json"))
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            weeks = data[yr]
+            total_player_weeks = sum(len(w) for w in weeks.values())
+            summary.append({
+                "year":                int(yr),
+                "weeks_built":         len(weeks),
+                "total_player_weeks":  total_player_weeks,
+            })
+        return {"total_seasons": len(data), "seasons": summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/player-stats/download")
+def download_player_stats(year: str = Query(default=None, description="Limit to one year (files can be large)")):
+    """Returns current player_stats.json for local save. Use ?year= to limit size."""
+    try:
+        data = _load_json(_get_data_path("player_stats.json"))
+        if not data:
+            raise HTTPException(status_code=404, detail="player_stats.json not found. Run build-all first.")
+        if year:
+            if year not in data:
+                raise HTTPException(status_code=404, detail=f"Year {year} not found.")
+            return {"year": int(year), "data": {year: data[year]}}
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
