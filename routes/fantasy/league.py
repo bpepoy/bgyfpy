@@ -1525,12 +1525,22 @@ def build_transactions(
 
                 for item in tx_list:
                     try:
-                        # Unwrap _extracted_data on the transaction itself
-                        tx     = _unwrap_yfpy_obj(item if isinstance(item, dict) else {})
-                        ttype  = tx.get("type", "")
-                        status = tx.get("status", "")
+                        # Merge _extracted_data with top-level — top-level wins.
+                        # CRITICAL: In live YFPY responses, 'type' and 'status' may be
+                        # ONLY in _extracted_data (not promoted to top level by all YFPY versions).
+                        # We check both explicitly before doing the full merge.
+                        item_dict = item if isinstance(item, dict) else {}
+                        ed        = item_dict.get("_extracted_data", {}) or {}
+                        
+                        # Read critical fields from either location
+                        ttype  = item_dict.get("type") or (ed.get("type") if isinstance(ed, dict) else None) or ""
+                        status = item_dict.get("status") or (ed.get("status") if isinstance(ed, dict) else None) or ""
+                        
                         if status != "successful":
                             continue
+                        
+                        # Full merge for remaining fields
+                        tx = _unwrap_yfpy_obj(item_dict)
 
                         ts       = tx.get("timestamp")
                         date_str = _ts_to_date(ts)
@@ -2102,10 +2112,20 @@ def build_drafts(
                 draft_raw = query.get_league_draft_results()
                 picks_raw = _unwrap_picks_raw(draft_raw, _convert_to_dict)
 
+                # Load player_info for this year to enrich picks with player names
+                player_info_data = _load_json(_get_data_path("player_info.json"))
+                player_lookup = {}
+                if yr in player_info_data:
+                    player_lookup = player_info_data[yr].get("players", {})
+
                 picks = []
                 for item in picks_raw:
-                    p = item["draft_result"] if isinstance(item, dict) and "draft_result" in item \
-                        else (item if isinstance(item, dict) else {})
+                    # Confirmed flat fields from API: pick, round, cost, team_key, player_key
+                    # All at top level AND in _extracted_data — use top level
+                    p = item if isinstance(item, dict) else {}
+                    # Also check if wrapped in draft_result
+                    if "draft_result" in p:
+                        p = p["draft_result"] if isinstance(p["draft_result"], dict) else p
 
                     team_key   = str(p.get("team_key")   or "")
                     player_key = str(p.get("player_key") or "")
@@ -2125,7 +2145,6 @@ def build_drafts(
                     except (TypeError, ValueError):
                         pick_int = None
 
-                    # Derive round from overall_pick when API omits the field
                     try:
                         round_int = int(round_num) if round_num is not None else None
                         if round_int is None and pick_int is not None:
@@ -2138,14 +2157,22 @@ def build_drafts(
                     except (TypeError, ValueError):
                         cost_int = None
 
+                    # Enrich with player info if available
+                    pi = player_lookup.get(player_key, {})
+                    player_name = pi.get("name")
+                    position    = pi.get("position")
+                    nfl_team    = pi.get("nfl_team")
+
                     picks.append({
                         "overall_pick": pick_int,
                         "round":        round_int,
                         "manager_id":   manager_id,
                         "display_name": display_name,
+                        "team_key":     team_key,
                         "player_key":   player_key or None,
-                        "player_name":  None,  # not in draft API — enrich via player_info.json
-                        "position":     None,  # not in draft API — enrich via player_info.json
+                        "player_name":  player_name,
+                        "position":     position,
+                        "nfl_team":     nfl_team,
                         "cost":         cost_int,
                     })
 
@@ -2635,7 +2662,15 @@ def build_player_info(
             return base
 
         def _norm_page(raw) -> list:
-            """Normalise a page response to a flat list of player wrapper objects."""
+            """Normalise a page response to a flat list of player wrapper objects.
+            Handles YFPY returning Player objects, lists, or dicts."""
+            # If it's a YFPY object (not list/dict), convert it first
+            if not isinstance(raw, (list, dict)):
+                try:
+                    from services.fantasy.league_service import _convert_to_dict
+                    raw = _convert_to_dict(raw)
+                except Exception:
+                    return []
             if isinstance(raw, list):
                 return raw
             if isinstance(raw, dict):
@@ -2721,11 +2756,13 @@ def build_player_info(
 
                 while start < max_players:
                     try:
-                        raw_page = query.get_league_players(
+                        raw_page   = query.get_league_players(
                             player_count=page_size,
                             player_start=start,
                         )
-                        page_items = _norm_page(_convert_to_dict(raw_page))
+                        # _convert_to_dict handles YFPY objects → dicts
+                        conv_page  = _convert_to_dict(raw_page)
+                        page_items = _norm_page(conv_page)
 
                         if not page_items:
                             empty_streak += 1
@@ -2924,18 +2961,26 @@ def build_rosters(
                 start_week    = int(settings_dict.get("start_week") or 1)
                 end_week      = int(settings_dict.get("end_week")   or 17)
 
-                # Get all team_keys for this season
-                teams_raw = _convert_to_dict(query.get_league_teams())
+                # get_league_teams() returns YFPY Team objects — must convert each one
+                teams_raw_yfpy = query.get_league_teams()
+                # Convert the whole response first
+                teams_raw = _convert_to_dict(teams_raw_yfpy)
+                
                 if isinstance(teams_raw, dict):
-                    teams_list = teams_raw.get("teams", list(teams_raw.values()))
+                    teams_list_raw = teams_raw.get("teams", list(teams_raw.values()))
                 elif isinstance(teams_raw, list):
-                    teams_list = teams_raw
+                    teams_list_raw = teams_raw
                 else:
-                    teams_list = []
+                    teams_list_raw = []
+                if isinstance(teams_list_raw, dict):
+                    teams_list_raw = list(teams_list_raw.values())
 
                 team_info: list[dict] = []  # [{team_key, team_id, manager_id}]
-                for t in teams_list:
+                for t in teams_list_raw:
                     tw = _unwrap(t)
+                    # Handle {"team": {...}} wrapper
+                    inner = tw.get("team", tw)
+                    tw = _unwrap(inner) if isinstance(inner, dict) else tw
                     tk = tw.get("team_key") or tw.get("key")
                     if not tk:
                         continue
