@@ -3472,191 +3472,196 @@ def debug_api_shapes(year: str = Query(default="2025")):
 @router.get("/data/debug/player-info-raw")
 def debug_player_info_raw(
     year: str = Query(default="2025"),
-    start: int = Query(default=0),
-    count: int = Query(default=5),
+    count: int = Query(default=3),
 ):
     """
-    Dumps the raw get_league_players() response so we can see
-    exactly what YFPY returns — type, shape, keys, and a sample item.
+    Discovers the correct YFPY v17 method and signature for fetching players.
+    Tries every known variant and shows the raw response shape.
 
-    Usage:
-        GET /league/data/debug/player-info-raw?year=2025
-        GET /league/data/debug/player-info-raw?year=2025&start=0&count=3
+    Usage: GET /league/data/debug/player-info-raw?year=2025
     """
     try:
         from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
         from services.yahoo_service import get_query
+        import inspect
 
         league_key = get_league_key_for_season(year)
         query      = get_query(league_key)
 
-        # Try get_league_players
-        raw       = query.get_league_players(player_count=count, player_start=start)
-        raw_type  = type(raw).__name__
-        converted = _convert_to_dict(raw)
-        conv_type = type(converted).__name__
+        # 1. Show all player-related methods and their signatures
+        player_methods = {}
+        for m in sorted(dir(query)):
+            if m.startswith("_"): continue
+            if any(word in m.lower() for word in ["player", "roster", "free", "waiver"]):
+                try:
+                    sig = str(inspect.signature(getattr(query, m)))
+                    player_methods[m] = sig
+                except Exception:
+                    player_methods[m] = "(signature unavailable)"
 
-        # Shape of converted
-        if isinstance(converted, list):
-            top_shape   = f"list[{len(converted)}]"
-            sample_item = converted[0] if converted else None
-        elif isinstance(converted, dict):
-            top_shape   = f"dict — keys: {list(converted.keys())[:10]}"
-            # Try to find where the players actually are
-            sample_item = None
-            for k, v in converted.items():
-                if isinstance(v, list) and v:
-                    sample_item = v[0]
-                    break
-            if not sample_item:
-                sample_item = converted
-        else:
-            top_shape   = str(type(converted))
-            sample_item = None
+        result = {"year": year, "player_and_roster_methods": player_methods, "attempts": {}}
 
-        # Inspect the sample item
-        sample_keys     = None
-        sample_ed_keys  = None
-        sample_top_vals = {}
-        if isinstance(sample_item, dict):
-            sample_keys    = [k for k in sample_item.keys() if not k.startswith("_")][:20]
-            ed = sample_item.get("_extracted_data", {})
-            sample_ed_keys = list(ed.keys()) if isinstance(ed, dict) else None
-            # Show values for key fields
-            for field in ["player_key", "player_id", "full_name", "display_position",
-                          "editorial_team_abbr", "name", "status"]:
-                val = sample_item.get(field)
-                if val is not None:
-                    sample_top_vals[field] = repr(val)[:80]
-            # Also check _extracted_data values
-            if isinstance(ed, dict):
-                for field in ["player_key", "player_id", "name", "display_position"]:
-                    if field in ed:
-                        sample_top_vals[f"_extracted_data.{field}"] = repr(ed[field])[:80]
+        # 2. Try every plausible call variant for get_league_players
+        attempts = [
+            ("get_league_players()",
+             lambda: query.get_league_players()),
+            ("get_league_players(0, 25)",
+             lambda: query.get_league_players(0, 25)),
+            ("get_league_players(25, 0)",
+             lambda: query.get_league_players(25, 0)),
+            ("get_league_free_agents()",
+             lambda: query.get_league_free_agents() if hasattr(query, "get_league_free_agents") else None),
+        ]
 
-        # Also list all methods on query that relate to players
-        player_methods = sorted([m for m in dir(query)
-                                 if not m.startswith("_") and "player" in m.lower()])
+        for label, fn in attempts:
+            try:
+                raw  = fn()
+                if raw is None:
+                    result["attempts"][label] = "method does not exist"
+                    continue
+                conv = _convert_to_dict(raw)
 
-        return {
-            "year":              year,
-            "start":             start,
-            "count_requested":   count,
-            "raw_type":          raw_type,
-            "converted_type":    conv_type,
-            "converted_shape":   top_shape,
-            "sample_item_top_keys":   sample_keys,
-            "sample_item_ed_keys":    sample_ed_keys,
-            "sample_item_key_values": sample_top_vals,
-            "sample_item_full":       sample_item,
-            "available_player_methods": player_methods,
-        }
+                # Summarise shape
+                if isinstance(conv, list):
+                    shape = f"list[{len(conv)}]"
+                    sample = conv[0] if conv else None
+                elif isinstance(conv, dict):
+                    shape = f"dict — keys: {list(conv.keys())[:8]}"
+                    # Find first list value as likely players list
+                    sample = None
+                    for v in conv.values():
+                        if isinstance(v, list) and v:
+                            sample = v[0]; break
+                    if not sample: sample = conv
+                else:
+                    shape = str(type(conv))
+                    sample = None
+
+                # Inspect sample
+                sample_summary = {}
+                if isinstance(sample, dict):
+                    sample_summary["top_keys_no_underscore"] = [k for k in sample.keys() if not k.startswith("_")][:15]
+                    ed = sample.get("_extracted_data", {})
+                    sample_summary["_extracted_data_keys"] = list(ed.keys()) if isinstance(ed, dict) else None
+                    # Key field values
+                    for f in ["player_key", "player_id", "full_name", "name", "display_position", "editorial_team_abbr"]:
+                        v = sample.get(f)
+                        if v is not None:
+                            sample_summary[f"top.{f}"] = repr(v)[:60]
+                    if isinstance(ed, dict):
+                        for f in ["player_key", "player_id", "name", "display_position"]:
+                            v = ed.get(f)
+                            if v is not None:
+                                sample_summary[f"ed.{f}"] = repr(v)[:60]
+
+                result["attempts"][label] = {
+                    "status":         "ok",
+                    "raw_type":       type(raw).__name__,
+                    "converted_shape":shape,
+                    "sample_summary": sample_summary,
+                    "sample_full":    sample,
+                }
+            except Exception as e:
+                result["attempts"][label] = {"status": "error", "error": str(e)[:200]}
+
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/data/debug/player-stats-raw")
 def debug_player_stats_raw(
-    year: str        = Query(default="2025"),
-    player_key: str  = Query(default=None, description="e.g. 461.p.32723 — omit to auto-pick from draft"),
-    week: int        = Query(default=1),
+    year: str       = Query(default="2025"),
+    player_key: str = Query(default="461.p.32723", description="Player key to test with"),
+    week: int       = Query(default=1),
 ):
     """
-    Dumps the raw get_player_stats_by_week() response so we can see
-    exactly what YFPY returns for one player's weekly stats.
+    Discovers the correct YFPY v17 method and signature for fetching player stats.
+    Shows raw response shape including where fantasy points and stat lines are nested.
 
-    If no player_key is provided, uses the first pick from drafts.json.
-
-    Usage:
-        GET /league/data/debug/player-stats-raw?year=2025&week=1
-        GET /league/data/debug/player-stats-raw?year=2025&player_key=461.p.32723&week=1
+    Usage: GET /league/data/debug/player-stats-raw?year=2025&player_key=461.p.32723&week=1
     """
     try:
         from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
         from services.yahoo_service import get_query
+        import inspect
 
         league_key = get_league_key_for_season(year)
         query      = get_query(league_key)
 
-        # Auto-pick player_key from drafts.json if not provided
-        if not player_key:
-            drafts = _load_json(_get_data_path("drafts.json"))
-            season_draft = drafts.get(year, {})
-            picks = season_draft.get("picks", [])
-            if picks:
-                player_key = picks[0].get("player_key")
-
-        if not player_key:
-            return {"error": "No player_key provided and none found in drafts.json. Pass ?player_key="}
+        # 1. All stat-related method signatures
+        stat_methods = {}
+        for m in sorted(dir(query)):
+            if m.startswith("_"): continue
+            if any(word in m.lower() for word in ["stat", "point", "score", "player"]):
+                try:
+                    sig = str(inspect.signature(getattr(query, m)))
+                    stat_methods[m] = sig
+                except Exception:
+                    stat_methods[m] = "(signature unavailable)"
 
         result = {
-            "year":       year,
-            "week":       week,
-            "player_key": player_key,
+            "year": year, "player_key": player_key, "week": week,
+            "stat_methods": stat_methods,
+            "attempts": {},
         }
 
-        # Try get_player_stats_by_week
-        try:
-            raw       = query.get_player_stats_by_week(player_key, week)
-            raw_type  = type(raw).__name__
-            converted = _convert_to_dict(raw)
-            conv_type = type(converted).__name__
+        # 2. Try every plausible call for player stats
+        attempts = [
+            ("get_player_stats_by_week(player_key, week)",
+             lambda: query.get_player_stats_by_week(player_key, week)),
+            ("get_player_stats_by_week(player_key, str(week))",
+             lambda: query.get_player_stats_by_week(player_key, str(week))),
+            ("get_player(player_key)",
+             lambda: query.get_player(player_key) if hasattr(query, "get_player") else None),
+            ("get_player_ownership(player_key)",
+             lambda: query.get_player_ownership(player_key) if hasattr(query, "get_player_ownership") else None),
+        ]
 
-            # Find key fields
-            def _find_keys(obj, depth=0):
-                if depth > 3 or not isinstance(obj, dict):
-                    return
-                return {k: type(v).__name__ for k, v in obj.items()
-                        if not k.startswith("_")}
+        for label, fn in attempts:
+            try:
+                raw = fn()
+                if raw is None:
+                    result["attempts"][label] = "method does not exist"
+                    continue
+                conv = _convert_to_dict(raw)
 
-            top_keys = list(converted.keys()) if isinstance(converted, dict) else str(type(converted))
-            ed       = converted.get("_extracted_data", {}) if isinstance(converted, dict) else {}
+                # Find where stats/points are nested
+                stats_path  = None
+                points_path = None
 
-            # Look for stats / points nested inside
-            stats_location = None
-            points_location = None
-            def _search(obj, path=""):
-                nonlocal stats_location, points_location
-                if not isinstance(obj, dict): return
-                if "stats" in obj and stats_location is None:
-                    stats_location = path + ".stats"
-                if "player_points" in obj and points_location is None:
-                    points_location = path + ".player_points"
-                if "player_stats" in obj and stats_location is None:
-                    stats_location = path + ".player_stats"
-                for k, v in obj.items():
-                    _search(v, path + f".{k}")
-            _search(converted)
+                def _search(obj, path=""):
+                    nonlocal stats_path, points_path
+                    if not isinstance(obj, dict): return
+                    if "stats" in obj and stats_path is None:
+                        stats_path = path + ".stats"
+                    if "player_points" in obj and points_path is None:
+                        points_path = path + ".player_points"
+                    if "player_stats" in obj and stats_path is None:
+                        stats_path = path + ".player_stats"
+                    for k, v in obj.items():
+                        if isinstance(v, (dict, list)):
+                            _search(v if isinstance(v, dict) else (v[0] if v else {}),
+                                    path + f".{k}")
 
-            result["raw_type"]           = raw_type
-            result["converted_type"]     = conv_type
-            result["converted_top_keys"] = top_keys[:20] if isinstance(top_keys, list) else top_keys
-            result["ed_keys"]            = list(ed.keys()) if isinstance(ed, dict) else None
-            result["stats_found_at"]     = stats_location
-            result["points_found_at"]    = points_location
-            result["full_converted"]     = converted
+                _search(conv if isinstance(conv, dict) else {})
 
-        except Exception as e:
-            result["get_player_stats_by_week_error"] = str(e)
+                top_keys = list(conv.keys())[:15] if isinstance(conv, dict) else str(type(conv))
+                ed       = conv.get("_extracted_data", {}) if isinstance(conv, dict) else {}
 
-        # Also try get_player_stats_for_a_league if it exists
-        try:
-            raw2      = query.get_player_stats_for_a_league(player_key, "week", selected_date=None)
-            converted2 = _convert_to_dict(raw2)
-            result["get_player_stats_for_a_league"] = {
-                "type":     type(converted2).__name__,
-                "top_keys": list(converted2.keys())[:10] if isinstance(converted2, dict) else str(type(converted2)),
-                "preview":  str(converted2)[:400],
-            }
-        except Exception as e:
-            result["get_player_stats_for_a_league_error"] = str(e)[:150]
-
-        # List all available stat-related methods
-        stat_methods = sorted([m for m in dir(query)
-                               if not m.startswith("_") and "stat" in m.lower()])
-        result["available_stat_methods"] = stat_methods
+                result["attempts"][label] = {
+                    "status":        "ok",
+                    "raw_type":      type(raw).__name__,
+                    "conv_type":     type(conv).__name__,
+                    "top_keys":      top_keys,
+                    "ed_keys":       list(ed.keys()) if isinstance(ed, dict) else None,
+                    "stats_at":      stats_path,
+                    "points_at":     points_path,
+                    "full_response": conv,
+                }
+            except Exception as e:
+                result["attempts"][label] = {"status": "error", "error": str(e)[:200]}
 
         return result
-
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
