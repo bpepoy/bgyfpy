@@ -1438,20 +1438,36 @@ def _date_to_week(date_str: str, week_map: list) -> int | None:
     return None
 
 
+
+# ============================================================
+# TRANSACTIONS
+# ============================================================
 @router.get("/data/transactions/build-all")
 def build_transactions(
     skip_existing: bool = Query(default=True),
-    year: str          = Query(default=None, description="Single year e.g. '2025', or omit for all"),
+    year: str          = Query(default=None),
     force_clean: bool  = Query(default=False),
 ):
     """
-    Generates transactions.json — trades and waiver/FA moves per season.
-    Keyed by year: {"2025": {"trades": [...], "moves": [...]}}
+    Generates transactions.json — adds, drops, trades per season.
 
-    Usage:
-        GET /league/data/transactions/build-all
-        GET /league/data/transactions/build-all?year=2025
-        GET /league/data/transactions/build-all?force_clean=true
+    CONFIRMED from API extract + debug:
+      - query.get_league_transactions() returns a list of Transaction dicts
+      - type, status, timestamp, faab_bid, trader/tradee_team_key at top level
+      - players field shapes by type:
+          add/drop → list of {"player": {...}}
+          trade    → list of {"player": {...}}
+          add      → dict  {"player": {...}}  (single player)
+          drop     → dict  {"player": {...}}  (single player)
+          commish  → empty list (skip)
+      - After live _convert_to_dict, players may be {"players": [...]}
+        (nested one level deeper) — normalization handles this
+      - Player fields: player_key, full_name, display_position at top level
+      - transaction_data at top level: type, source_type, source_team_key,
+        destination_team_key, destination_team_name, destination_type
+
+    Shape:
+        {"2025": {"trades": [...], "moves": [...], "total_trades": N, "total_moves": N}}
     """
     try:
         from services.fantasy.league_service import (
@@ -1470,10 +1486,89 @@ def build_transactions(
         results      = {"success": [], "skipped": [], "failed": {}}
 
         def _ts_to_date(ts):
+            if not ts: return None
             try:
                 return datetime.datetime.fromtimestamp(int(ts)).strftime("%Y-%m-%d")
-            except (TypeError, ValueError):
+            except Exception:
                 return None
+
+        def _norm_players(raw) -> list:
+            """
+            Normalise the players field to a flat list of {"player": {...}} dicts.
+
+            Handles all confirmed shapes:
+              - list of {"player": {...}}          → add/drop, trade
+              - dict {"player": {...}}             → single add or drop
+              - dict {"players": [...]}            → live YFPY conversion wraps in extra dict
+              - list containing a list (double-wrapped) → flatten
+            """
+            if isinstance(raw, list):
+                # Flatten any nested lists (live YFPY double-wrapping)
+                flat = []
+                for item in raw:
+                    if isinstance(item, list):
+                        flat.extend(item)
+                    else:
+                        flat.append(item)
+                return flat
+            if isinstance(raw, dict):
+                # Single-player: {"player": {...}}
+                if "player" in raw:
+                    return [raw]
+                # YFPY-wrapped: {"players": [...]}
+                if "players" in raw:
+                    inner = raw["players"]
+                    return _norm_players(inner)
+                # Numbered dict: {"0": {...}, "1": {...}}
+                keys = list(raw.keys())
+                if keys and all(str(k).isdigit() for k in keys):
+                    return [raw[k] for k in sorted(keys, key=lambda x: int(x))]
+                return list(raw.values())
+            return []
+
+        def _extract_player(pw: dict) -> dict:
+            """
+            Extract player info from a {"player": {...}} wrapper or flat player dict.
+
+            CONFIRMED field locations (top level after _convert_to_dict):
+              player_key, full_name, display_position, editorial_team_abbr
+              transaction_data: type, source_type, source_team_key,
+                                destination_team_key, destination_team_name
+            """
+            # Unwrap {"player": {...}} if present
+            if isinstance(pw, dict) and "player" in pw:
+                p = pw["player"]
+            else:
+                p = pw
+            if not isinstance(p, dict):
+                return {}
+
+            # Name — full_name at top level (confirmed)
+            name = p.get("full_name") or ""
+            if not name:
+                name_raw = p.get("name", {})
+                if isinstance(name_raw, dict):
+                    name = name_raw.get("full") or ""
+
+            # transaction_data — flat dict at top level (confirmed)
+            td = p.get("transaction_data") or {}
+            if not isinstance(td, dict):
+                td = {}
+
+            return {
+                "player_key": p.get("player_key"),
+                "name":       name or "Unknown",
+                "position":   p.get("display_position") or p.get("primary_position"),
+                "nfl_team":   p.get("editorial_team_abbr"),
+                "td":         td,
+            }
+
+        def _week_from_date(date_str: str, week_map: list) -> int | None:
+            if not date_str or not week_map: return None
+            for entry in week_map:
+                if entry.get("week_start", "") <= date_str <= entry.get("week_end", ""):
+                    return entry.get("week")
+            return None
 
         for yr in target_years:
             if skip_existing and yr in existing and existing[yr]:
@@ -1482,195 +1577,178 @@ def build_transactions(
             try:
                 league_key = get_league_key_for_season(yr)
                 query      = get_query(league_key)
-                week_map   = _build_week_map(query, yr)
 
-                tx_dict = _convert_to_dict(query.get_league_transactions())
+                # Build week map from settings
+                week_map = []
+                try:
+                    settings = _convert_to_dict(query.get_league_settings())
+                    end_week = int(settings.get("end_week") or 17)
+                    for wk in range(1, end_week + 1):
+                        try:
+                            sb  = _convert_to_dict(query.get_league_scoreboard_by_week(wk))
+                            matchups = sb.get("matchups", []) if isinstance(sb, dict) else []
+                            if matchups:
+                                m = matchups[0]
+                                m = m.get("matchup", m) if isinstance(m, dict) else m
+                                ws = m.get("week_start")
+                                we = m.get("week_end")
+                                if ws and we:
+                                    week_map.append({"week": wk, "week_start": ws, "week_end": we})
+                        except Exception:
+                            continue
+                except Exception:
+                    pass
 
-                # YFPY can return transactions in several shapes:
-                #   list  → already a flat list
-                #   dict  → {"transactions": [...]} named key
-                #   dict  → {"0": tx, "1": tx, ...} numbered keys
-                #   dict  → with _extracted_data wrapping
-                if isinstance(tx_dict, list):
-                    tx_list = tx_dict
-                elif isinstance(tx_dict, dict):
-                    tx_list = tx_dict.get("transactions", [])
+                # Fetch all transactions
+                tx_raw  = _convert_to_dict(query.get_league_transactions())
+                if isinstance(tx_raw, list):
+                    tx_list = tx_raw
+                elif isinstance(tx_raw, dict):
+                    tx_list = tx_raw.get("transactions", [])
                     if not tx_list:
-                        # Try numbered dict
-                        keys = list(tx_dict.keys())
+                        keys = list(tx_raw.keys())
                         if keys and all(str(k).isdigit() for k in keys):
-                            tx_list = [tx_dict[k] for k in sorted(keys, key=lambda x: int(x))]
-                        elif not tx_list:
-                            # Try any list-valued key
-                            for v in tx_dict.values():
+                            tx_list = [tx_raw[k] for k in sorted(keys, key=lambda x: int(x))]
+                        else:
+                            for v in tx_raw.values():
                                 if isinstance(v, list) and v:
                                     tx_list = v
                                     break
                 else:
                     tx_list = []
 
-                def _unwrap_yfpy_obj(obj: dict) -> dict:
-                    """Merge _extracted_data into top level; top-level keys win."""
-                    if not isinstance(obj, dict):
-                        return obj or {}
-                    base = dict(obj.get("_extracted_data", {})) if isinstance(obj.get("_extracted_data"), dict) else {}
-                    for k, v in obj.items():
-                        if k not in ("_extracted_data", "_index", "_keys"):
-                            base[k] = v
-                    return base
-
-                trades = []
-                moves  = []
+                trades      = []
+                moves       = []
                 item_errors = []
 
                 for item in tx_list:
                     try:
-                        # Merge _extracted_data with top-level — top-level wins.
-                        # CRITICAL: In live YFPY responses, 'type' and 'status' may be
-                        # ONLY in _extracted_data (not promoted to top level by all YFPY versions).
-                        # We check both explicitly before doing the full merge.
-                        item_dict = item if isinstance(item, dict) else {}
-                        ed        = item_dict.get("_extracted_data", {}) or {}
-                        
-                        # Read critical fields from either location
-                        ttype  = item_dict.get("type") or (ed.get("type") if isinstance(ed, dict) else None) or ""
-                        status = item_dict.get("status") or (ed.get("status") if isinstance(ed, dict) else None) or ""
-                        
+                        tx = item if isinstance(item, dict) else {}
+
+                        # Read critical fields — check both top-level and _extracted_data
+                        ed     = tx.get("_extracted_data") or {}
+                        ttype  = tx.get("type")  or (ed.get("type")  if isinstance(ed, dict) else None) or ""
+                        status = tx.get("status") or (ed.get("status") if isinstance(ed, dict) else None) or ""
+
                         if status != "successful":
                             continue
-                        
-                        # Full merge for remaining fields
-                        tx = _unwrap_yfpy_obj(item_dict)
 
-                        ts       = tx.get("timestamp")
+                        ttype_norm = ttype.lower().replace(" ", "_")
+                        is_trade   = ttype_norm == "trade"
+                        is_move    = ttype_norm in ("add", "drop", "add/drop", "waiver", "free_agent")
+                        if not is_trade and not is_move:
+                            continue  # skip commish, unknown types
+
+                        ts       = tx.get("timestamp") or (ed.get("timestamp") if isinstance(ed, dict) else None)
                         date_str = _ts_to_date(ts)
-                        faab     = tx.get("faab_bid")
+                        week_num = _week_from_date(date_str, week_map)
+                        faab     = tx.get("faab_bid") or (ed.get("faab_bid") if isinstance(ed, dict) else None)
                         try:
                             faab_int = int(faab) if faab is not None else None
                         except (TypeError, ValueError):
                             faab_int = None
 
-                        # Normalize players_raw to a flat list of {player:{...}} wrappers.
-                        # CONFIRMED from API extract:
-                        #   add/drop → list of {player:{...}}
-                        #   trade    → list of {player:{...}}
-                        #   add      → dict {player:{...}}  (single player, no outer list)
-                        #   drop     → dict {player:{...}}  (single player, no outer list)
-                        #   commish  → empty list (skip)
-                        players_raw = tx.get("players", [])
-                        if isinstance(players_raw, dict):
-                            # Single-player tx: {"player": {...}} → wrap in list
-                            if "player" in players_raw:
-                                players_raw = [players_raw]
-                            else:
-                                # Numbered dict fallback
-                                keys = list(players_raw.keys())
-                                if keys and all(str(k).isdigit() for k in keys):
-                                    players_raw = [players_raw[k] for k in sorted(keys, key=lambda x: int(x))]
-                                else:
-                                    players_raw = list(players_raw.values())
-                        elif not isinstance(players_raw, list):
-                            players_raw = []
-
-                        ttype_norm  = ttype.lower().replace(" ", "_")
-                        is_trade    = ttype_norm == "trade"
-                        is_move     = ttype_norm in (
-                            "add", "drop", "add/drop", "waiver", "free_agent",
-                        )
-                        # Skip commish moves (empty players list, no meaningful data)
-                        if not is_trade and not is_move:
-                            continue
+                        # Normalise players to flat list
+                        players_raw  = tx.get("players") or (ed.get("players") if isinstance(ed, dict) else None) or []
+                        players_list = _norm_players(players_raw)
 
                         if is_trade:
-                            trader_tk = str(tx.get("trader_team_key") or "")
-                            tradee_tk = str(tx.get("tradee_team_key") or "")
-                            ti_a = get_manager_identity(team_key=trader_tk)
-                            ti_b = get_manager_identity(team_key=tradee_tk)
-                            mgr_a      = ti_a["manager_id"]   if ti_a else trader_tk
-                            mgr_a_name = ti_a["display_name"] if ti_a else trader_tk
-                            mgr_b      = ti_b["manager_id"]   if ti_b else tradee_tk
-                            mgr_b_name = ti_b["display_name"] if ti_b else tradee_tk
-    
+                            trader_tk = str(tx.get("trader_team_key") or (ed.get("trader_team_key") if isinstance(ed, dict) else "") or "")
+                            tradee_tk = str(tx.get("tradee_team_key") or (ed.get("tradee_team_key") if isinstance(ed, dict) else "") or "")
+                            ti_a      = get_manager_identity(team_key=trader_tk)
+                            ti_b      = get_manager_identity(team_key=tradee_tk)
+                            mgr_a     = ti_a["manager_id"]   if ti_a else trader_tk
+                            name_a    = ti_a["display_name"] if ti_a else trader_tk
+                            mgr_b     = ti_b["manager_id"]   if ti_b else tradee_tk
+                            name_b    = ti_b["display_name"] if ti_b else tradee_tk
+
                             a_received, b_received = [], []
-                            for pw in players_raw:
-                                pi      = _extract_player_from_yfpy(pw)
-                                dest_tk = str(pi["td"].get("destination_team_key") or "")
-                                entry   = {"name": pi["name"], "position": pi["position"], "player_key": pi["player_key"]}
+                            for pw in players_list:
+                                pi      = _extract_player(pw)
+                                dest_tk = pi["td"].get("destination_team_key") or ""
+                                entry   = {"player_key": pi["player_key"], "name": pi["name"],
+                                           "position": pi["position"], "nfl_team": pi["nfl_team"]}
                                 if dest_tk == trader_tk:
                                     a_received.append(entry)
                                 else:
                                     b_received.append(entry)
-    
+
                             trades.append({
-                                "week":           _date_to_week(date_str, week_map),
+                                "week":           week_num,
                                 "date":           date_str,
                                 "manager_a":      mgr_a,
-                                "manager_a_name": mgr_a_name,
+                                "manager_a_name": name_a,
                                 "manager_b":      mgr_b,
-                                "manager_b_name": mgr_b_name,
+                                "manager_b_name": name_b,
                                 "a_received":     a_received,
                                 "b_received":     b_received,
                             })
-    
+
                         elif is_move:
                             added, dropped = [], []
-                            for pw in players_raw:
-                                pi        = _extract_player_from_yfpy(pw)
+                            for pw in players_list:
+                                pi        = _extract_player(pw)
                                 move_type = (pi["td"].get("type") or "").lower()
-                                entry     = {"name": pi["name"], "position": pi["position"], "player_key": pi["player_key"]}
+                                entry     = {"player_key": pi["player_key"], "name": pi["name"],
+                                             "position": pi["position"], "nfl_team": pi["nfl_team"]}
                                 if move_type == "add":
-                                    added.append({**entry, "source_type": pi["td"].get("source_type", "")})
+                                    added.append({**entry,
+                                                  "source_type": pi["td"].get("source_type") or "",
+                                                  "waiver_bid": faab_int})
                                 elif move_type == "drop":
                                     dropped.append(entry)
-    
-                            # Resolve manager: prefer destination of first add
+
+                            if not added and not dropped:
+                                continue
+
+                            # Manager = destination team of add, or source team of drop
                             team_key = None
-                            for pw in players_raw:
-                                pi = _extract_player_from_yfpy(pw)
+                            for pw in players_list:
+                                pi = _extract_player(pw)
                                 mt = (pi["td"].get("type") or "").lower()
                                 if mt == "add":
-                                    team_key = str(pi["td"].get("destination_team_key") or "")
+                                    team_key = pi["td"].get("destination_team_key") or ""
                                     break
                                 elif mt == "drop":
-                                    team_key = str(pi["td"].get("source_team_key") or "")
+                                    team_key = pi["td"].get("source_team_key") or ""
                                     break
-    
+
                             identity     = get_manager_identity(team_key=team_key) if team_key else None
-                            manager      = identity["manager_id"]   if identity else team_key
-                            manager_name = identity["display_name"] if identity else team_key
-    
-                            if added or dropped:
-                                moves.append({
-                                    "week":         _date_to_week(date_str, week_map),
-                                    "date":         date_str,
-                                    "manager":      manager,
-                                    "display_name": manager_name,
-                                    "added":        added,
-                                    "dropped":      dropped,
-                                    "faab_bid":     faab_int,
-                                })
-    
-                    except Exception as item_err:
-                        item_errors.append(str(item_err)[:120])
+                            manager_id   = identity["manager_id"]   if identity else team_key
+                            display_name = identity["display_name"] if identity else team_key
+
+                            moves.append({
+                                "week":         week_num,
+                                "date":         date_str,
+                                "manager":      manager_id,
+                                "display_name": display_name,
+                                "added":        added,
+                                "dropped":      dropped,
+                            })
+
+                    except Exception as e:
+                        item_errors.append(str(e)[:120])
                         continue
 
                 existing[yr] = {
-                    "trades": sorted(trades, key=lambda x: (x.get("week") or 99, x.get("date") or "")),
-                    "moves":  sorted(moves,  key=lambda x: (x.get("week") or 99, x.get("date") or "")),
+                    "total_trades": len(trades),
+                    "total_moves":  len(moves),
+                    "trades":       sorted(trades, key=lambda x: (x.get("week") or 99, x.get("date") or "")),
+                    "moves":        sorted(moves,  key=lambda x: (x.get("week") or 99, x.get("date") or "")),
                     "_build_stats": {
                         "total_items":  len(tx_list),
                         "trades_found": len(trades),
                         "moves_found":  len(moves),
-                        "item_errors":  item_errors[:10],  # first 10 errors only
+                        "item_errors":  item_errors[:10],
                     },
                 }
                 results["success"].append(int(yr))
+
             except Exception as e:
                 results["failed"][yr] = str(e)
 
         sorted_data = _year_sort(existing)
         _write_json(path, sorted_data)
-
         return {
             "status":          "complete",
             "seasons_updated": results["success"],
@@ -1686,20 +1764,18 @@ def build_transactions(
 
 @router.get("/data/transactions/status")
 def transactions_status():
-    """Shows which years are in transactions.json."""
+    """Shows trade and move counts per year in transactions.json."""
     try:
-        path = _get_data_path("transactions.json")
-        data = _load_json(path)
+        data = _load_json(_get_data_path("transactions.json"))
         if not data:
             return {"status": "file_not_found", "years": []}
         summary = []
         for yr in sorted(data.keys(), reverse=True):
-            season = data[yr]
+            s = data[yr]
             summary.append({
-                "year":     int(yr),
-                "trades":   len(season.get("trades", [])),
-                "moves":    len(season.get("moves", [])),
-                "has_data": bool(season.get("trades") or season.get("moves")),
+                "year":         int(yr),
+                "total_trades": s.get("total_trades", len(s.get("trades", []))),
+                "total_moves":  s.get("total_moves",  len(s.get("moves",  []))),
             })
         return {"total_seasons": len(data), "seasons": summary}
     except Exception as e:
@@ -1712,7 +1788,7 @@ def download_transactions():
     try:
         data = _load_json(_get_data_path("transactions.json"))
         if not data:
-            raise HTTPException(status_code=404, detail="transactions.json not found.")
+            raise HTTPException(status_code=404, detail="transactions.json not found. Run build-all first.")
         return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
     except HTTPException:
         raise
@@ -1722,7 +1798,7 @@ def download_transactions():
 
 @router.get("/data/transactions/debug")
 def debug_transactions_raw(year: str = Query(default="2025")):
-    """Returns raw YFPY transaction response before parsing. Use to diagnose issues."""
+    """Returns raw transaction response shape for diagnosis."""
     try:
         from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
         from services.yahoo_service import get_query
@@ -1732,919 +1808,69 @@ def debug_transactions_raw(year: str = Query(default="2025")):
         raw        = query.get_league_transactions()
         converted  = _convert_to_dict(raw)
 
-        # Show all extraction paths
-        extracted_as_list   = converted if isinstance(converted, list) else []
-        extracted_named_key = converted.get("transactions", []) if isinstance(converted, dict) else []
-        keys                = list(converted.keys()) if isinstance(converted, dict) else []
-        numbered_keys       = all(str(k).isdigit() for k in keys) if keys else False
-        extracted_numbered  = [converted[k] for k in sorted(keys, key=lambda x: int(x))] \
-                              if numbered_keys else []
-
-        best_list = extracted_as_list or extracted_named_key or extracted_numbered
-        sample    = best_list[:2] if best_list else []
-
-        return {
-            "raw_type":              str(type(raw)),
-            "converted_type":        str(type(converted)),
-            "converted_top_keys":    keys[:10],
-            "count_as_list":         len(extracted_as_list),
-            "count_named_key":       len(extracted_named_key),
-            "count_numbered_keys":   len(extracted_numbered),
-            "best_count":            len(best_list),
-            "sample_items":          sample,
-            "note": "best_count > 0 means transactions were found. If 0, check raw_type.",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ===========================================================================
-# Data generation — matchups.json
-# ===========================================================================
-
-@router.get("/data/matchups/build-all")
-def build_matchups(
-    skip_existing: bool = Query(default=True),
-    year: str          = Query(default=None, description="Single year e.g. '2025', or omit for all"),
-    force_clean: bool  = Query(default=False),
-):
-    """
-    Generates matchups.json — weekly scoreboard data per season.
-
-    Shape per season:
-        {"2025": {"weeks": [{"week": 1, "matchups": [...]}, ...]}}
-
-    Per matchup:
-        {
-          "week": int,
-          "week_start": "YYYY-MM-DD",
-          "week_end":   "YYYY-MM-DD",
-          "is_playoffs": bool,
-          "is_consolation": bool,
-          "winner_manager": str,
-          "loser_manager":  str,
-          "is_tied": bool,
-          "teams": [
-            {
-              "manager_id":    str,
-              "team_key":      str,
-              "team_name":     str,
-              "points":        float,
-              "projected":     float,
-              "is_winner":     bool,
-            }, ...
-          ]
-        }
-
-    Usage:
-        GET /league/data/matchups/build-all
-        GET /league/data/matchups/build-all?year=2025
-        GET /league/data/matchups/build-all?force_clean=true
-    """
-    try:
-        from services.fantasy.league_service import (
-            get_all_seasons, get_league_key_for_season, _convert_to_dict,
-        )
-        from services.yahoo_service import get_query
-        from config import get_manager_identity
-
-        path     = _get_data_path("matchups.json")
-        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
-
-        seasons_data = get_all_seasons(force_refresh=True)
-        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
-        target_years = [year] if year else all_years
-        results      = {"success": [], "skipped": [], "failed": {}}
-
-        for yr in target_years:
-            if skip_existing and yr in existing and existing[yr]:
-                results["skipped"].append(int(yr))
-                continue
-            try:
-                league_key = get_league_key_for_season(yr)
-                query      = get_query(league_key)
-
-                try:
-                    settings_dict = _convert_to_dict(query.get_league_settings())
-                    playoff_start = int(settings_dict.get("playoff_start_week") or 15)
-                    end_week      = int(settings_dict.get("end_week") or 17)
-                except Exception:
-                    playoff_start, end_week = 15, 17
-
-                weeks_out = []
-
-                for week in range(1, end_week + 1):
-                    try:
-                        sb_dict  = _convert_to_dict(query.get_league_scoreboard_by_week(week))
-
-                        # Handle YFPY's various response shapes
-                        if isinstance(sb_dict, list):
-                            matchups_raw = sb_dict
-                        elif isinstance(sb_dict, dict):
-                            matchups_raw = sb_dict.get("matchups", [])
-                            if not matchups_raw:
-                                keys = list(sb_dict.keys())
-                                if keys and all(str(k).isdigit() for k in keys):
-                                    matchups_raw = [sb_dict[k] for k in sorted(keys, key=lambda x: int(x))]
-                        else:
-                            matchups_raw = []
-
-                        week_matchups = []
-                        for m in matchups_raw:
-                            matchup = m.get("matchup", m) if isinstance(m, dict) else {}
-
-                            # Unwrap _extracted_data if present
-                            if "_extracted_data" in matchup:
-                                ed = matchup["_extracted_data"]
-                                if isinstance(ed, dict):
-                                    merged = {**ed}
-                                    for k, v in matchup.items():
-                                        if k not in ("_extracted_data", "_index", "_keys"):
-                                            merged[k] = v
-                                    matchup = merged
-
-                            week_num       = int(matchup.get("week") or week)
-                            week_start     = matchup.get("week_start")
-                            week_end       = matchup.get("week_end")
-                            is_playoffs    = bool(int(matchup.get("is_playoffs",    0) or 0))
-                            is_consolation = bool(int(matchup.get("is_consolation", 0) or 0))
-                            is_tied        = bool(int(matchup.get("is_tied",        0) or 0))
-                            winner_tk      = matchup.get("winner_team_key") or ""
-
-                            teams_m = matchup.get("teams", [])
-                            if isinstance(teams_m, dict):
-                                teams_m = list(teams_m.values())
-
-                            teams_out      = []
-                            winner_manager      = None
-                            winner_display_name = None
-                            loser_manager       = None
-                            loser_display_name  = None
-
-                            for tw in teams_m:
-                                tm = tw.get("team", tw) if isinstance(tw, dict) else {}
-
-                                # Unwrap _extracted_data on team object
-                                if "_extracted_data" in tm:
-                                    ed = tm["_extracted_data"]
-                                    if isinstance(ed, dict):
-                                        merged = {**ed}
-                                        for k, v in tm.items():
-                                            if k not in ("_extracted_data", "_index", "_keys"):
-                                                merged[k] = v
-                                        tm = merged
-
-                                tk   = tm.get("team_key", "")
-                                name = tm.get("name", "")
-
-                                pts  = float(
-                                    (tm.get("team_points") or {}).get("total") or
-                                    tm.get("points") or 0
-                                )
-                                proj = float(
-                                    (tm.get("team_projected_points") or {}).get("total") or
-                                    tm.get("projected_points") or 0
-                                )
-
-                                identity   = get_manager_identity(team_key=tk)
-                                manager_id = identity["manager_id"]   if identity else tk
-                                disp_name  = identity["display_name"] if identity else tk
-                                is_winner  = (tk == winner_tk) and not is_tied
-
-                                if is_winner:
-                                    winner_manager      = manager_id
-                                    winner_display_name = disp_name
-                                elif not is_tied:
-                                    loser_manager      = manager_id
-                                    loser_display_name = disp_name
-
-                                teams_out.append({
-                                    "manager_id":   manager_id,
-                                    "display_name": disp_name,
-                                    "team_key":     tk,
-                                    "team_id":      tk.split(".t.")[-1] if ".t." in tk else None,
-                                    "team_name":    name,
-                                    "points":       round(pts,  2),
-                                    "projected":    round(proj, 2),
-                                    "is_winner":    is_winner,
-                                })
-
-                            week_matchups.append({
-                                "week":                week_num,
-                                "week_start":          week_start,
-                                "week_end":            week_end,
-                                "is_playoffs":         is_playoffs,
-                                "is_consolation":      is_consolation,
-                                "is_tied":             is_tied,
-                                "winner_manager":      winner_manager,
-                                "winner_display_name": winner_display_name,
-                                "loser_manager":       loser_manager,
-                                "loser_display_name":  loser_display_name,
-                                "teams":               teams_out,
-                            })
-
-                        if week_matchups:
-                            weeks_out.append({"week": week, "matchups": week_matchups})
-
-                    except Exception:
-                        continue  # skip individual weeks that fail
-
-                existing[yr] = {
-                    "year":          int(yr),
-                    "playoff_start": playoff_start,
-                    "end_week":      end_week,
-                    "total_weeks":   len(weeks_out),
-                    "weeks":         weeks_out,
-                }
-                results["success"].append(int(yr))
-            except Exception as e:
-                results["failed"][yr] = str(e)
-
-        sorted_data = _year_sort(existing)
-        _write_json(path, sorted_data)
-
-        return {
-            "status":          "complete",
-            "seasons_updated": results["success"],
-            "seasons_skipped": results["skipped"],
-            "seasons_failed":  results["failed"],
-            "total_seasons":   len(sorted_data),
-            "file_written":    path,
-            "next_step":       "GET /league/data/matchups/download to save locally",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/data/matchups/status")
-def matchups_status():
-    """Shows which years are in matchups.json."""
-    try:
-        path = _get_data_path("matchups.json")
-        data = _load_json(path)
-        if not data:
-            return {"status": "file_not_found", "years": []}
-        summary = []
-        for yr in sorted(data.keys(), reverse=True):
-            season = data[yr]
-            weeks  = season.get("weeks", [])
-            total_matchups = sum(len(w.get("matchups", [])) for w in weeks)
-            summary.append({
-                "year":           int(yr),
-                "total_weeks":    season.get("total_weeks", len(weeks)),
-                "total_matchups": total_matchups,
-                "playoff_start":  season.get("playoff_start"),
-            })
-        return {"total_seasons": len(data), "seasons": summary}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/data/matchups/download")
-def download_matchups():
-    """Returns current matchups.json for local save."""
-    try:
-        data = _load_json(_get_data_path("matchups.json"))
-        if not data:
-            raise HTTPException(status_code=404, detail="matchups.json not found. Run build-all first.")
-        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/data/matchups/debug")
-def debug_matchups_raw(
-    year: str = Query(default="2025"),
-    week: int = Query(default=1),
-):
-    """
-    Returns raw scoreboard for one week. Use to confirm field paths before rebuilding.
-
-    Usage:
-        GET /league/data/matchups/debug?year=2025&week=1
-    """
-    try:
-        from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
-        from services.yahoo_service import get_query
-
-        league_key   = get_league_key_for_season(year)
-        query        = get_query(league_key)
-        sb_raw       = query.get_league_scoreboard_by_week(week)
-        sb_dict      = _convert_to_dict(sb_raw)
-
-        matchups_raw = []
-        if isinstance(sb_dict, list):
-            matchups_raw = sb_dict
-        elif isinstance(sb_dict, dict):
-            matchups_raw = sb_dict.get("matchups", [])
-
-        first = matchups_raw[0] if matchups_raw else {}
-
-        return {
-            "year":             year,
-            "week":             week,
-            "converted_type":   str(type(sb_dict)),
-            "converted_keys":   list(sb_dict.keys()) if isinstance(sb_dict, dict) else [],
-            "matchup_count":    len(matchups_raw),
-            "first_matchup":    first,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ===========================================================================
-# Data generation — drafts.json
-# ===========================================================================
-
-@router.get("/data/drafts/build-all")
-def build_drafts(
-    skip_existing: bool = Query(default=True),
-    year: str          = Query(default=None, description="Single year e.g. '2025', or omit for all"),
-    force_clean: bool  = Query(default=False),
-):
-    """
-    Generates drafts.json — full draft board per season.
-
-    Snake drafts: cost = null
-    Auction drafts: cost = dollars spent (2023+)
-    Keyed by year: {"2025": {"draft_type": "auction", "picks": [...]}}
-
-    Usage:
-        GET /league/data/drafts/build-all
-        GET /league/data/drafts/build-all?year=2025
-        GET /league/data/drafts/build-all?force_clean=true
-    """
-    try:
-        from services.fantasy.league_service import (
-            get_all_seasons, get_league_key_for_season, _convert_to_dict, _safe_get,
-        )
-        from services.yahoo_service import get_query
-        from config import get_manager_identity
-
-        path     = _get_data_path("drafts.json")
-        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
-
-        seasons_data = get_all_seasons(force_refresh=True)
-        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
-        target_years = [year] if year else all_years
-        results      = {"success": [], "skipped": [], "failed": {}}
-
-        for yr in target_years:
-            if skip_existing and yr in existing and existing[yr]:
-                results["skipped"].append(int(yr))
-                continue
-            try:
-                league_key = get_league_key_for_season(yr)
-                query      = get_query(league_key)
-
-                # Draft type
-                try:
-                    settings_dict = _convert_to_dict(query.get_league_settings())
-                    is_auction    = bool(int(settings_dict.get("is_auction_draft") or 0))
-                    draft_type    = "auction" if is_auction else "snake"
-                    num_teams     = int(settings_dict.get("num_teams") or 10)
-                except Exception:
-                    draft_type, is_auction, num_teams = "unknown", False, 10
-
-                # Get picks — _unwrap_picks_raw handles all YFPY return shapes
-                draft_raw = query.get_league_draft_results()
-                picks_raw = _unwrap_picks_raw(draft_raw, _convert_to_dict)
-
-                # Load player_info for this year to enrich picks with player names
-                player_info_data = _load_json(_get_data_path("player_info.json"))
-                player_lookup = {}
-                if yr in player_info_data:
-                    player_lookup = player_info_data[yr].get("players", {})
-
-                picks = []
-                for item in picks_raw:
-                    # Confirmed flat fields from API: pick, round, cost, team_key, player_key
-                    # All at top level AND in _extracted_data — use top level
-                    p = item if isinstance(item, dict) else {}
-                    # Also check if wrapped in draft_result
-                    if "draft_result" in p:
-                        p = p["draft_result"] if isinstance(p["draft_result"], dict) else p
-
-                    team_key   = str(p.get("team_key")   or "")
-                    player_key = str(p.get("player_key") or "")
-                    pick_num   = p.get("pick")
-                    round_num  = p.get("round")
-                    cost       = p.get("cost")
-
-                    if not team_key and not player_key:
-                        continue
-
-                    identity     = get_manager_identity(team_key=team_key)
-                    manager_id   = identity["manager_id"]   if identity else None
-                    display_name = identity["display_name"] if identity else team_key or "Unknown"
-
-                    try:
-                        pick_int = int(pick_num) if pick_num is not None else None
-                    except (TypeError, ValueError):
-                        pick_int = None
-
-                    try:
-                        round_int = int(round_num) if round_num is not None else None
-                        if round_int is None and pick_int is not None:
-                            round_int = ((pick_int - 1) // num_teams) + 1
-                    except (TypeError, ValueError):
-                        round_int = None
-
-                    try:
-                        cost_int = int(cost) if cost is not None else None
-                    except (TypeError, ValueError):
-                        cost_int = None
-
-                    # Enrich with player info if available
-                    pi = player_lookup.get(player_key, {})
-                    player_name = pi.get("name")
-                    position    = pi.get("position")
-                    nfl_team    = pi.get("nfl_team")
-
-                    picks.append({
-                        "overall_pick": pick_int,
-                        "round":        round_int,
-                        "manager_id":   manager_id,
-                        "display_name": display_name,
-                        "team_key":     team_key,
-                        "player_key":   player_key or None,
-                        "player_name":  player_name,
-                        "position":     position,
-                        "nfl_team":     nfl_team,
-                        "cost":         cost_int,
-                    })
-
-                picks.sort(key=lambda x: x.get("overall_pick") or 9999)
-
-                existing[yr] = {
-                    "year":        int(yr),
-                    "draft_type":  draft_type,
-                    "total_picks": len(picks),
-                    "picks":       picks,
-                }
-                results["success"].append(int(yr))
-            except Exception as e:
-                results["failed"][yr] = str(e)
-
-        sorted_data = _year_sort(existing)
-        _write_json(path, sorted_data)
-
-        return {
-            "status":          "complete",
-            "seasons_updated": results["success"],
-            "seasons_skipped": results["skipped"],
-            "seasons_failed":  results["failed"],
-            "total_seasons":   len(sorted_data),
-            "file_written":    path,
-            "next_step":       "GET /league/data/drafts/download to save locally",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/data/drafts/debug")
-def debug_draft_raw(year: str = Query(default="2025")):
-    """
-    Returns raw YFPY draft response before parsing.
-    Use this to diagnose why picks are empty in drafts.json.
-
-    Look at 'raw_type', 'raw_dict_keys', and 'raw_repr_excerpt' to understand
-    what shape YFPY is returning and which unwrap path to fix.
-    """
-    try:
-        from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
-        from services.yahoo_service import get_query
-
-        league_key = get_league_key_for_season(year)
-        query      = get_query(league_key)
-        raw        = query.get_league_draft_results()
-        converted  = _convert_to_dict(raw)
-        picks_raw  = _unwrap_picks_raw(raw, _convert_to_dict)
-
-        # Inspect the raw object deeply
-        raw_dict_keys = []
-        raw_dict_sample = {}
-        if hasattr(raw, "__dict__"):
-            raw_dict_keys = list(raw.__dict__.keys())
-            # Sample first value of each key
-            for k in raw_dict_keys[:8]:
-                v = raw.__dict__[k]
-                raw_dict_sample[k] = {
-                    "type": str(type(v).__name__),
-                    "len": len(v) if hasattr(v, "__len__") else None,
-                    "preview": str(v)[:200] if not isinstance(v, (dict, list)) else (
-                        list(v.keys())[:5] if isinstance(v, dict) else str(v)[:200]
-                    ),
-                }
-
-        # If converted is a dict, show its key structure
-        converted_structure = {}
-        if isinstance(converted, dict):
-            for k, v in list(converted.items())[:10]:
-                converted_structure[k] = {
-                    "type": str(type(v).__name__),
-                    "len": len(v) if hasattr(v, "__len__") else None,
-                }
-
-        return {
-            "year":                  year,
-            "league_key":            league_key,
-            "raw_type":              str(type(raw)),
-            "raw_is_list":           isinstance(raw, list),
-            "raw_is_dict":           isinstance(raw, dict),
-            "raw_has_dict":          hasattr(raw, "__dict__"),
-            "raw_has_iter":          hasattr(raw, "__iter__"),
-            "raw_len":               len(raw) if hasattr(raw, "__len__") else None,
-            "raw_dict_keys":         raw_dict_keys,
-            "raw_dict_sample":       raw_dict_sample,
-            "raw_repr_excerpt":      repr(raw)[:500],
-            "converted_type":        str(type(converted)),
-            "converted_structure":   converted_structure,
-            "unwrapped_len":         len(picks_raw),
-            "first_pick_raw":        str(raw[0])[:300] if isinstance(raw, list) and raw else None,
-            "first_pick_unwrapped":  picks_raw[0] if picks_raw else None,
-            "note": (
-                "If unwrapped_len is 0: check raw_dict_keys for 'draft_results' or similar. "
-                "If raw is a YFPY object, the picks are likely in raw.__dict__['draft_results']. "
-                "Report back the full output of this endpoint to fix _unwrap_picks_raw."
-            ),
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/data/drafts/status")
-def drafts_status():
-    """Shows which years are in drafts.json and pick enrichment state."""
-    try:
-        path = _get_data_path("drafts.json")
-        data = _load_json(path)
-        if not data:
-            return {"status": "file_not_found", "years": []}
-
-        summary = []
-        for yr in sorted(data.keys(), reverse=True):
-            season = data[yr]
-            picks  = season.get("picks", [])
-            with_names = sum(1 for p in picks if p.get("player_name"))
-            summary.append({
-                "year":             int(yr),
-                "draft_type":       season.get("draft_type"),
-                "total_picks":      len(picks),
-                "picks_with_names": with_names,
-                "needs_refresh":    with_names < len(picks) // 2 if picks else True,
+        if isinstance(converted, list):
+            tx_list = converted
+        elif isinstance(converted, dict):
+            tx_list = converted.get("transactions", [])
+            if not tx_list:
+                for v in converted.values():
+                    if isinstance(v, list) and v:
+                        tx_list = v; break
+        else:
+            tx_list = []
+
+        sample = tx_list[:2] if tx_list else []
+
+        # For each sample show the players field shape
+        samples_annotated = []
+        for tx in sample:
+            players = tx.get("players") or {}
+            samples_annotated.append({
+                "type":         tx.get("type"),
+                "status":       tx.get("status"),
+                "players_type": type(players).__name__,
+                "players_keys": list(players.keys()) if isinstance(players, dict) else len(players),
+                "full":         tx,
             })
 
         return {
-            "total_seasons":  len(data),
-            "auction_seasons":[s["year"] for s in summary if s["draft_type"] == "auction"],
-            "snake_seasons":  [s["year"] for s in summary if s["draft_type"] == "snake"],
-            "seasons":        summary,
+            "total_items":    len(tx_list),
+            "converted_type": type(converted).__name__,
+            "sample_items":   samples_annotated,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/data/drafts/download")
-def download_drafts():
-    """Returns current drafts.json for local save."""
-    try:
-        data = _load_json(_get_data_path("drafts.json"))
-        if not data:
-            raise HTTPException(status_code=404, detail="drafts.json not found.")
-        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
-
-# ===========================================================================
-# Data generation — rules.json
-# ===========================================================================
-
-@router.get("/data/rules/build-all")
-def build_rules(
-    skip_existing: bool = Query(default=True),
-    year: str          = Query(default=None),
-    force_clean: bool  = Query(default=False),
-):
-    """
-    Generates rules.json — league settings and scoring rules per season.
-
-    Shape per season:
-        {
-          "year": int,
-          "league_key": str,
-          "draft_type": "auction" | "snake",
-          "num_teams": int,
-          "playoff_teams": int,
-          "playoff_start_week": int,
-          "end_week": int,
-          "uses_faab": bool,
-          "waiver_type": str,
-          "trade_deadline": str,
-          "scoring_type": "head" | "rotisserie",
-          "roster_positions": [...],
-          "stat_categories": [{"stat_id", "name", "abbr", "sort_order"}]
-        }
-
-    Usage:
-        GET /league/data/rules/build-all
-        GET /league/data/rules/build-all?year=2025
-        GET /league/data/rules/build-all?force_clean=true
-    """
-    try:
-        from services.fantasy.league_service import (
-            get_all_seasons, get_league_key_for_season, _convert_to_dict, _safe_get,
-        )
-        from services.yahoo_service import get_query
-
-        path     = _get_data_path("rules.json")
-        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
-
-        seasons_data = get_all_seasons(force_refresh=True)
-        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
-        target_years = [year] if year else all_years
-        results      = {"success": [], "skipped": [], "failed": {}}
-
-        for yr in target_years:
-            if skip_existing and yr in existing and existing[yr]:
-                results["skipped"].append(int(yr))
-                continue
-            try:
-                league_key = get_league_key_for_season(yr)
-                query      = get_query(league_key)
-
-                s = _convert_to_dict(query.get_league_settings())
-
-                # Roster positions
-                rp_raw = s.get("roster_positions", [])
-                if isinstance(rp_raw, dict):
-                    rp_raw = list(rp_raw.values())
-                roster_positions = []
-                for rp in (rp_raw or []):
-                    r = rp.get("roster_position", rp) if isinstance(rp, dict) else {}
-                    if "_extracted_data" in r:
-                        ed = r["_extracted_data"]
-                        if isinstance(ed, dict):
-                            r = {**ed, **{k: v for k, v in r.items() if k not in ("_extracted_data", "_index", "_keys")}}
-                    pos   = r.get("position") or r.get("abbreviation")
-                    count = int(r.get("count") or r.get("position_count") or 1)
-                    is_starting = bool(int(r.get("is_starting_position") or 0))
-                    if pos:
-                        roster_positions.append({
-                            "position":    pos,
-                            "count":       count,
-                            "is_starting": is_starting,
-                        })
-
-                # Stat categories
-                sc_raw = s.get("stat_categories", {})
-                if isinstance(sc_raw, dict):
-                    sc_raw = sc_raw.get("stats", []) or list(sc_raw.values())
-                stat_categories = []
-                for sc in (sc_raw or []):
-                    stat = sc.get("stat", sc) if isinstance(sc, dict) else {}
-                    if "_extracted_data" in stat:
-                        ed = stat["_extracted_data"]
-                        if isinstance(ed, dict):
-                            stat = {**ed, **{k: v for k, v in stat.items() if k not in ("_extracted_data", "_index", "_keys")}}
-                    sid  = stat.get("stat_id")
-                    name = stat.get("name") or stat.get("display_name")
-                    abbr = stat.get("abbr") or stat.get("abbreviation")
-                    enabled = bool(int(stat.get("enabled") or 0))
-                    sort    = int(stat.get("sort_order") or 1)
-                    if sid and name:
-                        stat_categories.append({
-                            "stat_id":    sid,
-                            "name":       name,
-                            "abbr":       abbr,
-                            "sort_order": sort,
-                            "enabled":    enabled,
-                        })
-
-                existing[yr] = {
-                    "year":               int(yr),
-                    "league_key":         league_key,
-                    "draft_type":         "auction" if bool(int(s.get("is_auction_draft") or 0)) else "snake",
-                    "num_teams":          int(s.get("num_teams") or s.get("max_teams") or 10),
-                    "playoff_teams":      int(s.get("num_playoff_teams") or 4),
-                    "playoff_start_week": int(s.get("playoff_start_week") or 15),
-                    "end_week":           int(s.get("end_week") or 17),
-                    "uses_faab":          bool(int(s.get("uses_faab") or 0)),
-                    "faab_budget":        int(s.get("faab_budget") or 100) if bool(int(s.get("uses_faab") or 0)) else None,
-                    "waiver_type":        s.get("waiver_type"),
-                    "waiver_rule":        s.get("waiver_rule"),
-                    "trade_deadline":     s.get("trade_end_date"),
-                    "trade_ratify_type":  s.get("trade_ratify_type"),
-                    "scoring_type":       s.get("scoring_type") or "head",
-                    "roster_positions":   roster_positions,
-                    "stat_categories":    stat_categories,
-                }
-                results["success"].append(int(yr))
-            except Exception as e:
-                results["failed"][yr] = str(e)
-
-        sorted_data = _year_sort(existing)
-        _write_json(path, sorted_data)
-
-        return {
-            "status":          "complete",
-            "seasons_updated": results["success"],
-            "seasons_skipped": results["skipped"],
-            "seasons_failed":  results["failed"],
-            "total_seasons":   len(sorted_data),
-            "file_written":    path,
-            "next_step":       "GET /league/data/rules/download to save locally",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/data/rules/status")
-def rules_status():
-    """Shows which years are in rules.json."""
-    try:
-        path = _get_data_path("rules.json")
-        data = _load_json(path)
-        if not data:
-            return {"status": "file_not_found", "years": []}
-        summary = []
-        for yr in sorted(data.keys(), reverse=True):
-            s = data[yr]
-            summary.append({
-                "year":          int(yr),
-                "draft_type":    s.get("draft_type"),
-                "playoff_teams": s.get("playoff_teams"),
-                "uses_faab":     s.get("uses_faab"),
-                "stat_count":    len(s.get("stat_categories", [])),
-                "roster_slots":  sum(r.get("count", 1) for r in s.get("roster_positions", [])),
-            })
-        return {"total_seasons": len(data), "seasons": summary}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/data/rules/download")
-def download_rules():
-    """Returns current rules.json for local save."""
-    try:
-        data = _load_json(_get_data_path("rules.json"))
-        if not data:
-            raise HTTPException(status_code=404, detail="rules.json not found. Run build-all first.")
-        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ===========================================================================
-# Data generation — punishment.json
-# ===========================================================================
-
-@router.get("/data/punishment/build")
-def build_punishment():
-    """
-    Seeds punishment.json from SEASON_HISTORY_MANUAL in config.py.
-    Loser is NOT stored here — derive at runtime from results.json (rank == 10).
-    Run once to seed; update manually or via commissioner UI after that.
-    """
-    try:
-        from config import get_all_manual_history
-
-        path     = _get_data_path("punishment.json")
-        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
-        manual   = get_all_manual_history()
-
-        for yr, data in manual.items():
-            yr_str     = str(yr)
-            punishment = data.get("punishment")
-            if yr_str not in existing:
-                existing[yr_str] = {"year": yr, "punishment": punishment}
-            elif punishment and not existing[yr_str].get("punishment"):
-                existing[yr_str]["punishment"] = punishment
-
-        sorted_data = _year_sort(existing)
-        _write_json(path, sorted_data)
-
-        return {
-            "status":        "complete",
-            "total_seasons": len(sorted_data),
-            "populated":     sum(1 for v in sorted_data.values() if v.get("punishment")),
-            "missing":       [k for k, v in sorted_data.items() if not v.get("punishment")],
-            "file_written":  path,
-            "next_step":     "GET /league/data/punishment/download to save locally",
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/data/punishment/update")
-def update_punishment(
-    year:       int = Query(..., description="Season year e.g. 2026"),
-    punishment: str = Query(..., description="Punishment text for the loser"),
-    user: dict = Depends(require_permission("edit_settings")),
-):
-    """
-    Commissioner/app owner — add or update punishment for a season.
-    Requires commissioner or app_owner role.
-    """
-    try:
-        import datetime
-
-        path     = _get_data_path("punishment.json")
-        existing = {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
-
-        existing[str(year)] = {
-            "year":       year,
-            "punishment": punishment,
-            "updated_by": user.get("display_name"),
-            "updated_at": datetime.datetime.utcnow().isoformat(),
-        }
-
-        sorted_data = _year_sort(existing)
-        _write_json(path, sorted_data)
-
-        return {
-            "status":     "updated",
-            "year":       year,
-            "punishment": punishment,
-            "updated_by": user.get("display_name"),
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/data/punishment/status")
-def punishment_status():
-    """Shows which years have punishment entries."""
-    try:
-        path = _get_data_path("punishment.json")
-        data = _load_json(path)
-        if not data:
-            return {"status": "file_not_found", "years": []}
-        summary = [
-            {"year": int(yr), "has_punishment": bool(v.get("punishment")), "punishment": v.get("punishment")}
-            for yr, v in sorted(data.items(), reverse=True)
-        ]
-        return {
-            "total_seasons": len(data),
-            "populated":     sum(1 for s in summary if s["has_punishment"]),
-            "missing":       [s["year"] for s in summary if not s["has_punishment"]],
-            "seasons":       summary,
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/data/punishment/download")
-def download_punishment():
-    """Returns current punishment.json for local save."""
-    try:
-        data = _load_json(_get_data_path("punishment.json"))
-        if not data:
-            raise HTTPException(status_code=404, detail="punishment.json not found. Run /league/data/punishment/build first.")
-        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-# ===========================================================================
-# Data generation — player_info.json
-# ===========================================================================
-
+# ============================================================
+# PLAYER INFO
+# ============================================================
 @router.get("/data/player-info/build-all")
 def build_player_info(
     skip_existing: bool = Query(default=True),
     year: str          = Query(default=None),
     force_clean: bool  = Query(default=False),
-    max_players: int   = Query(default=1200, description="Max players to fetch per season"),
 ):
     """
-    Generates player_info.json — player metadata per season.
+    Generates player_info.json — all player metadata for a season.
 
-    Confirmed field locations from Yahoo API extract (all at top level):
-      player_key, player_id, full_name, display_position, editorial_team_abbr,
-      editorial_team_full_name, position_type, status, injury_note, uniform_number,
-      is_undroppable. Name object also at top level as full_name (string).
+    CONFIRMED from YFPY v17 debug:
+      - query.get_league_players() — NO arguments, returns ALL ~1,187 players at once
+      - Returns List[Player] objects; after _convert_to_dict: clean flat dicts, no _extracted_data
+      - Fields all at top level: player_key, player_id, full_name, first_name, last_name,
+        display_position, primary_position, position_type, editorial_team_abbr,
+        editorial_team_full_name, headshot_url, image_url, status, status_full,
+        injury_note, is_undroppable, uniform_number, bye (integer, NOT bye_weeks)
+      - One API call per season (no pagination needed)
 
-    Shape: {"2025": {"total_players": N, "players": {"461.p.12345": {...}}}}
-
-    Usage:
-        GET /league/data/player-info/build-all?year=2025
-        GET /league/data/player-info/build-all?year=2025&max_players=500
+    Shape: {"2025": {"total_players": N, "players": {"461.p.32723": {...}}}}
     """
     try:
         from services.fantasy.league_service import (
             get_all_seasons, get_league_key_for_season, _convert_to_dict,
         )
         from services.yahoo_service import get_query
-        import time
 
         path     = _get_data_path("player_info.json")
         existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
@@ -2654,91 +1880,45 @@ def build_player_info(
         target_years = [year] if year else all_years
         results      = {"success": [], "skipped": [], "failed": {}}
 
-        def _unwrap(obj):
-            if not isinstance(obj, dict): return obj
-            base = dict(obj.get("_extracted_data", {})) if isinstance(obj.get("_extracted_data"), dict) else {}
-            for k, v in obj.items():
-                if k not in ("_extracted_data", "_index", "_keys"): base[k] = v
-            return base
-
-        def _norm_page(raw) -> list:
-            """Normalise a page response to a flat list of player wrapper objects.
-            Handles YFPY returning Player objects, lists, or dicts."""
-            # If it's a YFPY object (not list/dict), convert it first
-            if not isinstance(raw, (list, dict)):
-                try:
-                    from services.fantasy.league_service import _convert_to_dict
-                    raw = _convert_to_dict(raw)
-                except Exception:
-                    return []
-            if isinstance(raw, list):
-                return raw
-            if isinstance(raw, dict):
-                # Try named key first
-                players = raw.get("players", [])
-                if isinstance(players, list) and players:
-                    return players
-                if isinstance(players, dict):
-                    return list(players.values())
-                # Numbered dict fallback
-                keys = list(raw.keys())
-                if keys and all(str(k).isdigit() for k in keys):
-                    return [raw[k] for k in sorted(keys, key=lambda x: int(x))]
-                # Any list-valued key
-                for v in raw.values():
-                    if isinstance(v, list) and v:
-                        return v
-            return []
-
-        def _extract_player(item: dict) -> dict | None:
-            """Extract clean player dict from a YFPY player object.
-            Confirmed top-level fields: full_name, player_key, player_id,
-            display_position, editorial_team_abbr, position_type etc."""
-            p = _unwrap(item.get("player", item) if isinstance(item, dict) else item)
-
+        def _extract_player_info(p: dict) -> dict | None:
+            """
+            Extract player info from a converted Player dict.
+            All fields confirmed at top level after _convert_to_dict.
+            """
             pk = p.get("player_key")
             if not pk:
                 return None
 
-            # full_name is confirmed at top level
-            name = p.get("full_name")
-            if not name:
-                # Fallback to name dict
-                name_raw = p.get("name", {})
-                if isinstance(name_raw, dict):
-                    name = _unwrap(name_raw).get("full") or ""
-                else:
-                    name = str(name_raw or "")
-
-            # Headshot
-            headshot = _unwrap(p.get("headshot", {})) if isinstance(p.get("headshot"), dict) else {}
-            headshot_url = (headshot.get("url") or p.get("headshot_url") or
-                           p.get("image_url") or "")
-
-            # Bye week
-            bye_raw = p.get("bye")
-            if bye_raw is None:
-                bw = p.get("bye_weeks", {})
-                if isinstance(bw, dict) and bw:
-                    bye_raw = next(iter(bw.values()), None)
+            # eligible_positions can be list of strings or list of {"position": str} dicts
+            ep_raw = p.get("eligible_positions") or []
+            if isinstance(ep_raw, list):
+                eligible = []
+                for ep in ep_raw:
+                    if isinstance(ep, dict):
+                        eligible.append(ep.get("position") or "")
+                    elif isinstance(ep, str):
+                        eligible.append(ep)
+            else:
+                eligible = []
 
             return {
-                "player_key":          pk,
-                "player_id":           p.get("player_id"),
-                "name":                name,
-                "first_name":          p.get("first_name"),
-                "last_name":           p.get("last_name"),
-                "position":            p.get("display_position"),
-                "position_type":       p.get("position_type"),
-                "eligible_positions":  p.get("eligible_positions") or [],
-                "nfl_team":            p.get("editorial_team_abbr"),
-                "nfl_team_full":       p.get("editorial_team_full_name"),
-                "uniform_number":      p.get("uniform_number"),
-                "headshot_url":        headshot_url,
-                "status":              p.get("status") or "",
-                "injury_note":         p.get("injury_note") or "",
-                "is_undroppable":      bool(int(p.get("is_undroppable") or 0)),
-                "bye_week":            bye_raw,
+                "player_key":      pk,
+                "player_id":       p.get("player_id"),
+                "name":            p.get("full_name") or "",
+                "first_name":      p.get("first_name") or "",
+                "last_name":       p.get("last_name") or "",
+                "position":        p.get("display_position") or p.get("primary_position") or "",
+                "position_type":   p.get("position_type") or "",
+                "eligible_positions": [e for e in eligible if e],
+                "nfl_team":        p.get("editorial_team_abbr") or "",
+                "nfl_team_full":   p.get("editorial_team_full_name") or "",
+                "uniform_number":  p.get("uniform_number"),
+                "headshot_url":    p.get("headshot_url") or p.get("image_url") or "",
+                "status":          p.get("status") or "",
+                "status_full":     p.get("status_full") or "",
+                "injury_note":     p.get("injury_note") or "",
+                "is_undroppable":  bool(int(p.get("is_undroppable") or 0)),
+                "bye_week":        p.get("bye"),  # integer at top level, confirmed
             }
 
         for yr in target_years:
@@ -2749,37 +1929,29 @@ def build_player_info(
                 league_key = get_league_key_for_season(yr)
                 query      = get_query(league_key)
 
+                # One call — returns all players (confirmed ~1,187 for 2025)
+                raw   = query.get_league_players()
+                items = _convert_to_dict(raw)
+
+                # Normalise to flat list
+                if isinstance(items, list):
+                    player_list = items
+                elif isinstance(items, dict):
+                    player_list = items.get("players", [])
+                    if not player_list:
+                        for v in items.values():
+                            if isinstance(v, list) and v:
+                                player_list = v; break
+                else:
+                    player_list = []
+
                 players_dict: dict = {}
-                page_size         = 25
-                start             = 0
-                empty_streak      = 0
-
-                while start < max_players:
-                    try:
-                        raw_page   = query.get_league_players(
-                            player_count=page_size,
-                            player_start=start,
-                        )
-                        # _convert_to_dict handles YFPY objects → dicts
-                        conv_page  = _convert_to_dict(raw_page)
-                        page_items = _norm_page(conv_page)
-
-                        if not page_items:
-                            empty_streak += 1
-                            if empty_streak >= 2:
-                                break
-                        else:
-                            empty_streak = 0
-                            for item in page_items:
-                                pi = _extract_player(item)
-                                if pi and pi.get("player_key"):
-                                    players_dict[pi["player_key"]] = pi
-
-                        start += page_size
-                        time.sleep(0.3)
-
-                    except Exception:
-                        break
+                for item in player_list:
+                    # After _convert_to_dict, item is a flat Player dict
+                    p  = item if isinstance(item, dict) else {}
+                    pi = _extract_player_info(p)
+                    if pi and pi.get("player_key"):
+                        players_dict[pi["player_key"]] = pi
 
                 existing[yr] = {
                     "year":          int(yr),
@@ -2793,7 +1965,6 @@ def build_player_info(
 
         sorted_data = _year_sort(existing)
         _write_json(path, sorted_data)
-
         return {
             "status":          "complete",
             "seasons_updated": results["success"],
@@ -2839,31 +2010,32 @@ def download_player_info():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ===========================================================================
-# Data generation — rosters.json
-# ===========================================================================
 
+# ============================================================
+# ROSTERS
+# ============================================================
 @router.get("/data/rosters/build-all")
 def build_rosters(
     skip_existing: bool = Query(default=True),
     year: str          = Query(default=None),
-    week: int          = Query(default=None, description="Single week to build (omit for all)"),
+    week: int          = Query(default=None, description="Single week to build, omit for all"),
     force_clean: bool  = Query(default=False),
 ):
     """
     Generates rosters.json — each team's weekly roster for every season.
 
-    Confirmed data shape from Yahoo API extract:
-      get_team_roster_by_week(team_id, week) returns a list of player objects.
-      Each player has: player_key, player_id, full_name, display_position,
-      selected_position (slot), editorial_team_abbr, status.
+    CONFIRMED from YFPY v17 debug:
+      - Use query.get_team_roster_player_info_by_week(team_id, week)
+        returns List[Player] with full player info including selected_position
+      - Better than get_team_roster_by_week which returns a Roster object
+      - All player fields at top level after _convert_to_dict (no _extracted_data)
+      - selected_position at top level as a string (the actual roster slot)
+      - team_key and team_id available at top level of league_teams items
 
-    NOTE: get_league_teams() does NOT include roster data — players[] is always
-    empty there. Must call get_team_roster_by_week() per team per week.
+    Shape:
+        {"2025": {"week_1": {"brian": {"team_key": ..., "players": [...]}}}}
 
-    Build one year at a time to stay within rate limits:
-        GET /league/data/rosters/build-all?year=2025
-        GET /league/data/rosters/build-all?year=2025&week=1
+    Build one year at a time: GET /league/data/rosters/build-all?year=2025
     """
     try:
         from services.fantasy.league_service import (
@@ -2881,73 +2053,39 @@ def build_rosters(
         target_years = [year] if year else all_years
         results      = {"success": [], "skipped": [], "failed": {}}
 
-        def _unwrap(obj):
-            if not isinstance(obj, dict): return obj
-            base = dict(obj.get("_extracted_data", {})) if isinstance(obj.get("_extracted_data"), dict) else {}
-            for k, v in obj.items():
-                if k not in ("_extracted_data", "_index", "_keys"): base[k] = v
-            return base
+        def _extract_roster_player(p: dict) -> dict | None:
+            """
+            Extract player roster slot info from a converted Player dict.
+            All fields confirmed at top level after _convert_to_dict.
+            selected_position is a string (QB, WR, BN, IR, etc.)
+            """
+            pk = p.get("player_key")
+            if not pk:
+                return None
 
-        def _extract_players_from_roster(roster_raw) -> list:
-            """
-            Extract flat list of player dicts from get_team_roster_by_week() response.
-            YFPY returns a list of player objects (each with _extracted_data + top-level fields).
-            """
-            if isinstance(roster_raw, list):
-                items = roster_raw
-            elif isinstance(roster_raw, dict):
-                # May be {"players": [...]} or a numbered dict
-                items = roster_raw.get("players", [])
-                if not items:
-                    keys = list(roster_raw.keys())
-                    if keys and all(str(k).isdigit() for k in keys):
-                        items = [roster_raw[k] for k in sorted(keys, key=lambda x: int(x))]
-                    elif not items:
-                        items = list(roster_raw.values())
+            # selected_position — top level string after conversion
+            sp_raw = p.get("selected_position")
+            if isinstance(sp_raw, dict):
+                sp = sp_raw.get("position") or p.get("selected_position_value") or ""
             else:
-                items = []
+                sp = str(sp_raw or p.get("selected_position_value") or "")
 
-            players = []
-            for item in items:
-                # Each item may be {"player": {...}} wrapper or flat
-                pw = _unwrap(item)
-                p_raw = pw.get("player", pw)
-                p = _unwrap(p_raw) if isinstance(p_raw, dict) else pw
+            is_starting = sp not in ("BN", "IR", "IR+", "")
+            is_on_bench = sp == "BN"
+            is_on_ir    = sp in ("IR", "IR+")
 
-                pk = p.get("player_key")
-                if not pk:
-                    continue
-
-                # Name — full_name is at top level (confirmed from extract)
-                name = p.get("full_name") or p.get("name", {})
-                if isinstance(name, dict):
-                    name = _unwrap(name).get("full") or ""
-
-                # Selected position — the actual roster slot
-                sp_raw = p.get("selected_position", {})
-                if isinstance(sp_raw, dict):
-                    sp = _unwrap(sp_raw).get("position") or p.get("selected_position_value") or ""
-                else:
-                    sp = str(sp_raw or p.get("selected_position_value") or "")
-
-                is_starting = sp not in ("BN", "IR", "IR+", "")
-                is_on_bench = sp == "BN"
-                is_on_ir    = sp in ("IR", "IR+")
-
-                players.append({
-                    "player_key":        pk,
-                    "player_id":         p.get("player_id"),
-                    "name":              name,
-                    "position":          p.get("display_position") or p.get("primary_position"),
-                    "nfl_team":          p.get("editorial_team_abbr"),
-                    "selected_position": sp,
-                    "is_starting":       is_starting,
-                    "is_on_bench":       is_on_bench,
-                    "is_on_ir":          is_on_ir,
-                    "status":            p.get("status") or "",
-                    "injury_note":       p.get("injury_note") or "",
-                })
-            return players
+            return {
+                "player_key":        pk,
+                "player_id":         p.get("player_id"),
+                "name":              p.get("full_name") or "",
+                "position":          p.get("display_position") or p.get("primary_position") or "",
+                "nfl_team":          p.get("editorial_team_abbr") or "",
+                "selected_position": sp,
+                "is_starting":       is_starting,
+                "is_on_bench":       is_on_bench,
+                "is_on_ir":          is_on_ir,
+                "status":            p.get("status") or "",
+            }
 
         for yr in target_years:
             if skip_existing and yr in existing and existing[yr] and not week:
@@ -2957,34 +2095,26 @@ def build_rosters(
                 league_key = get_league_key_for_season(yr)
                 query      = get_query(league_key)
 
-                settings_dict = _convert_to_dict(query.get_league_settings())
-                start_week    = int(settings_dict.get("start_week") or 1)
-                end_week      = int(settings_dict.get("end_week")   or 17)
+                settings_raw = _convert_to_dict(query.get_league_settings())
+                start_week   = int(settings_raw.get("start_week") or 1)
+                end_week     = int(settings_raw.get("end_week")   or 17)
 
-                # get_league_teams() returns YFPY Team objects — must convert each one
-                teams_raw_yfpy = query.get_league_teams()
-                # Convert the whole response first
-                teams_raw = _convert_to_dict(teams_raw_yfpy)
-                
-                if isinstance(teams_raw, dict):
-                    teams_list_raw = teams_raw.get("teams", list(teams_raw.values()))
-                elif isinstance(teams_raw, list):
-                    teams_list_raw = teams_raw
+                # Get team info — team_key and team_id at top level
+                teams_raw  = _convert_to_dict(query.get_league_teams())
+                if isinstance(teams_raw, list):
+                    teams_list = teams_raw
+                elif isinstance(teams_raw, dict):
+                    teams_list = teams_raw.get("teams", list(teams_raw.values()))
                 else:
-                    teams_list_raw = []
-                if isinstance(teams_list_raw, dict):
-                    teams_list_raw = list(teams_list_raw.values())
+                    teams_list = []
 
-                team_info: list[dict] = []  # [{team_key, team_id, manager_id}]
-                for t in teams_list_raw:
-                    tw = _unwrap(t)
-                    # Handle {"team": {...}} wrapper
-                    inner = tw.get("team", tw)
-                    tw = _unwrap(inner) if isinstance(inner, dict) else tw
-                    tk = tw.get("team_key") or tw.get("key")
-                    if not tk:
-                        continue
-                    tid = str(tk).split(".t.")[-1] if ".t." in str(tk) else None
+                team_info: list[dict] = []
+                for t in teams_list:
+                    if not isinstance(t, dict): continue
+                    # team_key confirmed at top level AND in _extracted_data
+                    tk = t.get("team_key") or (t.get("_extracted_data") or {}).get("team_key")
+                    if not tk: continue
+                    tid        = str(tk).split(".t.")[-1] if ".t." in str(tk) else None
                     identity   = get_manager_identity(team_key=tk)
                     manager_id = identity["manager_id"]   if identity else tk
                     disp_name  = identity["display_name"] if identity else tk
@@ -3004,24 +2134,42 @@ def build_rosters(
 
                     for ti in team_info:
                         try:
-                            roster_raw = _convert_to_dict(
-                                query.get_team_roster_by_week(ti["team_id"], wk)
+                            # CONFIRMED method: get_team_roster_player_info_by_week
+                            raw_players = _convert_to_dict(
+                                query.get_team_roster_player_info_by_week(ti["team_id"], wk)
                             )
-                            players = _extract_players_from_roster(roster_raw)
+
+                            # Normalise to flat list of player dicts
+                            if isinstance(raw_players, list):
+                                player_list = raw_players
+                            elif isinstance(raw_players, dict):
+                                player_list = raw_players.get("players", [])
+                                if not player_list:
+                                    for v in raw_players.values():
+                                        if isinstance(v, list) and v:
+                                            player_list = v; break
+                            else:
+                                player_list = []
+
+                            players_out = []
+                            for item in player_list:
+                                p  = item if isinstance(item, dict) else {}
+                                rp = _extract_roster_player(p)
+                                if rp:
+                                    players_out.append(rp)
 
                             week_data[ti["manager_id"]] = {
                                 "team_key":     ti["team_key"],
                                 "display_name": ti["display_name"],
-                                "player_count": len(players),
-                                "starters":     sum(1 for p in players if p["is_starting"]),
-                                "bench":        sum(1 for p in players if p["is_on_bench"]),
-                                "ir":           sum(1 for p in players if p["is_on_ir"]),
-                                "players":      players,
+                                "player_count": len(players_out),
+                                "starters":     sum(1 for p in players_out if p["is_starting"]),
+                                "bench":        sum(1 for p in players_out if p["is_on_bench"]),
+                                "ir":           sum(1 for p in players_out if p["is_on_ir"]),
+                                "players":      players_out,
                             }
-                            time.sleep(0.25)
+                            time.sleep(0.2)
 
                         except Exception as team_err:
-                            # Log the error but continue with other teams
                             week_data[ti["manager_id"]] = {
                                 "team_key": ti["team_key"],
                                 "error":    str(team_err)[:150],
@@ -3038,7 +2186,6 @@ def build_rosters(
 
         sorted_data = _year_sort(existing)
         _write_json(path, sorted_data)
-
         return {
             "status":          "complete",
             "seasons_updated": results["success"],
@@ -3046,12 +2193,8 @@ def build_rosters(
             "seasons_failed":  results["failed"],
             "total_seasons":   len(sorted_data),
             "file_written":    path,
-            "note": (
-                "Rosters are NOT in get_league_teams() — always fetched separately "
-                "via get_team_roster_by_week() per team per week. "
-                "Build one year at a time: ?year=2025"
-            ),
-            "next_step": "GET /league/data/rosters/download to save locally",
+            "note":            "Build one year at a time: ?year=2025",
+            "next_step":       "GET /league/data/rosters/download to save locally",
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -3066,10 +2209,10 @@ def rosters_status():
             return {"status": "file_not_found", "years": []}
         summary = []
         for yr in sorted(data.keys(), reverse=True):
-            weeks      = data[yr]
-            num_weeks  = len(weeks)
-            sample_wk  = next(iter(weeks.values()), {}) if weeks else {}
-            num_teams  = len(sample_wk)
+            weeks     = data[yr]
+            num_weeks = len(weeks)
+            sample_wk = next(iter(weeks.values()), {}) if weeks else {}
+            num_teams = len(sample_wk)
             summary.append({"year": int(yr), "weeks_built": num_weeks, "teams_per_week": num_teams})
         return {"total_seasons": len(data), "seasons": summary}
     except Exception as e:
@@ -3090,168 +2233,167 @@ def download_rosters():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ===========================================================================
-# Data generation — player_stats.json
-# ===========================================================================
 
+# ============================================================
+# PLAYER STATS
+# ============================================================
 @router.get("/data/player-stats/build-all")
 def build_player_stats(
     skip_existing: bool = Query(default=True),
     year: str          = Query(default=None),
-    week: int          = Query(default=None, description="Single week to build (omit for all weeks in year)"),
+    week: int          = Query(default=None, description="Single week, omit for all"),
     force_clean: bool  = Query(default=False),
 ):
     """
-    Generates player_stats.json — weekly fantasy point totals per player per season.
+    Generates player_stats.json — weekly fantasy points and stat lines per player.
 
-    Sources stats from rosters.json (must exist) to know which players to fetch.
-    Only fetches stats for players who were rostered at any point — not all ~1000+
-    available players, making this tractable.
+    CONFIRMED from YFPY v17 debug:
+      - Use query.get_team_roster_player_stats_by_week(team_id, week)
+        returns List[Player] with stats already attached — 10 calls/week not 1,400+
+      - player_points.total = fantasy points for the week
+      - player_stats.stats = list of {"stat": {"stat_id": N, "value": V}}
+      - All fields at top level after _convert_to_dict (no _extracted_data wrapper)
+      - Does NOT require rosters.json to be built first
 
     Shape:
-        {
-          "2025": {
-            "week_1": {
-              "461.p.12345": {
-                "name": "Patrick Mahomes",
-                "position": "QB",
-                "nfl_team": "KC",
-                "fantasy_points": 34.5,
-                "stats": {
-                  "pass_yds": 312, "pass_td": 3, "interceptions": 1, ...
-                }
-              }, ...
-            }, ...
-          }
-        }
+        {"2025": {"week_1": {"461.p.32723": {"name": ..., "fantasy_points": 25.8,
+                                              "stats": {"2": 19, "4": 152, ...}}}}}
 
-    Build one year at a time, and optionally one week at a time:
-        GET /league/data/player-stats/build-all?year=2025
-        GET /league/data/player-stats/build-all?year=2025&week=1
+    Build one year at a time: GET /league/data/player-stats/build-all?year=2025
+    Or one week:              GET /league/data/player-stats/build-all?year=2025&week=1
     """
     try:
         from services.fantasy.league_service import (
             get_all_seasons, get_league_key_for_season, _convert_to_dict,
         )
         from services.yahoo_service import get_query
+        from config import get_manager_identity
         import time
 
-        path          = _get_data_path("player_stats.json")
-        rosters_path  = _get_data_path("rosters.json")
-        existing      = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
-        all_rosters   = _load_json(rosters_path)
-
-        if not all_rosters:
-            raise HTTPException(
-                status_code=400,
-                detail="rosters.json not found. Run GET /league/data/rosters/build-all first.",
-            )
+        path     = _get_data_path("player_stats.json")
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
 
         seasons_data = get_all_seasons(force_refresh=True)
         all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
         target_years = [year] if year else all_years
         results      = {"success": [], "skipped": [], "failed": {}}
 
-        def _unwrap(obj):
-            if not isinstance(obj, dict): return obj
-            base = dict(obj.get("_extracted_data", {})) if isinstance(obj.get("_extracted_data"), dict) else {}
-            for k, v in obj.items():
-                if k not in ("_extracted_data", "_index", "_keys"): base[k] = v
-            return base
+        def _extract_stats(p: dict) -> dict:
+            """
+            Extract fantasy points and stat breakdown from a converted Player dict.
+
+            CONFIRMED structure:
+              player_points: {"total": 25.8, "week": 1, "coverage_type": "week"}
+              player_stats:  {"stats": [{"stat": {"stat_id": N, "value": V}}, ...],
+                               "week": 1, "coverage_type": "week"}
+            """
+            # Fantasy points
+            pts_raw = p.get("player_points") or {}
+            if isinstance(pts_raw, dict):
+                fantasy_points = float(pts_raw.get("total") or 0)
+            else:
+                fantasy_points = float(p.get("player_points_value") or 0)
+
+            # Stat breakdown
+            stats_raw = p.get("player_stats") or {}
+            if isinstance(stats_raw, dict):
+                stat_list = stats_raw.get("stats") or []
+            elif isinstance(stats_raw, list):
+                stat_list = stats_raw
+            else:
+                stat_list = []
+
+            stats_out: dict = {}
+            for entry in stat_list:
+                if not isinstance(entry, dict): continue
+                stat = entry.get("stat", entry)
+                if not isinstance(stat, dict): continue
+                sid = stat.get("stat_id")
+                val = stat.get("value")
+                if sid is not None and val not in (None, "", "-"):
+                    try:
+                        fval = float(val)
+                        if fval != 0:  # skip zero stats to keep file compact
+                            stats_out[str(sid)] = fval
+                    except (TypeError, ValueError):
+                        pass
+
+            return {
+                "name":           p.get("full_name") or "",
+                "position":       p.get("display_position") or p.get("primary_position") or "",
+                "nfl_team":       p.get("editorial_team_abbr") or "",
+                "fantasy_points": fantasy_points,
+                "stats":          stats_out,
+            }
 
         for yr in target_years:
-            roster_season = all_rosters.get(yr, {})
-            if not roster_season:
-                results["failed"][yr] = "No roster data — run rosters/build-all first"
-                continue
-
             yr_stats = existing.get(yr, {})
-
-            # Determine weeks to build
-            settings_from_roster = list(roster_season.keys())  # ["week_1", "week_2", ...]
-            if week:
-                target_weeks = [f"week_{week}"]
-            else:
-                target_weeks = sorted(settings_from_roster, key=lambda x: int(x.split("_")[1]))
 
             try:
                 league_key = get_league_key_for_season(yr)
                 query      = get_query(league_key)
 
-                for week_key in target_weeks:
-                    if skip_existing and week_key in yr_stats and yr_stats[week_key]:
+                settings_raw = _convert_to_dict(query.get_league_settings())
+                start_week   = int(settings_raw.get("start_week") or 1)
+                end_week     = int(settings_raw.get("end_week")   or 17)
+
+                # Get all team IDs
+                teams_raw = _convert_to_dict(query.get_league_teams())
+                if isinstance(teams_raw, list):
+                    teams_list = teams_raw
+                elif isinstance(teams_raw, dict):
+                    teams_list = teams_raw.get("teams", list(teams_raw.values()))
+                else:
+                    teams_list = []
+
+                team_ids: list[str] = []
+                for t in teams_list:
+                    if not isinstance(t, dict): continue
+                    tk = t.get("team_key") or (t.get("_extracted_data") or {}).get("team_key")
+                    if tk and ".t." in str(tk):
+                        team_ids.append(str(tk).split(".t.")[-1])
+
+                target_weeks = [week] if week else list(range(start_week, end_week + 1))
+
+                for wk in target_weeks:
+                    week_key = f"week_{wk}"
+                    if skip_existing and not force_clean and week_key in yr_stats and yr_stats[week_key]:
                         continue
-
-                    week_num    = int(week_key.split("_")[1])
-                    week_roster = roster_season.get(week_key, {})
-
-                    # Collect all unique player_keys rostered this week
-                    rostered_keys: set = set()
-                    for mgr_data in week_roster.values():
-                        for p in mgr_data.get("players", []):
-                            pk = p.get("player_key")
-                            if pk:
-                                rostered_keys.add(pk)
 
                     week_stats: dict = {}
 
-                    for pk in rostered_keys:
+                    for tid in team_ids:
                         try:
-                            # Get stats for this player this week
-                            raw = _convert_to_dict(
-                                query.get_player_stats_by_week(pk, week_num)
+                            # CONFIRMED method: returns List[Player] with stats attached
+                            raw_players = _convert_to_dict(
+                                query.get_team_roster_player_stats_by_week(tid, wk)
                             )
 
-                            p = _unwrap(raw.get("player", raw) if isinstance(raw, dict) else raw)
-
-                            name_raw = p.get("name", {})
-                            if isinstance(name_raw, dict):
-                                nf = _unwrap(name_raw)
-                                name = nf.get("full") or p.get("full_name") or ""
+                            if isinstance(raw_players, list):
+                                player_list = raw_players
+                            elif isinstance(raw_players, dict):
+                                player_list = raw_players.get("players", [])
+                                if not player_list:
+                                    for v in raw_players.values():
+                                        if isinstance(v, list) and v:
+                                            player_list = v; break
                             else:
-                                name = p.get("full_name") or ""
+                                player_list = []
 
-                            # Fantasy points total
-                            pts_raw = _unwrap(p.get("player_points", {})) if isinstance(p.get("player_points"), dict) else {}
-                            fantasy_points = float(pts_raw.get("total") or p.get("player_points_value") or 0)
+                            for item in player_list:
+                                p  = item if isinstance(item, dict) else {}
+                                pk = p.get("player_key")
+                                if not pk:
+                                    continue
+                                stats = _extract_stats(p)
+                                # Only store if player actually played (has any stats)
+                                if stats["fantasy_points"] > 0 or stats["stats"]:
+                                    week_stats[pk] = stats
 
-                            # Raw stat breakdown
-                            stats_raw = p.get("player_stats", {}) or p.get("stats", {})
-                            if isinstance(stats_raw, dict):
-                                stats_raw = _unwrap(stats_raw)
-                                stat_list = stats_raw.get("stats", []) or []
-                            elif isinstance(stats_raw, list):
-                                stat_list = stats_raw
-                            else:
-                                stat_list = []
-
-                            if isinstance(stat_list, dict):
-                                stat_list = list(stat_list.values())
-
-                            stats_out: dict = {}
-                            for se in stat_list:
-                                stat = se.get("stat", se) if isinstance(se, dict) else {}
-                                stat = _unwrap(stat)
-                                sid  = stat.get("stat_id")
-                                val  = stat.get("value")
-                                if sid is not None and val not in (None, "", "-", "0"):
-                                    try:
-                                        stats_out[str(sid)] = float(val)
-                                    except (TypeError, ValueError):
-                                        pass
-
-                            week_stats[pk] = {
-                                "name":           name,
-                                "position":       p.get("display_position") or p.get("primary_position"),
-                                "nfl_team":       p.get("editorial_team_abbr"),
-                                "fantasy_points": fantasy_points,
-                                "stats":          stats_out,
-                            }
-
-                            time.sleep(0.15)  # rate limit pacing
+                            time.sleep(0.2)
 
                         except Exception:
-                            continue  # skip individual player errors
+                            continue
 
                     yr_stats[week_key] = week_stats
 
@@ -3263,7 +2405,6 @@ def build_player_stats(
 
         sorted_data = _year_sort(existing)
         _write_json(path, sorted_data)
-
         return {
             "status":          "complete",
             "seasons_updated": results["success"],
@@ -3271,9 +2412,48 @@ def build_player_stats(
             "seasons_failed":  results["failed"],
             "total_seasons":   len(sorted_data),
             "file_written":    path,
-            "note":            "Build one year+week at a time to avoid rate limits: ?year=2025&week=1",
+            "note":            "Build one week at a time: ?year=2025&week=1",
             "next_step":       "GET /league/data/player-stats/download to save locally",
         }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/player-stats/status")
+def player_stats_status():
+    """Shows which years and weeks are in player_stats.json."""
+    try:
+        data = _load_json(_get_data_path("player_stats.json"))
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            weeks = data[yr]
+            total_player_weeks = sum(len(w) for w in weeks.values())
+            summary.append({
+                "year":               int(yr),
+                "weeks_built":        len(weeks),
+                "total_player_weeks": total_player_weeks,
+            })
+        return {"total_seasons": len(data), "seasons": summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/player-stats/download")
+def download_player_stats(year: str = Query(default=None, description="Limit to one year — files can be large")):
+    """Returns current player_stats.json for local save. Use ?year= to limit size."""
+    try:
+        data = _load_json(_get_data_path("player_stats.json"))
+        if not data:
+            raise HTTPException(status_code=404, detail="player_stats.json not found. Run build-all first.")
+        if year:
+            if year not in data:
+                raise HTTPException(status_code=404, detail=f"Year {year} not found.")
+            return {"year": int(year), "data": {year: data[year]}}
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
