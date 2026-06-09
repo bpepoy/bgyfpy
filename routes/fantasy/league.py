@@ -1891,21 +1891,90 @@ def build_player_info(
             except Exception:
                 return {}
 
+        def _get_name(p: dict) -> tuple:
+            """
+            Get (full, first, last) from a player dict.
+            After per-item _convert_to_dict, YFPY Player properties like full_name
+            may not survive — the reliable source is p['name']['full'].
+            Checks all known locations in priority order.
+            """
+            # 1. Top-level convenience fields (YFPY Player properties, may survive)
+            full  = p.get("full_name") or ""
+            first = p.get("first_name") or ""
+            last  = p.get("last_name") or ""
+            if full:
+                return full, first, last
+
+            # 2. name sub-dict — always present, most reliable
+            name_raw = p.get("name") or {}
+            if isinstance(name_raw, dict):
+                # Try _extracted_data inside name first
+                name_ed = name_raw.get("_extracted_data") or {}
+                if isinstance(name_ed, dict) and name_ed.get("full"):
+                    return (str(name_ed.get("full", "")),
+                            str(name_ed.get("first", "")),
+                            str(name_ed.get("last", "")))
+                # Then name dict top-level fields
+                if name_raw.get("full"):
+                    return (str(name_raw.get("full", "")),
+                            str(name_raw.get("first", "")),
+                            str(name_raw.get("last", "")))
+
+            return "", "", ""
+
+        def _get_bye(p: dict) -> int | None:
+            """
+            Get bye week integer from a player dict.
+            Checks top-level bye, bye_weeks.week, and _extracted_data paths.
+            """
+            # 1. Top-level bye integer (YFPY Player property)
+            bye = p.get("bye")
+            if bye is not None:
+                try: return int(bye)
+                except (TypeError, ValueError): pass
+
+            # 2. bye_weeks sub-dict
+            bw = p.get("bye_weeks") or {}
+            if isinstance(bw, dict):
+                for src in [bw.get("_extracted_data") or {}, bw]:
+                    if isinstance(src, dict):
+                        wk = src.get("week")
+                        if wk is not None:
+                            try: return int(wk)
+                            except (TypeError, ValueError): pass
+
+            # 3. Player's own _extracted_data
+            ed = p.get("_extracted_data") or {}
+            if isinstance(ed, dict):
+                bw_ed = ed.get("bye_weeks") or {}
+                if isinstance(bw_ed, dict):
+                    for src in [bw_ed.get("_extracted_data") or {}, bw_ed]:
+                        if isinstance(src, dict):
+                            wk = src.get("week")
+                            if wk is not None:
+                                try: return int(wk)
+                                except (TypeError, ValueError): pass
+            return None
+
         def _extract_player_info(p: dict) -> dict | None:
             pk = p.get("player_key")
             if not pk:
                 return None
-            ep_raw = p.get("eligible_positions") or []
+
+            full, first, last = _get_name(p)
+
+            ep_raw   = p.get("eligible_positions") or []
             eligible = []
             for ep in (ep_raw if isinstance(ep_raw, list) else []):
                 if isinstance(ep, dict): eligible.append(ep.get("position") or "")
                 elif isinstance(ep, str): eligible.append(ep)
+
             return {
                 "player_key":        pk,
                 "player_id":         p.get("player_id"),
-                "name":              p.get("full_name") or "",
-                "first_name":        p.get("first_name") or "",
-                "last_name":         p.get("last_name") or "",
+                "name":              full,
+                "first_name":        first,
+                "last_name":         last,
                 "position":          p.get("display_position") or p.get("primary_position") or "",
                 "position_type":     p.get("position_type") or "",
                 "eligible_positions":[e for e in eligible if e],
@@ -1917,7 +1986,7 @@ def build_player_info(
                 "status_full":       p.get("status_full") or "",
                 "injury_note":       p.get("injury_note") or "",
                 "is_undroppable":    bool(int(p.get("is_undroppable") or 0)),
-                "bye_week":          p.get("bye"),
+                "bye_week":          _get_bye(p),
             }
 
         for yr in target_years:
@@ -2026,15 +2095,20 @@ def build_rosters(
     LEAN SCHEMA: Only player_key + slot data. Join with player_info.json for
     name/position/nfl_team. This keeps the file ~67% smaller.
 
+    ⚠️  MUST BUILD ONE WEEK AT A TIME to avoid 502 timeout.
+    10 teams × 1 week = 10 API calls (~2s). All weeks at once = 200 calls (40s+).
+    Render's request timeout is 30s — building all weeks in one call will 502.
+
+    Recommended build pattern:
+        GET /league/data/rosters/build-all?year=2025&week=1
+        GET /league/data/rosters/build-all?year=2025&week=2
+        ... through week=17 (or 18-20 for playoff weeks)
+        Each call adds that week to the file without overwriting previous weeks.
+
     CONFIRMED from YFPY v17:
       - Use get_team_roster_player_info_by_week(team_id, week) → List[Player]
       - Must call _convert_to_dict on each Player item individually
       - selected_position at top level after conversion (roster slot: QB/WR/BN/IR)
-      - team_key at top level of league_teams items
-
-    Shape per week entry:
-        {"player_key": "461.p.32723", "selected_position": "QB",
-         "is_starting": true, "is_on_bench": false, "is_on_ir": false}
     """
     try:
         from services.fantasy.league_service import (
@@ -2160,7 +2234,7 @@ def build_rosters(
             "status": "complete", "seasons_updated": results["success"],
             "seasons_skipped": results["skipped"], "seasons_failed": results["failed"],
             "total_seasons": len(sorted_data), "file_written": path,
-            "note": "Join with player_info.json on player_key for name/position/nfl_team",
+            "note": "⚠️  Build ONE WEEK AT A TIME to avoid 502: ?year=2025&week=1, then &week=2, etc.",
             "next_step": "GET /league/data/rosters/download to save locally",
         }
     except Exception as e:
