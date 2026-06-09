@@ -1538,22 +1538,21 @@ def build_transactions(
 
         def _extract_player(pw) -> dict:
             """
-            Extract player info from a {"player": {...}} wrapper, flat player dict,
-            or YFPY Player object.
+            Extract player info from a {"player": {...}} wrapper or flat player dict.
 
-            CONFIRMED field locations (top level after per-item _convert_to_dict):
-              player_key, full_name, display_position, editorial_team_abbr
-              transaction_data.type, .source_type, .source_team_key,
-                              .destination_team_key
+            CONFIRMED from debug: after live _convert_to_dict on Transaction objects,
+            inner player dict has player_key + transaction_data but NOT full_name.
+            We store player_key as the join key; name enriched at endpoint from player_info.json.
+
+            transaction_data confirmed present with: type, source_type,
+            source_team_key (empty str for adds), destination_team_key (empty str for drops).
             """
-            # Convert YFPY object if needed
             if not isinstance(pw, dict):
                 pw = _to_dict_tx(pw)
 
             # Unwrap {"player": {...}} wrapper
             if "player" in pw:
                 p = pw["player"]
-                # Inner player may also be a YFPY object
                 if not isinstance(p, dict):
                     p = _to_dict_tx(p)
             else:
@@ -1562,17 +1561,7 @@ def build_transactions(
             if not isinstance(p, dict):
                 return {}
 
-            # Name — full_name at top level; name.full as fallback
-            name = p.get("full_name") or ""
-            if not name:
-                name_raw = p.get("name") or {}
-                if isinstance(name_raw, dict):
-                    name = (name_raw.get("_extracted_data") or {}).get("full") or name_raw.get("full") or ""
-                elif not isinstance(name_raw, dict):
-                    name_raw2 = _to_dict_tx(name_raw)
-                    name = name_raw2.get("full") or ""
-
-            # transaction_data — flat dict at top level
+            # transaction_data is confirmed at top level of inner player dict
             td_raw = p.get("transaction_data") or {}
             if isinstance(td_raw, dict):
                 td = td_raw
@@ -1581,9 +1570,18 @@ def build_transactions(
             if not isinstance(td, dict):
                 td = {}
 
+            # Name — may be null for live Transaction players; use player_key for join
+            name = p.get("full_name") or ""
+            if not name:
+                name_raw = p.get("name") or {}
+                if isinstance(name_raw, dict):
+                    name = (name_raw.get("_extracted_data") or {}).get("full") or name_raw.get("full") or ""
+                elif not isinstance(name_raw, dict):
+                    name = _to_dict_tx(name_raw).get("full") or ""
+
             return {
                 "player_key": p.get("player_key"),
-                "name":       name or "Unknown",
+                "name":       name or None,   # null is fine — join from player_info.json
                 "position":   p.get("display_position") or p.get("primary_position"),
                 "nfl_team":   p.get("editorial_team_abbr"),
                 "td":         td,
@@ -3085,7 +3083,85 @@ def download_drafts():
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/data/drafts/debug")
+@router.get("/data/drafts/enrich")
+def enrich_drafts(year: str = Query(default=None)):
+    """
+    Enriches drafts.json with player_name, position, nfl_team from player_info.json.
+
+    Run this AFTER building both player_info.json and drafts.json in the same
+    deploy session (before the next deploy wipes the files).
+
+    Usage:
+        GET /league/data/drafts/enrich             ← all years
+        GET /league/data/drafts/enrich?year=2025   ← one year
+    """
+    try:
+        import os
+        drafts_path = _get_data_path("drafts.json")
+        pi_path     = _get_data_path("player_info.json")
+
+        if not os.path.exists(pi_path):
+            raise HTTPException(
+                status_code=400,
+                detail="player_info.json not found. Run /league/data/player-info/build-all first."
+            )
+        if not os.path.exists(drafts_path):
+            raise HTTPException(
+                status_code=400,
+                detail="drafts.json not found. Run /league/data/drafts/build-all first."
+            )
+
+        drafts_data = _load_json(drafts_path)
+        pi_data     = _load_json(pi_path)
+
+        target_years = [str(year)] if year else list(drafts_data.keys())
+        enriched     = []
+        skipped      = []
+        total_picks_enriched = 0
+
+        for yr in target_years:
+            if yr not in drafts_data:
+                skipped.append(yr)
+                continue
+
+            player_lookup = (pi_data.get(str(yr), {}) or {}).get("players", {})
+            if not player_lookup:
+                skipped.append(yr)
+                continue
+
+            picks = drafts_data[yr].get("picks", [])
+            yr_enriched = 0
+            for pick in picks:
+                pk = pick.get("player_key")
+                if not pk:
+                    continue
+                pi = player_lookup.get(pk, {})
+                if pi:
+                    pick["player_name"] = pi.get("name")
+                    pick["position"]    = pi.get("position")
+                    pick["nfl_team"]    = pi.get("nfl_team")
+                    yr_enriched += 1
+
+            total_picks_enriched += yr_enriched
+            enriched.append({"year": int(yr), "picks_enriched": yr_enriched, "total_picks": len(picks)})
+
+        _write_json(drafts_path, drafts_data)
+
+        return {
+            "status":              "complete",
+            "years_enriched":      enriched,
+            "years_skipped":       skipped,
+            "total_picks_enriched":total_picks_enriched,
+            "file_written":        drafts_path,
+            "next_step":           "GET /league/data/drafts/download to save locally",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
 def debug_draft_raw(year: str = Query(default="2025")):
     """Raw YFPY draft response — shows exact shape for diagnosing pick extraction."""
     try:
