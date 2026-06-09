@@ -1492,66 +1492,92 @@ def build_transactions(
             except Exception:
                 return None
 
+        def _to_dict_tx(obj):
+            """Convert a YFPY object to dict. Used for player items inside transactions."""
+            if isinstance(obj, dict): return obj
+            try: return _convert_to_dict(obj)
+            except Exception: return {}
+
         def _norm_players(raw) -> list:
             """
-            Normalise the players field to a flat list of {"player": {...}} dicts.
+            Normalise the players field to a flat list of player wrapper dicts.
 
-            Handles all confirmed shapes:
+            Handles all confirmed shapes from live YFPY:
               - list of {"player": {...}}          → add/drop, trade
               - dict {"player": {...}}             → single add or drop
-              - dict {"players": [...]}            → live YFPY conversion wraps in extra dict
+              - dict {"players": [...]}            → YFPY wraps list in extra dict
+              - list of YFPY Player objects        → convert each individually
               - list containing a list (double-wrapped) → flatten
             """
             if isinstance(raw, list):
-                # Flatten any nested lists (live YFPY double-wrapping)
                 flat = []
                 for item in raw:
                     if isinstance(item, list):
                         flat.extend(item)
                     else:
-                        flat.append(item)
+                        # CRITICAL: convert each YFPY Player object individually
+                        flat.append(_to_dict_tx(item) if not isinstance(item, dict) else item)
                 return flat
             if isinstance(raw, dict):
-                # Single-player: {"player": {...}}
                 if "player" in raw:
                     return [raw]
-                # YFPY-wrapped: {"players": [...]}
                 if "players" in raw:
-                    inner = raw["players"]
-                    return _norm_players(inner)
-                # Numbered dict: {"0": {...}, "1": {...}}
+                    return _norm_players(raw["players"])
                 keys = list(raw.keys())
                 if keys and all(str(k).isdigit() for k in keys):
-                    return [raw[k] for k in sorted(keys, key=lambda x: int(x))]
-                return list(raw.values())
+                    return [_to_dict_tx(raw[k]) for k in sorted(keys, key=lambda x: int(x))]
+                return [_to_dict_tx(v) for v in raw.values()]
+            # YFPY Players collection object — convert it
+            if not isinstance(raw, (list, dict)):
+                converted = _to_dict_tx(raw)
+                if isinstance(converted, list):
+                    return _norm_players(converted)
+                if isinstance(converted, dict):
+                    return _norm_players(converted)
             return []
 
-        def _extract_player(pw: dict) -> dict:
+        def _extract_player(pw) -> dict:
             """
-            Extract player info from a {"player": {...}} wrapper or flat player dict.
+            Extract player info from a {"player": {...}} wrapper, flat player dict,
+            or YFPY Player object.
 
-            CONFIRMED field locations (top level after _convert_to_dict):
+            CONFIRMED field locations (top level after per-item _convert_to_dict):
               player_key, full_name, display_position, editorial_team_abbr
-              transaction_data: type, source_type, source_team_key,
-                                destination_team_key, destination_team_name
+              transaction_data.type, .source_type, .source_team_key,
+                              .destination_team_key
             """
-            # Unwrap {"player": {...}} if present
-            if isinstance(pw, dict) and "player" in pw:
+            # Convert YFPY object if needed
+            if not isinstance(pw, dict):
+                pw = _to_dict_tx(pw)
+
+            # Unwrap {"player": {...}} wrapper
+            if "player" in pw:
                 p = pw["player"]
+                # Inner player may also be a YFPY object
+                if not isinstance(p, dict):
+                    p = _to_dict_tx(p)
             else:
                 p = pw
+
             if not isinstance(p, dict):
                 return {}
 
-            # Name — full_name at top level (confirmed)
+            # Name — full_name at top level; name.full as fallback
             name = p.get("full_name") or ""
             if not name:
-                name_raw = p.get("name", {})
+                name_raw = p.get("name") or {}
                 if isinstance(name_raw, dict):
-                    name = name_raw.get("full") or ""
+                    name = (name_raw.get("_extracted_data") or {}).get("full") or name_raw.get("full") or ""
+                elif not isinstance(name_raw, dict):
+                    name_raw2 = _to_dict_tx(name_raw)
+                    name = name_raw2.get("full") or ""
 
-            # transaction_data — flat dict at top level (confirmed)
-            td = p.get("transaction_data") or {}
+            # transaction_data — flat dict at top level
+            td_raw = p.get("transaction_data") or {}
+            if isinstance(td_raw, dict):
+                td = td_raw
+            else:
+                td = _to_dict_tx(td_raw) if td_raw else {}
             if not isinstance(td, dict):
                 td = {}
 
@@ -2928,9 +2954,10 @@ def build_drafts(
                     else:
                         picks_raw = []
 
-                # Load player_info for this year to enrich picks with name/position
+                # Load player_info for enrichment — keyed by string year "2025"
                 player_info_data = _load_json(_get_data_path("player_info.json"))
-                player_lookup    = player_info_data.get(yr, {}).get("players", {})
+                season_pi        = player_info_data.get(str(yr), {})
+                player_lookup    = season_pi.get("players", {})
 
                 picks = []
                 for item in picks_raw:
