@@ -3117,3 +3117,179 @@ def debug_draft_raw(year: str = Query(default="2025")):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Debug — draft enrichment + transaction player extraction
+# ===========================================================================
+
+@router.get("/data/debug/draft-enrichment")
+def debug_draft_enrichment(year: str = Query(default="2025")):
+    """
+    Diagnoses why draft picks show null player_name/position/nfl_team.
+
+    Shows:
+    - Whether player_info.json exists and its exact structure
+    - Whether the year key matches
+    - Whether specific player_keys from the draft are found
+    - The first 3 picks with their lookup results
+    """
+    try:
+        from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
+        from services.yahoo_service import get_query
+        import os
+
+        pi_path = _get_data_path("player_info.json")
+        result  = {
+            "year":               year,
+            "player_info_path":   pi_path,
+            "player_info_exists": os.path.exists(pi_path),
+        }
+
+        pi_data = _load_json(pi_path)
+        result["player_info_top_keys"]   = list(pi_data.keys())[:10]
+        result["year_key_str_exists"]    = str(year) in pi_data
+        result["year_key_int_exists"]    = int(year) in pi_data if year.isdigit() else False
+
+        season_pi = pi_data.get(str(year), pi_data.get(int(year) if year.isdigit() else year, {}))
+        result["season_pi_keys"]         = list(season_pi.keys()) if isinstance(season_pi, dict) else type(season_pi).__name__
+        result["total_players_field"]    = season_pi.get("total_players") if isinstance(season_pi, dict) else None
+
+        players = season_pi.get("players", {}) if isinstance(season_pi, dict) else {}
+        result["players_type"]           = type(players).__name__
+        result["players_count"]          = len(players) if isinstance(players, dict) else 0
+        result["sample_player_keys"]     = list(players.keys())[:5] if isinstance(players, dict) else []
+
+        # Now get the actual draft picks and look them up
+        league_key = get_league_key_for_season(year)
+        query      = get_query(league_key)
+        raw        = query.get_league_draft_results()
+
+        if isinstance(raw, list):
+            picks_raw = raw
+        else:
+            converted = _convert_to_dict(raw)
+            picks_raw = converted if isinstance(converted, list) else []
+
+        def _to_dict(obj):
+            if isinstance(obj, dict): return obj
+            try: return _convert_to_dict(obj)
+            except Exception: return {}
+
+        pick_lookups = []
+        for item in picks_raw[:5]:
+            p  = _to_dict(item)
+            if "draft_result" in p:
+                p = _to_dict(p["draft_result"])
+            pk   = str(p.get("player_key") or "")
+            pi   = players.get(pk, {}) if isinstance(players, dict) else {}
+            pick_lookups.append({
+                "overall_pick": p.get("pick"),
+                "player_key":   pk,
+                "found_in_player_info": bool(pi),
+                "player_name":  pi.get("name") if pi else None,
+                "position":     pi.get("position") if pi else None,
+                "raw_pick_type": type(item).__name__,
+                "converted_keys": list(p.keys()) if p else [],
+            })
+
+        result["pick_lookups"] = pick_lookups
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/debug/transaction-player")
+def debug_transaction_player(year: str = Query(default="2025")):
+    """
+    Diagnoses why transactions show 0 trades/moves.
+
+    Shows exactly what each transaction item looks like after _convert_to_dict,
+    what _norm_players produces, and what _extract_player returns — all on
+    the first 3 live transactions.
+    """
+    try:
+        from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
+        from services.yahoo_service import get_query
+
+        league_key = get_league_key_for_season(year)
+        query      = get_query(league_key)
+
+        raw       = query.get_league_transactions()
+        converted = _convert_to_dict(raw)
+
+        tx_list = converted if isinstance(converted, list) else []
+        result  = {
+            "year":            year,
+            "raw_type":        type(raw).__name__,
+            "converted_type":  type(converted).__name__,
+            "total_items":     len(tx_list),
+        }
+
+        def _to_dict(obj):
+            if isinstance(obj, dict): return obj
+            try: return _convert_to_dict(obj)
+            except Exception: return {}
+
+        tx_details = []
+        for item in tx_list[:3]:
+            item_dict = _to_dict(item)
+            ed        = item_dict.get("_extracted_data") or {}
+
+            ttype  = item_dict.get("type")  or (ed.get("type")  if isinstance(ed, dict) else None) or ""
+            status = item_dict.get("status") or (ed.get("status") if isinstance(ed, dict) else None) or ""
+
+            # Raw players field
+            players_raw  = item_dict.get("players")
+            players_type = type(players_raw).__name__
+            players_len  = len(players_raw) if hasattr(players_raw, "__len__") else "N/A"
+
+            # What do individual player items look like before conversion?
+            first_player_raw_type = None
+            first_player_converted = None
+            if isinstance(players_raw, list) and players_raw:
+                fp = players_raw[0]
+                first_player_raw_type = type(fp).__name__
+                fp_dict = _to_dict(fp)
+                first_player_converted = {
+                    "keys_no_underscore": [k for k in fp_dict.keys() if not k.startswith("_")][:10],
+                    "has_player_wrapper": "player" in fp_dict,
+                    "player_key":         fp_dict.get("player_key"),
+                    "full_name":          fp_dict.get("full_name"),
+                }
+                # Also check inside "player" wrapper
+                if "player" in fp_dict:
+                    inner = _to_dict(fp_dict["player"])
+                    first_player_converted["inner_player_key"]  = inner.get("player_key")
+                    first_player_converted["inner_full_name"]    = inner.get("full_name")
+                    first_player_converted["inner_transaction_data"] = inner.get("transaction_data")
+
+            elif isinstance(players_raw, dict):
+                first_player_raw_type = "dict"
+                fp_dict = _to_dict(players_raw.get("player", players_raw))
+                first_player_converted = {
+                    "keys": [k for k in fp_dict.keys() if not k.startswith("_")][:10],
+                    "player_key": fp_dict.get("player_key"),
+                }
+
+            tx_details.append({
+                "item_type":               type(item).__name__,
+                "item_dict_keys":          [k for k in item_dict.keys() if not k.startswith("_")][:15],
+                "type":                    ttype,
+                "status":                  status,
+                "status_check_passes":     status == "successful",
+                "ttype_norm":              ttype.lower().replace(" ", "_"),
+                "is_move":                 ttype.lower().replace(" ", "_") in ("add","drop","add/drop","waiver","free_agent"),
+                "is_trade":                ttype.lower() == "trade",
+                "players_field_type":      players_type,
+                "players_field_len":       players_len,
+                "first_player_raw_type":   first_player_raw_type,
+                "first_player_converted":  first_player_converted,
+            })
+
+        result["transaction_details"] = tx_details
+        return result
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
