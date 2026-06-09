@@ -2842,3 +2842,251 @@ def debug_player_stats_raw(
         return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Data generation — drafts.json
+# ===========================================================================
+
+@router.get("/data/drafts/build-all")
+def build_drafts(
+    skip_existing: bool = Query(default=True),
+    year: str          = Query(default=None),
+    force_clean: bool  = Query(default=False),
+):
+    """
+    Generates drafts.json — full draft board per season.
+
+    CONFIRMED field locations (top level after per-item _convert_to_dict):
+      pick, round, cost, team_key, player_key
+    Player names NOT in draft API — join from player_info.json via player_key.
+
+    Snake drafts: cost = null. Auction drafts (2023+): cost = dollars bid.
+
+    Shape: {"2025": {"draft_type": "auction", "total_picks": 160, "picks": [...]}}
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_all_seasons, get_league_key_for_season, _convert_to_dict,
+        )
+        from services.yahoo_service import get_query
+        from config import get_manager_identity
+
+        path     = _get_data_path("drafts.json")
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+
+        seasons_data = get_all_seasons(force_refresh=True)
+        all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
+        target_years = [year] if year else all_years
+        results      = {"success": [], "skipped": [], "failed": {}}
+
+        def _to_dict(obj):
+            """Convert a YFPY DraftResult object or dict to a plain dict."""
+            if isinstance(obj, dict): return obj
+            try: return _convert_to_dict(obj)
+            except Exception: return {}
+
+        for yr in target_years:
+            if skip_existing and yr in existing and existing[yr]:
+                results["skipped"].append(int(yr))
+                continue
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+
+                # Draft type from settings
+                try:
+                    settings  = _to_dict(_convert_to_dict(query.get_league_settings()))
+                    is_auction = bool(int(settings.get("is_auction_draft") or 0))
+                    draft_type = "auction" if is_auction else "snake"
+                    num_teams  = int(settings.get("num_teams") or 10)
+                except Exception:
+                    draft_type, is_auction, num_teams = "unknown", False, 10
+
+                # Get raw picks — may be a list of DraftResult objects OR dicts
+                raw = query.get_league_draft_results()
+
+                # Normalise to a flat list regardless of YFPY return shape
+                if isinstance(raw, list):
+                    picks_raw = raw
+                else:
+                    converted = _convert_to_dict(raw)
+                    if isinstance(converted, list):
+                        picks_raw = converted
+                    elif isinstance(converted, dict):
+                        # Named key, numbered key, or values
+                        picks_raw = (
+                            converted.get("draft_results") or
+                            converted.get("picks") or
+                            ([converted[k] for k in sorted(converted, key=lambda x: int(x))]
+                             if all(str(k).isdigit() for k in converted) else None) or
+                            [v for v in converted.values()
+                             if isinstance(v, dict) and ("player_key" in v or "team_key" in v)]
+                        )
+                        if not isinstance(picks_raw, list):
+                            picks_raw = []
+                    else:
+                        picks_raw = []
+
+                # Load player_info for this year to enrich picks with name/position
+                player_info_data = _load_json(_get_data_path("player_info.json"))
+                player_lookup    = player_info_data.get(yr, {}).get("players", {})
+
+                picks = []
+                for item in picks_raw:
+                    # CRITICAL: convert each item individually — same fix as player_info
+                    # _convert_to_dict on the outer list leaves DraftResult objects unconverted
+                    p = _to_dict(item)
+
+                    # Also handle {"draft_result": {...}} wrapper
+                    if "draft_result" in p:
+                        p = _to_dict(p["draft_result"])
+
+                    team_key   = str(p.get("team_key")   or "")
+                    player_key = str(p.get("player_key") or "")
+                    if not team_key and not player_key:
+                        continue
+
+                    identity     = get_manager_identity(team_key=team_key)
+                    manager_id   = identity["manager_id"]   if identity else None
+                    display_name = identity["display_name"] if identity else team_key or "Unknown"
+
+                    pick_num  = p.get("pick")
+                    round_num = p.get("round")
+                    cost      = p.get("cost")
+
+                    try: pick_int  = int(pick_num)  if pick_num  is not None else None
+                    except (TypeError, ValueError): pick_int = None
+
+                    try:
+                        round_int = int(round_num) if round_num is not None else None
+                        if round_int is None and pick_int is not None:
+                            round_int = ((pick_int - 1) // num_teams) + 1
+                    except (TypeError, ValueError): round_int = None
+
+                    try: cost_int = int(cost) if cost is not None else None
+                    except (TypeError, ValueError): cost_int = None
+
+                    # Enrich from player_info.json if available
+                    pi           = player_lookup.get(player_key, {})
+                    player_name  = pi.get("name")
+                    position     = pi.get("position")
+                    nfl_team     = pi.get("nfl_team")
+
+                    picks.append({
+                        "overall_pick": pick_int,
+                        "round":        round_int,
+                        "manager_id":   manager_id,
+                        "display_name": display_name,
+                        "team_key":     team_key,
+                        "player_key":   player_key or None,
+                        "player_name":  player_name,   # from player_info.json
+                        "position":     position,       # from player_info.json
+                        "nfl_team":     nfl_team,       # from player_info.json
+                        "cost":         cost_int,       # null for snake drafts
+                    })
+
+                picks.sort(key=lambda x: x.get("overall_pick") or 9999)
+
+                existing[yr] = {
+                    "year":        int(yr),
+                    "draft_type":  draft_type,
+                    "total_picks": len(picks),
+                    "picks":       picks,
+                }
+                results["success"].append(int(yr))
+
+            except Exception as e:
+                results["failed"][yr] = str(e)
+
+        sorted_data = _year_sort(existing)
+        _write_json(path, sorted_data)
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "note":            "player_name/position enriched from player_info.json if available",
+            "next_step":       "GET /league/data/drafts/download to save locally",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/drafts/status")
+def drafts_status():
+    """Shows which years are in drafts.json and enrichment state."""
+    try:
+        data = _load_json(_get_data_path("drafts.json"))
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        summary = []
+        for yr in sorted(data.keys(), reverse=True):
+            season     = data[yr]
+            picks      = season.get("picks", [])
+            with_names = sum(1 for p in picks if p.get("player_name"))
+            summary.append({
+                "year":             int(yr),
+                "draft_type":       season.get("draft_type"),
+                "total_picks":      len(picks),
+                "picks_with_names": with_names,
+                "enriched":         with_names == len(picks) and bool(picks),
+            })
+        return {
+            "total_seasons":  len(data),
+            "auction_seasons":[s["year"] for s in summary if s["draft_type"] == "auction"],
+            "snake_seasons":  [s["year"] for s in summary if s["draft_type"] == "snake"],
+            "seasons":        summary,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/drafts/download")
+def download_drafts():
+    """Returns current drafts.json for local save."""
+    try:
+        data = _load_json(_get_data_path("drafts.json"))
+        if not data:
+            raise HTTPException(status_code=404, detail="drafts.json not found. Run build-all first.")
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/drafts/debug")
+def debug_draft_raw(year: str = Query(default="2025")):
+    """Raw YFPY draft response — shows exact shape for diagnosing pick extraction."""
+    try:
+        from services.fantasy.league_service import get_league_key_for_season, _convert_to_dict
+        from services.yahoo_service import get_query
+
+        league_key = get_league_key_for_season(year)
+        query      = get_query(league_key)
+        raw        = query.get_league_draft_results()
+        converted  = _convert_to_dict(raw)
+
+        # Show the shape of the first raw item vs first converted item
+        first_raw  = raw[0] if isinstance(raw, list) and raw else None
+        first_conv = None
+        if isinstance(converted, list) and converted:
+            item = converted[0]
+            first_conv = _convert_to_dict(item) if not isinstance(item, dict) else item
+
+        return {
+            "raw_type":       type(raw).__name__,
+            "raw_is_list":    isinstance(raw, list),
+            "raw_len":        len(raw) if hasattr(raw, "__len__") else None,
+            "conv_type":      type(converted).__name__,
+            "conv_is_list":   isinstance(converted, list),
+            "conv_len":       len(converted) if hasattr(converted, "__len__") else None,
+            "first_raw_type": type(first_raw).__name__ if first_raw else None,
+            "first_raw":      str(first_raw)[:300] if first_raw else None,
+            "first_converted":first_conv,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
