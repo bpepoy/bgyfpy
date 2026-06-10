@@ -1641,15 +1641,32 @@ def build_transactions(
                 else:
                     tx_list = []
 
+                # Load player_info for name/position enrichment (may be {} if not built yet)
+                _pi      = _load_json(_get_data_path("player_info.json"))
+                _pi_yr   = _pi.get(str(yr), {})
+                _players = _pi_yr.get("players", {}) if isinstance(_pi_yr, dict) else {}
+
+                def _enrich(player_key: str) -> dict:
+                    """Return {name, position, nfl_team} from player_info if available."""
+                    if not player_key or not _players:
+                        return {"name": None, "position": None, "nfl_team": None}
+                    pi = _players.get(str(player_key), {})
+                    return {
+                        "name":     pi.get("name"),
+                        "position": pi.get("position"),
+                        "nfl_team": pi.get("nfl_team"),
+                    }
+
                 trades      = []
                 moves       = []
                 item_errors = []
 
                 for item in tx_list:
                     try:
-                        tx = item if isinstance(item, dict) else {}
-
-                        # Read critical fields — check both top-level and _extracted_data
+                        # CRITICAL: item is a YFPY Transaction object, not a dict.
+                        # Must convert individually — _convert_to_dict on the outer
+                        # list does NOT convert the Transaction objects inside it.
+                        tx = _to_dict_tx(item)
                         ed     = tx.get("_extracted_data") or {}
                         ttype  = tx.get("type")  or (ed.get("type")  if isinstance(ed, dict) else None) or ""
                         status = tx.get("status") or (ed.get("status") if isinstance(ed, dict) else None) or ""
@@ -1690,8 +1707,14 @@ def build_transactions(
                             for pw in players_list:
                                 pi      = _extract_player(pw)
                                 dest_tk = pi["td"].get("destination_team_key") or ""
-                                entry   = {"player_key": pi["player_key"], "name": pi["name"],
-                                           "position": pi["position"], "nfl_team": pi["nfl_team"]}
+                                pk      = pi["player_key"]
+                                enrich  = _enrich(pk)
+                                entry   = {
+                                    "player_key": pk,
+                                    "name":       pi["name"] or enrich["name"],
+                                    "position":   pi["position"] or enrich["position"],
+                                    "nfl_team":   pi["nfl_team"] or enrich["nfl_team"],
+                                }
                                 if dest_tk == trader_tk:
                                     a_received.append(entry)
                                 else:
@@ -1713,12 +1736,18 @@ def build_transactions(
                             for pw in players_list:
                                 pi        = _extract_player(pw)
                                 move_type = (pi["td"].get("type") or "").lower()
-                                entry     = {"player_key": pi["player_key"], "name": pi["name"],
-                                             "position": pi["position"], "nfl_team": pi["nfl_team"]}
+                                pk        = pi["player_key"]
+                                enrich    = _enrich(pk)
+                                entry     = {
+                                    "player_key": pk,
+                                    "name":       pi["name"] or enrich["name"],
+                                    "position":   pi["position"] or enrich["position"],
+                                    "nfl_team":   pi["nfl_team"] or enrich["nfl_team"],
+                                }
                                 if move_type == "add":
                                     added.append({**entry,
                                                   "source_type": pi["td"].get("source_type") or "",
-                                                  "waiver_bid": faab_int})
+                                                  "waiver_bid":  faab_int})
                                 elif move_type == "drop":
                                     dropped.append(entry)
 
