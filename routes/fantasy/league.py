@@ -1445,11 +1445,20 @@ def _date_to_week(date_str: str, week_map: list) -> int | None:
 @router.get("/data/transactions/build-all")
 def build_transactions(
     skip_existing: bool = Query(default=True),
-    year: str          = Query(default=None),
+    year: str          = Query(default=None, description="Single year e.g. '2025'"),
+    year_from: int     = Query(default=None, description="Start of year range e.g. 2007"),
+    year_to: int       = Query(default=None, description="End of year range e.g. 2010"),
     force_clean: bool  = Query(default=False),
 ):
     """
     Generates transactions.json — adds, drops, trades per season.
+
+    ⚠️  Build in batches of 4-5 years to avoid Render's 30s timeout:
+        ?year_from=2007&year_to=2010
+        ?year_from=2011&year_to=2014
+        ?year_from=2015&year_to=2018
+        ?year_from=2019&year_to=2022
+        ?year_from=2023&year_to=2025
 
     CONFIRMED from API extract + debug:
       - query.get_league_transactions() returns a list of Transaction dicts
@@ -1482,8 +1491,17 @@ def build_transactions(
 
         seasons_data = get_all_seasons(force_refresh=True)
         all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
-        target_years = [year] if year else all_years
-        results      = {"success": [], "skipped": [], "failed": {}}
+
+        if year:
+            target_years = [year]
+        elif year_from or year_to:
+            lo = int(year_from) if year_from else 2007
+            hi = int(year_to)   if year_to   else 2025
+            target_years = [y for y in all_years if lo <= int(y) <= hi]
+        else:
+            target_years = all_years
+
+        results = {"success": [], "skipped": [], "failed": {}}
 
         def _ts_to_date(ts):
             if not ts: return None
@@ -1904,7 +1922,9 @@ def debug_transactions_raw(year: str = Query(default="2025")):
 @router.get("/data/player-info/build-all")
 def build_player_info(
     skip_existing: bool = Query(default=True),
-    year: str          = Query(default=None),
+    year: str          = Query(default=None, description="Single year e.g. '2025'"),
+    year_from: int     = Query(default=None, description="Start of year range e.g. 2007"),
+    year_to: int       = Query(default=None, description="End of year range e.g. 2010"),
     force_clean: bool  = Query(default=False),
 ):
     """
@@ -1912,6 +1932,16 @@ def build_player_info(
 
     This is the SOURCE OF TRUTH for player name, position, NFL team.
     rosters.json and player_stats.json reference player_key only — join here for display.
+
+    ⚠️  Do NOT run without a year filter — 19 seasons will 502 (Render 30s timeout).
+    Build in batches of 4-5 years to stay safely under 30 seconds:
+        ?year_from=2007&year_to=2010
+        ?year_from=2011&year_to=2014
+        ?year_from=2015&year_to=2018
+        ?year_from=2019&year_to=2022
+        ?year_from=2023&year_to=2025
+
+    Or one at a time: ?year=2025
 
     CONFIRMED from YFPY v17:
       - query.get_league_players() with NO arguments returns all ~1,187 players at once
@@ -1932,8 +1962,17 @@ def build_player_info(
 
         seasons_data = get_all_seasons(force_refresh=True)
         all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
-        target_years = [year] if year else all_years
-        results      = {"success": [], "skipped": [], "failed": {}}
+
+        if year:
+            target_years = [year]
+        elif year_from or year_to:
+            lo = int(year_from) if year_from else 2007
+            hi = int(year_to)   if year_to   else 2025
+            target_years = [y for y in all_years if lo <= int(y) <= hi]
+        else:
+            target_years = all_years
+
+        results = {"success": [], "skipped": [], "failed": {}}
 
         def _to_dict(obj):
             """Convert a YFPY object or dict to a plain dict."""
@@ -2904,15 +2943,21 @@ def debug_player_stats_raw(
 @router.get("/data/drafts/build-all")
 def build_drafts(
     skip_existing: bool = Query(default=True),
-    year: str          = Query(default=None),
+    year: str          = Query(default=None, description="Single year e.g. '2025'"),
+    year_from: int     = Query(default=None, description="Start of year range e.g. 2007"),
+    year_to: int       = Query(default=None, description="End of year range e.g. 2010"),
     force_clean: bool  = Query(default=False),
 ):
     """
     Generates drafts.json — full draft board per season.
 
+    ⚠️  Build in batches of 4-5 years to avoid Render's 30s timeout:
+        ?year_from=2007&year_to=2010
+        ?year_from=2011&year_to=2014  etc.
+
     CONFIRMED field locations (top level after per-item _convert_to_dict):
       pick, round, cost, team_key, player_key
-    Player names NOT in draft API — join from player_info.json via player_key.
+    Player names enriched from player_info.json — run /drafts/enrich after building.
 
     Snake drafts: cost = null. Auction drafts (2023+): cost = dollars bid.
 
@@ -2930,8 +2975,17 @@ def build_drafts(
 
         seasons_data = get_all_seasons(force_refresh=True)
         all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
-        target_years = [year] if year else all_years
-        results      = {"success": [], "skipped": [], "failed": {}}
+
+        if year:
+            target_years = [year]
+        elif year_from or year_to:
+            lo = int(year_from) if year_from else 2007
+            hi = int(year_to)   if year_to   else 2025
+            target_years = [y for y in all_years if lo <= int(y) <= hi]
+        else:
+            target_years = all_years
+
+        results = {"success": [], "skipped": [], "failed": {}}
 
         def _to_dict(obj):
             """Convert a YFPY DraftResult object or dict to a plain dict."""
