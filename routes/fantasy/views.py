@@ -1333,24 +1333,30 @@ def season_standings(year: int = Query(default=None, description="Season year e.
             pa     = rs.get("points_against") or 0
             proj   = proj_by_mgr.get(mid)
 
+            # playoff_seed = regular season finish rank (1-10)
+            # This is the stable ordering unaffected by consolation bracket results
+            playoff_seed = rs.get("rank")
+
             rows.append({
-                "rank":            rs.get("rank"),
-                "manager_id":      mid,
-                "display_name":    m.get("display_name") or mid.title(),
-                "team_name":       m.get("team_name"),
-                "wins":            wins,
-                "losses":          losses,
-                "ties":            ties,
-                "games_played":    games,
-                "points_for":      round(pf, 2),
-                "points_for_avg":  round(pf / games, 2) if games else None,
-                "points_against":  round(pa, 2),
+                "playoff_seed":     playoff_seed,    # sort key — reg season rank
+                "manager_id":       mid,
+                "display_name":     m.get("display_name") or mid.title(),
+                "team_name":        m.get("team_name"),
+                "wins":             wins,
+                "losses":           losses,
+                "ties":             ties,
+                "games_played":     games,
+                "points_for":       round(pf, 2),
+                "points_for_avg":   round(pf / games, 2) if games else None,
+                "points_against":   round(pa, 2),
                 "points_against_avg": round(pa / games, 2) if games else None,
-                "projected_total": round(proj, 2) if proj is not None else None,
-                "projected_avg":   round(proj / games, 2) if (proj is not None and games) else None,
+                "projected_total":  round(proj, 2) if proj is not None else None,
+                "projected_avg":    round(proj / games, 2) if (proj is not None and games) else None,
+                "made_playoffs":    bool(playoff_seed and playoff_seed <= 4),
             })
 
-        rows.sort(key=lambda x: (x.get("rank") or 99))
+        # Sort by regular season rank (playoff seed) — stable, unaffected by consolation
+        rows.sort(key=lambda x: (x.get("playoff_seed") or 99))
 
         seasons_out.append({
             "year":              int(yr),
@@ -1526,30 +1532,49 @@ def season_playoffs(year: int = Query(default=None, description="Season year e.g
             "teams":          teams_out,
         }
 
+    # ── playoff teams (seeds 1-4 only) ───────────────────────────────────────
+    playoff_manager_ids = {mid for mid, seed in seed_map.items() if seed <= 4}
+
+    def _is_playoff_matchup(m: dict) -> bool:
+        """True only if BOTH teams in the matchup are seeds 1-4."""
+        teams = m.get("teams", [])
+        return (
+            m.get("is_playoffs", False)
+            and not m.get("is_consolation", False)
+            and all(t.get("manager_id") in playoff_manager_ids for t in teams)
+        )
+
     # ── assemble bracket by week ──────────────────────────────────────────────
     bracket_weeks = []
     for wk_entry in sorted(playoff_weeks, key=lambda w: w["week"]):
-        wk_num     = wk_entry["week"]
+        wk_num      = wk_entry["week"]
         wk_matchups = wk_entry.get("matchups", [])
         is_final_wk = (wk_num == last_playoff_week)
 
         championship = None
         third_place  = None
         semifinals   = []
-        other        = []
 
         for m in wk_matchups:
-            if not m.get("is_playoffs") and not m.get("is_consolation"):
-                continue
+            if not _is_playoff_matchup(m):
+                continue   # skip consolation and non-seed-1-4 games entirely
             built = _build_matchup(m, wk_num)
-            if is_final_wk and not m.get("is_consolation"):
-                championship = built
-            elif is_final_wk and m.get("is_consolation"):
-                third_place  = built
-            elif not m.get("is_consolation"):
-                semifinals.append(built)
+            if is_final_wk:
+                # Determine championship vs 3rd place by seedings of the teams
+                team_seeds = [seed_map.get(t.get("manager_id") or "", 99) for t in m.get("teams", [])]
+                min_seed   = min(team_seeds) if team_seeds else 99
+                if min_seed <= 2:
+                    championship = built
+                else:
+                    third_place  = built
             else:
-                other.append(built)
+                semifinals.append(built)
+
+        # Sort semifinals so 1v4 comes before 2v3
+        semifinals.sort(key=lambda s: min(
+            seed_map.get(t.get("manager_id") or "", 99)
+            for t in s.get("teams", [])
+        ))
 
         bracket_weeks.append({
             "week":         wk_num,
@@ -1557,17 +1582,26 @@ def season_playoffs(year: int = Query(default=None, description="Season year e.g
             "championship": championship,
             "third_place":  third_place,
             "semifinals":   semifinals,
-            "other_games":  other,
         })
 
     # ── champion roster (all playoff weeks combined) ──────────────────────────
+    # Champion = seed 1 who won the championship (final_rank 1 from playoff obj,
+    # falling back to the team with regular_season.rank=1 if playoff rank unavailable)
     champion_mid = None
     for mid, m in managers.items():
-        po = m.get("playoff", {})
-        rs = m.get("regular_season", {})
-        if (po.get("rank") or rs.get("rank")) == 1:
+        po   = m.get("playoff", {})
+        rs   = m.get("regular_season", {})
+        rank = po.get("rank") or po.get("seed")
+        # Prefer playoff.rank=1; fall back to regular_season.rank=1 only if no playoff data
+        if rank == 1 and mid in playoff_manager_ids:
             champion_mid = mid
             break
+    if not champion_mid:
+        # Fallback: highest seed (seed 1) — will be wrong if they lost but better than nothing
+        for mid, seed in seed_map.items():
+            if seed == 1:
+                champion_mid = mid
+                break
 
     champion_roster = None
     if champion_mid and last_playoff_week:
@@ -1610,7 +1644,7 @@ def season_playoffs(year: int = Query(default=None, description="Season year e.g
     return {
         "year":             int(yr),
         "playoff_weeks":    playoff_week_nums,
-        "num_playoff_teams":len([m for m in managers.values() if m.get("playoff", {}).get("rank")]),
+        "num_playoff_teams": len(playoff_manager_ids),
         "bracket":          bracket_weeks,
         "champion_roster":  champion_roster,
         "_data_coverage": {
