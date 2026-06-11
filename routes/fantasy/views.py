@@ -992,11 +992,12 @@ def league_history():
 
     Sorted newest → oldest.
     """
-    results    = _load("results.json")
-    punishment = _load("punishment.json")
-    drafts     = _load("drafts.json")
+    results      = _load("results.json")
+    punishment   = _load("punishment.json")
+    drafts       = _load("drafts.json")
     player_stats = _load("player_stats.json")
     player_info  = _load("player_info.json")
+    rosters      = _load("rosters.json")
 
     if not results:
         raise HTTPException(status_code=404, detail="results.json not found.")
@@ -1066,6 +1067,7 @@ def league_history():
         # ── player_stats for this year ────────────────────────────────────────
         yr_stats   = player_stats.get(str(yr), {})
         yr_info    = (player_info.get(str(yr), {}) or {}).get("players", {})
+        yr_rosters = rosters.get(str(yr), {})
 
         # Sum fantasy_points per player_key across all weeks
         player_season_pts: dict = {}   # player_key → total_pts
@@ -1105,13 +1107,7 @@ def league_history():
 
         def _top_scorer(position: str) -> dict | None:
             """Top scorer at a position. Checks exact pos and common aliases."""
-            aliases = {
-                "QB": ["QB"],
-                "RB": ["RB"],
-                "WR": ["WR"],
-                "TE": ["TE"],
-            }
-            for p in aliases.get(position, [position]):
+            for p in [position]:
                 group = pos_groups.get(p, [])
                 if group:
                     top = group[0]
@@ -1123,152 +1119,131 @@ def league_history():
                     }
             return None
 
+        # ── roster owner lookup ───────────────────────────────────────────────
+        # Find who owned each player_key at season end (last available week)
+        # Returns {player_key: {manager_id, display_name}}
+        owner_map: dict = {}
+        if yr_rosters:
+            week_keys = sorted(
+                [k for k in yr_rosters.keys() if k.startswith("week_")],
+                key=lambda x: int(x.split("_")[1])
+            )
+            if week_keys:
+                last_week = yr_rosters[week_keys[-1]]
+                for mid, team in last_week.items():
+                    if not isinstance(team, dict): continue
+                    for slot in team.get("players", []):
+                        pk = slot.get("player_key") if isinstance(slot, dict) else None
+                        if pk:
+                            owner_map[pk] = {
+                                "manager_id":   mid,
+                                "display_name": team.get("display_name") or mid.title(),
+                            }
+
+        def _with_owner(scorer: dict | None) -> dict | None:
+            if not scorer: return None
+            owner = owner_map.get(scorer["player_key"])
+            return {**scorer, "owner": owner}
+
         top_scorers = None
         if yr_stats and yr_info:
             top_scorers = {
-                "QB": _top_scorer("QB"),
-                "RB": _top_scorer("RB"),
-                "WR": _top_scorer("WR"),
-                "TE": _top_scorer("TE"),
+                "QB": _with_owner(_top_scorer("QB")),
+                "RB": _with_owner(_top_scorer("RB")),
+                "WR": _with_owner(_top_scorer("WR")),
+                "TE": _with_owner(_top_scorer("TE")),
             }
 
-        # ── draft data ────────────────────────────────────────────────────────
-        yr_draft     = drafts.get(str(yr), {})
-        draft_picks  = yr_draft.get("picks", [])
-        draft_type   = yr_draft.get("draft_type", "snake")
+        # ── draft key picks (consolidated round_1 + grades) ──────────────────
+        yr_draft    = drafts.get(str(yr), {})
+        draft_picks = yr_draft.get("picks", [])
+        draft_type  = yr_draft.get("draft_type", "snake")
 
-        draft_round_1   = None
-        draft_grades    = None
+        draft_key_picks = None
         has_draft_data  = bool(draft_picks)
         has_stats_data  = bool(player_season_pts)
 
         if has_draft_data:
-            round_1_picks = [p for p in draft_picks if (p.get("round") or 0) == 1]
-
+            # Identify the 10 key picks:
+            # Snake → round 1 picks sorted by pick order
+            # Auction → highest-cost pick per team sorted by cost desc
             if draft_type == "snake":
-                draft_round_1 = {
-                    "type":  "snake",
-                    "picks": [
-                        {
-                            "pick":         p.get("overall_pick"),
-                            "manager_id":   p.get("manager_id"),
-                            "display_name": p.get("display_name"),
-                            "player_key":   p.get("player_key"),
-                            "player_name":  p.get("player_name"),
-                            "position":     p.get("position"),
-                            "nfl_team":     p.get("nfl_team"),
-                        }
-                        for p in sorted(round_1_picks, key=lambda x: x.get("overall_pick") or 99)
-                    ],
-                }
+                key_picks = sorted(
+                    [p for p in draft_picks if (p.get("round") or 0) == 1],
+                    key=lambda x: x.get("overall_pick") or 99,
+                )
             else:
-                # Auction — highest-cost pick per team
                 team_top: dict = {}
                 for p in draft_picks:
                     mid  = p.get("manager_id") or ""
                     cost = p.get("cost") or 0
-                    if not mid:
-                        continue
+                    if not mid: continue
                     if mid not in team_top or cost > (team_top[mid].get("cost") or 0):
                         team_top[mid] = p
-                draft_round_1 = {
-                    "type": "auction",
-                    "note": "Highest-cost pick per team (auction draft)",
-                    "picks": [
-                        {
-                            "manager_id":   p.get("manager_id"),
-                            "display_name": p.get("display_name"),
-                            "player_key":   p.get("player_key"),
-                            "player_name":  p.get("player_name"),
-                            "position":     p.get("position"),
-                            "nfl_team":     p.get("nfl_team"),
-                            "cost":         p.get("cost"),
-                        }
-                        for p in sorted(team_top.values(), key=lambda x: -(x.get("cost") or 0))
-                    ],
-                }
+                key_picks = sorted(team_top.values(), key=lambda x: -(x.get("cost") or 0))
 
-        # ── draft grades — round 1 only ───────────────────────────────────────
-        if has_draft_data and has_stats_data and yr_info:
-            # Only grade the round 1 picks (the 10 players in draft_round_1)
-            if draft_type == "snake":
-                picks_to_grade = [p for p in draft_picks if (p.get("round") or 0) == 1]
-            else:
-                # Auction: grade the highest-cost pick per team (same set as draft_round_1)
-                team_top_keys: set = set()
-                team_top_cost: dict = {}
-                for p in draft_picks:
-                    mid  = p.get("manager_id") or ""
-                    cost = p.get("cost") or 0
-                    if not mid: continue
-                    if mid not in team_top_cost or cost > team_top_cost[mid]:
-                        team_top_cost[mid] = cost
-                        team_top_keys.add(p.get("player_key") or "")
-                picks_to_grade = [
-                    p for p in draft_picks
-                    if (p.get("player_key") or "") in team_top_keys
-                ]
-
-            graded_picks = []
-            for p in picks_to_grade:
+            graded = []
+            for p in key_picks:
                 pk       = p.get("player_key") or ""
-                pts      = round(player_season_pts.get(pk, 0), 2)
+                pts      = round(player_season_pts.get(pk, 0), 2) if has_stats_data else None
                 pos_raw  = p.get("position") or (yr_info.get(pk, {}).get("position") or "")
                 position = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
 
                 pos_rank  = None
                 pos_label = None
-                group     = pos_groups.get(position, [])
-                if group and pts > 0:
+                if pts is not None and pts > 0:
+                    group = pos_groups.get(position, [])
                     for i, g in enumerate(group):
                         if g["player_key"] == pk:
                             pos_rank  = i + 1
                             pos_label = f"{position}{pos_rank}"
                             break
 
-                graded_picks.append({
+                entry_pick: dict = {
                     "manager_id":   p.get("manager_id"),
                     "display_name": p.get("display_name"),
                     "player_key":   pk or None,
                     "player_name":  p.get("player_name"),
                     "position":     position or None,
                     "nfl_team":     p.get("nfl_team"),
-                    "cost":         p.get("cost"),
                     "season_pts":   pts,
                     "pos_rank":     pos_rank,
                     "pos_label":    pos_label,
-                })
+                }
+                # Snake picks have pick number; auction picks have cost
+                if draft_type == "snake":
+                    entry_pick["pick"] = p.get("overall_pick")
+                else:
+                    entry_pick["cost"] = p.get("cost")
 
-            # Sort by cost desc (auction) or pick order (snake)
-            if draft_type == "auction":
-                graded_picks.sort(key=lambda x: -(x.get("cost") or 0))
-            else:
-                graded_picks.sort(key=lambda x: x.get("overall_pick") or 99)
+                graded.append(entry_pick)
 
-            draft_grades = {
+            draft_key_picks = {
                 "type":  draft_type,
-                "picks": graded_picks,
-                "note":  "pos_rank = rank among rostered players at that position who scored > 0 pts",
+                "note":  ("Round 1 picks" if draft_type == "snake"
+                          else "Highest-cost pick per team"),
+                "stats_available": has_stats_data,
+                "picks": graded,
             }
 
         # ── assemble ──────────────────────────────────────────────────────────
         entry = {
-            "year":       int(yr),
-            "num_teams":  num_teams,
-            "champion":   champion,
-            "last_place": last_place,
-            "best_record":best_rec,
-            "punishment": punishment_text,
-            "top_scorers":top_scorers,
-            "draft_round_1": draft_round_1,
-            "draft_grades":  draft_grades,
+            "year":            int(yr),
+            "num_teams":       num_teams,
+            "champion":        champion,
+            "last_place":      last_place,
+            "best_record":     best_rec,
+            "punishment":      punishment_text,
+            "top_scorers":     top_scorers,
+            "draft_key_picks": draft_key_picks,
             "_data_coverage": {
-                "has_results":     True,
-                "has_punishment":  punishment_text is not None,
-                "has_player_stats":has_stats_data,
-                "has_player_info": bool(yr_info),
-                "has_draft":       has_draft_data,
-                "draft_grades_available": draft_grades is not None,
+                "has_results":          True,
+                "has_punishment":       punishment_text is not None,
+                "has_player_stats":     has_stats_data,
+                "has_player_info":      bool(yr_info),
+                "has_rosters":          bool(yr_rosters),
+                "has_draft":            has_draft_data,
+                "draft_grades_available": draft_key_picks is not None and has_stats_data,
             },
         }
         history.append(entry)
@@ -1277,7 +1252,7 @@ def league_history():
 
     return {
         "total_seasons":      len(history),
-        "seasons_with_grades":sum(1 for h in history if h["draft_grades"]),
+        "seasons_with_grades":sum(1 for h in history if h.get("draft_key_picks") and h["draft_key_picks"].get("stats_available")),
         "seasons_with_stats": sum(1 for h in history if h["top_scorers"]),
         "history":            history,
     }
