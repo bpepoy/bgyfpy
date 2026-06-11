@@ -895,3 +895,354 @@ def league_seasons():
         })
 
     return {"total_seasons": len(seasons), "seasons": seasons}
+
+
+# ===========================================================================
+# GET /fantasy/league/rules
+# ===========================================================================
+
+@router.get("/league/rules")
+def league_rules():
+    """
+    Returns the most recent season's scoring rules and league settings.
+
+    Pulls from rules.json — the latest year with populated stat_categories.
+    Useful for displaying scoring settings in the app (how many points per
+    passing yard, touchdown, reception etc.)
+
+    Returns:
+        year, draft_type, num_teams, uses_faab, faab_budget,
+        playoff_teams, playoff_start_week, end_week, trade_deadline,
+        roster_positions, stat_categories (with points_per_unit)
+    """
+    rules = _load("rules.json")
+    if not rules:
+        raise HTTPException(status_code=404, detail="rules.json not found.")
+
+    rules_yr = _year_keyed(rules)
+    if not rules_yr:
+        raise HTTPException(status_code=404, detail="No season data in rules.json.")
+
+    # Use most recent year that has stat_categories populated
+    latest_yr = None
+    latest    = None
+    for yr, s in rules_yr.items():
+        if s.get("stat_categories"):
+            latest_yr = yr
+            latest    = s
+            break
+
+    if not latest:
+        latest_yr, latest = next(iter(rules_yr.items()))
+
+    # Split stat_categories into scoring (has points_per_unit) and display-only
+    all_cats  = latest.get("stat_categories", [])
+    scoring   = [c for c in all_cats if c.get("points_per_unit") is not None]
+    display   = [c for c in all_cats if c.get("points_per_unit") is None and c.get("enabled")]
+
+    # Group scoring stats by position type for easier frontend rendering
+    by_pos: dict = {}
+    for c in scoring:
+        pt = c.get("position_type") or "O"
+        by_pos.setdefault(pt, []).append(c)
+
+    return {
+        "year":              int(latest_yr),
+        "draft_type":        latest.get("draft_type"),
+        "num_teams":         latest.get("num_teams"),
+        "uses_faab":         latest.get("uses_faab"),
+        "faab_budget":       latest.get("faab_budget"),
+        "playoff_teams":     latest.get("playoff_teams"),
+        "playoff_start_week":latest.get("playoff_start_week"),
+        "end_week":          latest.get("end_week"),
+        "trade_deadline":    latest.get("trade_deadline"),
+        "roster_positions":  latest.get("roster_positions", []),
+        "scoring_by_position_type": by_pos,
+        "scoring_stats":     scoring,
+        "display_only_stats":display,
+        "total_scoring_stats":len(scoring),
+    }
+
+
+# ===========================================================================
+# GET /fantasy/league/history
+# ===========================================================================
+
+@router.get("/league/history")
+def league_history():
+    """
+    Full season-by-season history of the BlackGold fantasy league.
+
+    For each completed season returns:
+      - year, num_teams
+      - champion        (rank 1 — display_name, manager_id, record, points_for)
+      - last_place      (rank == num_teams)
+      - best_record     (most wins; points_for as tiebreak)
+      - punishment      (from punishment.json)
+      - top_scorers     (top QB/RB/WR/TE by total season fantasy points)
+                        NOTE: ranked among rostered players only (player_stats
+                        covers only players who appeared on a league roster)
+      - draft_round_1   (snake: pick + player + team per slot;
+                         auction: each team's highest-cost pick)
+      - draft_grades    (each pick's season total pts + position rank
+                         e.g. WR10 = 10th-most points among rostered WRs)
+
+    Seasons missing player_stats or drafts return those fields as null
+    with a note explaining what's missing — partial data is always returned.
+
+    Sorted newest → oldest.
+    """
+    results    = _load("results.json")
+    punishment = _load("punishment.json")
+    drafts     = _load("drafts.json")
+    player_stats = _load("player_stats.json")
+    player_info  = _load("player_info.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    finished = _finished_seasons(_year_keyed(results))
+    history  = []
+
+    for yr, season in finished.items():
+
+        # ── helpers ──────────────────────────────────────────────────────────
+        managers   = season.get("managers", {})
+        num_teams  = len(managers)
+
+        def _mgr_entry(mgr: dict) -> dict:
+            return {
+                "manager_id":   mgr.get("manager_id"),
+                "display_name": mgr.get("display_name"),
+                "wins":         mgr.get("wins", 0),
+                "losses":       mgr.get("losses", 0),
+                "ties":         mgr.get("ties", 0),
+                "points_for":   mgr.get("points_for"),
+                "final_rank":   mgr.get("final_rank") or mgr.get("rank"),
+                "team_name":    mgr.get("team_name"),
+            }
+
+        mgr_list = list(managers.values())
+
+        # ── champion ─────────────────────────────────────────────────────────
+        champion   = None
+        last_place = None
+        best_rec   = None
+
+        rank_sorted = sorted(
+            mgr_list,
+            key=lambda m: (m.get("final_rank") or m.get("rank") or 99)
+        )
+        if rank_sorted:
+            champion   = _mgr_entry(rank_sorted[0])
+            last_place = _mgr_entry(rank_sorted[-1])
+
+        # ── best regular-season record ────────────────────────────────────────
+        rec_sorted = sorted(
+            mgr_list,
+            key=lambda m: (-(m.get("wins") or 0), -(m.get("points_for") or 0))
+        )
+        if rec_sorted:
+            best_rec = _mgr_entry(rec_sorted[0])
+
+        # ── punishment ────────────────────────────────────────────────────────
+        pun_entry   = punishment.get(str(yr), {})
+        punishment_text = pun_entry.get("punishment") if isinstance(pun_entry, dict) else None
+
+        # ── player_stats for this year ────────────────────────────────────────
+        yr_stats   = player_stats.get(str(yr), {})
+        yr_info    = (player_info.get(str(yr), {}) or {}).get("players", {})
+
+        # Sum fantasy_points per player_key across all weeks
+        player_season_pts: dict = {}   # player_key → total_pts
+        if yr_stats:
+            for wk_key, wk_data in yr_stats.items():
+                if not isinstance(wk_data, dict):
+                    continue
+                for pk, pdata in wk_data.items():
+                    if not isinstance(pdata, dict):
+                        continue
+                    fp = pdata.get("fantasy_points") or 0
+                    try:
+                        player_season_pts[pk] = player_season_pts.get(pk, 0) + float(fp)
+                    except (TypeError, ValueError):
+                        pass
+
+        # Build position → sorted [(player_key, pts, name)] for ranking
+        pos_groups: dict = {}
+        for pk, pts in player_season_pts.items():
+            if pts <= 0:
+                continue
+            pi = yr_info.get(pk, {})
+            pos = pi.get("position") or ""
+            # Normalise flex positions to primary
+            primary = pos.split("/")[0].strip() if "/" in pos else pos
+            if primary not in pos_groups:
+                pos_groups[primary] = []
+            pos_groups[primary].append({
+                "player_key": pk,
+                "name":       pi.get("name") or pk,
+                "position":   primary,
+                "total_pts":  round(pts, 2),
+            })
+
+        for pos in pos_groups:
+            pos_groups[pos].sort(key=lambda x: -x["total_pts"])
+
+        def _top_scorer(position: str) -> dict | None:
+            """Top scorer at a position. Checks exact pos and common aliases."""
+            aliases = {
+                "QB": ["QB"],
+                "RB": ["RB"],
+                "WR": ["WR"],
+                "TE": ["TE"],
+            }
+            for p in aliases.get(position, [position]):
+                group = pos_groups.get(p, [])
+                if group:
+                    top = group[0]
+                    return {
+                        "player_key": top["player_key"],
+                        "name":       top["name"],
+                        "total_pts":  top["total_pts"],
+                        "position":   position,
+                    }
+            return None
+
+        top_scorers = None
+        if yr_stats and yr_info:
+            top_scorers = {
+                "QB": _top_scorer("QB"),
+                "RB": _top_scorer("RB"),
+                "WR": _top_scorer("WR"),
+                "TE": _top_scorer("TE"),
+            }
+
+        # ── draft data ────────────────────────────────────────────────────────
+        yr_draft     = drafts.get(str(yr), {})
+        draft_picks  = yr_draft.get("picks", [])
+        draft_type   = yr_draft.get("draft_type", "snake")
+
+        draft_round_1   = None
+        draft_grades    = None
+        has_draft_data  = bool(draft_picks)
+        has_stats_data  = bool(player_season_pts)
+
+        if has_draft_data:
+            round_1_picks = [p for p in draft_picks if (p.get("round") or 0) == 1]
+
+            if draft_type == "snake":
+                draft_round_1 = {
+                    "type":  "snake",
+                    "picks": [
+                        {
+                            "pick":         p.get("overall_pick"),
+                            "manager_id":   p.get("manager_id"),
+                            "display_name": p.get("display_name"),
+                            "player_key":   p.get("player_key"),
+                            "player_name":  p.get("player_name"),
+                            "position":     p.get("position"),
+                            "nfl_team":     p.get("nfl_team"),
+                        }
+                        for p in sorted(round_1_picks, key=lambda x: x.get("overall_pick") or 99)
+                    ],
+                }
+            else:
+                # Auction — highest-cost pick per team
+                team_top: dict = {}
+                for p in draft_picks:
+                    mid  = p.get("manager_id") or ""
+                    cost = p.get("cost") or 0
+                    if not mid:
+                        continue
+                    if mid not in team_top or cost > (team_top[mid].get("cost") or 0):
+                        team_top[mid] = p
+                draft_round_1 = {
+                    "type": "auction",
+                    "note": "Highest-cost pick per team (auction draft)",
+                    "picks": [
+                        {
+                            "manager_id":   p.get("manager_id"),
+                            "display_name": p.get("display_name"),
+                            "player_key":   p.get("player_key"),
+                            "player_name":  p.get("player_name"),
+                            "position":     p.get("position"),
+                            "nfl_team":     p.get("nfl_team"),
+                            "cost":         p.get("cost"),
+                        }
+                        for p in sorted(team_top.values(), key=lambda x: -(x.get("cost") or 0))
+                    ],
+                }
+
+        # ── draft grades ──────────────────────────────────────────────────────
+        if has_draft_data and has_stats_data and yr_info:
+            graded_picks = []
+            for p in draft_picks:
+                pk       = p.get("player_key") or ""
+                pts      = round(player_season_pts.get(pk, 0), 2)
+                pos_raw  = p.get("position") or (yr_info.get(pk, {}).get("position") or "")
+                position = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
+
+                # Rank within position group
+                pos_rank = None
+                pos_label = None
+                group = pos_groups.get(position, [])
+                if group and pts > 0:
+                    # Find where this player falls in the sorted group
+                    for i, g in enumerate(group):
+                        if g["player_key"] == pk:
+                            pos_rank  = i + 1
+                            pos_label = f"{position}{pos_rank}"
+                            break
+
+                graded_picks.append({
+                    "overall_pick": p.get("overall_pick"),
+                    "round":        p.get("round"),
+                    "manager_id":   p.get("manager_id"),
+                    "display_name": p.get("display_name"),
+                    "player_key":   pk or None,
+                    "player_name":  p.get("player_name"),
+                    "position":     position or None,
+                    "nfl_team":     p.get("nfl_team"),
+                    "cost":         p.get("cost"),
+                    "season_pts":   pts,
+                    "pos_rank":     pos_rank,
+                    "pos_label":    pos_label,   # e.g. "WR10"
+                })
+
+            draft_grades = {
+                "type":  draft_type,
+                "picks": graded_picks,
+                "note":  "pos_rank = rank among rostered players at that position who scored > 0 pts",
+            }
+
+        # ── assemble ──────────────────────────────────────────────────────────
+        entry = {
+            "year":       int(yr),
+            "num_teams":  num_teams,
+            "champion":   champion,
+            "last_place": last_place,
+            "best_record":best_rec,
+            "punishment": punishment_text,
+            "top_scorers":top_scorers,
+            "draft_round_1": draft_round_1,
+            "draft_grades":  draft_grades,
+            "_data_coverage": {
+                "has_results":     True,
+                "has_punishment":  punishment_text is not None,
+                "has_player_stats":has_stats_data,
+                "has_player_info": bool(yr_info),
+                "has_draft":       has_draft_data,
+                "draft_grades_available": draft_grades is not None,
+            },
+        }
+        history.append(entry)
+
+    history.sort(key=lambda x: -x["year"])
+
+    return {
+        "total_seasons":      len(history),
+        "seasons_with_grades":sum(1 for h in history if h["draft_grades"]),
+        "seasons_with_stats": sum(1 for h in history if h["top_scorers"]),
+        "history":            history,
+    }
