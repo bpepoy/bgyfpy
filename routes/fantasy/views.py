@@ -1010,40 +1010,54 @@ def league_history():
         managers   = season.get("managers", {})
         num_teams  = len(managers)
 
-        def _mgr_entry(mgr: dict) -> dict:
+        def _mgr_entry(mid: str, m: dict) -> dict:
+            """Build a manager summary from results.json manager dict."""
+            rs = m.get("regular_season", {})
+            po = m.get("playoff", {})
+            # final_rank: playoff rank if available, else regular season rank
+            final_rank = (
+                po.get("rank") or po.get("seed") or
+                rs.get("rank") or m.get("rank")
+            )
             return {
-                "manager_id":   mgr.get("manager_id"),
-                "display_name": mgr.get("display_name"),
-                "wins":         mgr.get("wins", 0),
-                "losses":       mgr.get("losses", 0),
-                "ties":         mgr.get("ties", 0),
-                "points_for":   mgr.get("points_for"),
-                "final_rank":   mgr.get("final_rank") or mgr.get("rank"),
-                "team_name":    mgr.get("team_name"),
+                "manager_id":   mid,
+                "display_name": m.get("display_name") or mid.title(),
+                "team_name":    m.get("team_name"),
+                "wins":         rs.get("wins"),
+                "losses":       rs.get("losses"),
+                "ties":         rs.get("ties", 0),
+                "points_for":   rs.get("points_for"),
+                "final_rank":   final_rank,
             }
 
-        mgr_list = list(managers.values())
+        mgr_list = [(mid, m) for mid, m in managers.items()]
 
         # ── champion ─────────────────────────────────────────────────────────
         champion   = None
         last_place = None
         best_rec   = None
 
-        rank_sorted = sorted(
-            mgr_list,
-            key=lambda m: (m.get("final_rank") or m.get("rank") or 99)
-        )
+        # Sort by final_rank for champion / last place
+        def _final_rank(item):
+            mid, m = item
+            rs = m.get("regular_season", {})
+            po = m.get("playoff", {})
+            return po.get("rank") or po.get("seed") or rs.get("rank") or 99
+
+        rank_sorted = sorted(mgr_list, key=_final_rank)
         if rank_sorted:
-            champion   = _mgr_entry(rank_sorted[0])
-            last_place = _mgr_entry(rank_sorted[-1])
+            champion   = _mgr_entry(*rank_sorted[0])
+            last_place = _mgr_entry(*rank_sorted[-1])
 
         # ── best regular-season record ────────────────────────────────────────
-        rec_sorted = sorted(
-            mgr_list,
-            key=lambda m: (-(m.get("wins") or 0), -(m.get("points_for") or 0))
-        )
+        def _rec_sort(item):
+            mid, m = item
+            rs = m.get("regular_season", {})
+            return (-(rs.get("wins") or 0), -(rs.get("points_for") or 0))
+
+        rec_sorted = sorted(mgr_list, key=_rec_sort)
         if rec_sorted:
-            best_rec = _mgr_entry(rec_sorted[0])
+            best_rec = _mgr_entry(*rec_sorted[0])
 
         # ── punishment ────────────────────────────────────────────────────────
         pun_entry   = punishment.get(str(yr), {})
@@ -1174,21 +1188,38 @@ def league_history():
                     ],
                 }
 
-        # ── draft grades ──────────────────────────────────────────────────────
+        # ── draft grades — round 1 only ───────────────────────────────────────
         if has_draft_data and has_stats_data and yr_info:
+            # Only grade the round 1 picks (the 10 players in draft_round_1)
+            if draft_type == "snake":
+                picks_to_grade = [p for p in draft_picks if (p.get("round") or 0) == 1]
+            else:
+                # Auction: grade the highest-cost pick per team (same set as draft_round_1)
+                team_top_keys: set = set()
+                team_top_cost: dict = {}
+                for p in draft_picks:
+                    mid  = p.get("manager_id") or ""
+                    cost = p.get("cost") or 0
+                    if not mid: continue
+                    if mid not in team_top_cost or cost > team_top_cost[mid]:
+                        team_top_cost[mid] = cost
+                        team_top_keys.add(p.get("player_key") or "")
+                picks_to_grade = [
+                    p for p in draft_picks
+                    if (p.get("player_key") or "") in team_top_keys
+                ]
+
             graded_picks = []
-            for p in draft_picks:
+            for p in picks_to_grade:
                 pk       = p.get("player_key") or ""
                 pts      = round(player_season_pts.get(pk, 0), 2)
                 pos_raw  = p.get("position") or (yr_info.get(pk, {}).get("position") or "")
                 position = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
 
-                # Rank within position group
-                pos_rank = None
+                pos_rank  = None
                 pos_label = None
-                group = pos_groups.get(position, [])
+                group     = pos_groups.get(position, [])
                 if group and pts > 0:
-                    # Find where this player falls in the sorted group
                     for i, g in enumerate(group):
                         if g["player_key"] == pk:
                             pos_rank  = i + 1
@@ -1196,8 +1227,6 @@ def league_history():
                             break
 
                 graded_picks.append({
-                    "overall_pick": p.get("overall_pick"),
-                    "round":        p.get("round"),
                     "manager_id":   p.get("manager_id"),
                     "display_name": p.get("display_name"),
                     "player_key":   pk or None,
@@ -1207,8 +1236,14 @@ def league_history():
                     "cost":         p.get("cost"),
                     "season_pts":   pts,
                     "pos_rank":     pos_rank,
-                    "pos_label":    pos_label,   # e.g. "WR10"
+                    "pos_label":    pos_label,
                 })
+
+            # Sort by cost desc (auction) or pick order (snake)
+            if draft_type == "auction":
+                graded_picks.sort(key=lambda x: -(x.get("cost") or 0))
+            else:
+                graded_picks.sort(key=lambda x: x.get("overall_pick") or 99)
 
             draft_grades = {
                 "type":  draft_type,
