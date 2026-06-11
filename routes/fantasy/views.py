@@ -1256,3 +1256,368 @@ def league_history():
         "seasons_with_stats": sum(1 for h in history if h["top_scorers"]),
         "history":            history,
     }
+
+
+# ===========================================================================
+# GET /fantasy/season/standings
+# ===========================================================================
+
+@router.get("/season/standings")
+def season_standings(year: int = Query(default=None, description="Season year e.g. 2025. Omit for all seasons.")):
+    """
+    Regular season standings for one or all seasons.
+
+    Per manager per season returns:
+      - wins, losses, ties, rank
+      - points_for (total + per-game average)
+      - points_against (total + per-game average)
+      - projected_points (total + per-game average — summed from matchups.json)
+
+    Projected points are summed from weekly matchup data across regular season
+    weeks only (is_playoffs=false). If matchups.json is unavailable for a year
+    the projected fields return null.
+
+    Query params:
+      year=2025   → single season
+      (omit)      → all finished seasons, newest first
+    """
+    results  = _load("results.json")
+    matchups = _load("matchups.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    finished = _finished_seasons(_year_keyed(results))
+    if not finished:
+        raise HTTPException(status_code=404, detail="No finished seasons found.")
+
+    target = {str(year): finished[str(year)]} if year else finished
+    if year and str(year) not in finished:
+        raise HTTPException(status_code=404, detail=f"Season {year} not found or not finished.")
+
+    seasons_out = []
+
+    for yr, season in target.items():
+        managers      = season.get("managers", {})
+        num_teams     = len(managers)
+
+        # ── projected points from matchups.json ──────────────────────────────
+        # Sum projected across all regular season weeks per manager
+        proj_by_mgr: dict = {}   # manager_id → total projected pts
+        yr_matchups = matchups.get(str(yr), {})
+        playoff_start = yr_matchups.get("playoff_start") or 99
+
+        for wk_entry in yr_matchups.get("weeks", []):
+            if wk_entry.get("week", 99) >= playoff_start:
+                continue   # skip playoff weeks
+            for m in wk_entry.get("matchups", []):
+                if m.get("is_playoffs"):
+                    continue
+                for team in m.get("teams", []):
+                    mid  = team.get("manager_id") or ""
+                    proj = team.get("projected") or 0
+                    if mid:
+                        proj_by_mgr[mid] = round(proj_by_mgr.get(mid, 0) + proj, 2)
+
+        # ── build standings rows ──────────────────────────────────────────────
+        rows = []
+        for mid, m in managers.items():
+            rs = m.get("regular_season", {})
+
+            wins   = rs.get("wins")   or 0
+            losses = rs.get("losses") or 0
+            ties   = rs.get("ties")   or 0
+            games  = wins + losses + (ties or 0)
+
+            pf     = rs.get("points_for")     or 0
+            pa     = rs.get("points_against") or 0
+            proj   = proj_by_mgr.get(mid)
+
+            rows.append({
+                "rank":            rs.get("rank"),
+                "manager_id":      mid,
+                "display_name":    m.get("display_name") or mid.title(),
+                "team_name":       m.get("team_name"),
+                "wins":            wins,
+                "losses":          losses,
+                "ties":            ties,
+                "games_played":    games,
+                "points_for":      round(pf, 2),
+                "points_for_avg":  round(pf / games, 2) if games else None,
+                "points_against":  round(pa, 2),
+                "points_against_avg": round(pa / games, 2) if games else None,
+                "projected_total": round(proj, 2) if proj is not None else None,
+                "projected_avg":   round(proj / games, 2) if (proj is not None and games) else None,
+            })
+
+        rows.sort(key=lambda x: (x.get("rank") or 99))
+
+        seasons_out.append({
+            "year":              int(yr),
+            "num_teams":         num_teams,
+            "has_projected":     bool(proj_by_mgr),
+            "standings":         rows,
+        })
+
+    seasons_out.sort(key=lambda x: -x["year"])
+
+    if year:
+        return seasons_out[0]
+
+    return {
+        "total_seasons": len(seasons_out),
+        "seasons":       seasons_out,
+    }
+
+
+# ===========================================================================
+# GET /fantasy/season/playoffs
+# ===========================================================================
+
+@router.get("/season/playoffs")
+def season_playoffs(year: int = Query(default=None, description="Season year e.g. 2025. Omit for most recent finished season.")):
+    """
+    Full playoff picture for a season — bracket, results, and champion roster.
+
+    Returns:
+      bracket:
+        - semifinal matchups (seed 1v4, 2v3) with points
+        - championship matchup + 3rd place matchup
+        - each matchup optionally expanded with per-player points
+
+      champion_roster:
+        - every player on the champion's roster during the last playoff week
+        - playoff_pts per player (sum across all playoff weeks)
+        - total_pts for the roster
+        - sorted starters first then bench, by points desc within each group
+
+    The expandable matchup UX works like this:
+      Backend returns full player breakdown for EVERY matchup right now.
+      Frontend starts all matchups collapsed (showing just team + score).
+      Tapping a matchup card toggles expanded=true showing the player rows.
+      Zero additional API calls needed — all data is already in the response.
+
+    Playoff week detection: uses matchups.json is_playoffs flag.
+    Seedings: from results.json regular_season.rank.
+    """
+    results      = _load("results.json")
+    matchups_raw = _load("matchups.json")
+    rosters      = _load("rosters.json")
+    player_stats = _load("player_stats.json")
+    player_info  = _load("player_info.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    finished = _finished_seasons(_year_keyed(results))
+    if not finished:
+        raise HTTPException(status_code=404, detail="No finished seasons found.")
+
+    # Default to most recent finished season
+    yr = str(year) if year else next(iter(finished))
+    if yr not in finished:
+        raise HTTPException(status_code=404, detail=f"Season {yr} not found or not finished.")
+
+    season   = finished[yr]
+    managers = season.get("managers", {})
+
+    # ── seedings from regular season rank ────────────────────────────────────
+    seed_map: dict = {}   # manager_id → seed (regular season rank)
+    for mid, m in managers.items():
+        rs = m.get("regular_season", {})
+        seed = rs.get("rank")
+        if seed:
+            seed_map[mid] = seed
+
+    def _team_info(mid: str) -> dict:
+        m = managers.get(mid, {})
+        return {
+            "manager_id":   mid,
+            "display_name": m.get("display_name") or mid.title(),
+            "team_name":    m.get("team_name"),
+            "seed":         seed_map.get(mid),
+            "final_rank":   (m.get("playoff") or {}).get("rank") or seed_map.get(mid),
+        }
+
+    # ── playoff weeks from matchups.json ─────────────────────────────────────
+    yr_matchups  = matchups_raw.get(yr, {})
+    all_weeks    = yr_matchups.get("weeks", [])
+    playoff_start = yr_matchups.get("playoff_start") or 99
+
+    playoff_weeks = [
+        w for w in all_weeks
+        if w.get("week", 0) >= playoff_start
+    ]
+    playoff_week_nums = sorted(w["week"] for w in playoff_weeks)
+    last_playoff_week = playoff_week_nums[-1] if playoff_week_nums else None
+
+    # ── player stats for playoff weeks only ──────────────────────────────────
+    yr_stats   = player_stats.get(yr, {})
+    yr_info    = (player_info.get(yr, {}) or {}).get("players", {})
+
+    playoff_pts: dict = {}  # player_key → total pts across playoff weeks
+    for wk_num in playoff_week_nums:
+        wk_data = yr_stats.get(f"week_{wk_num}", {})
+        for pk, pd in wk_data.items():
+            fp = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0
+            playoff_pts[pk] = round(playoff_pts.get(pk, 0) + fp, 2)
+
+    # ── per-team roster breakdown for a given week ───────────────────────────
+    def _team_players(mid: str, week_num: int) -> list:
+        """Players + points for a manager in a specific week."""
+        wk_key    = f"week_{week_num}"
+        yr_roster = rosters.get(yr, {})
+        wk_roster = yr_roster.get(wk_key, {})
+        team_slots = wk_roster.get(mid, {}).get("players", [])
+        if not team_slots:
+            return []
+
+        players_out = []
+        for slot in team_slots:
+            if not isinstance(slot, dict): continue
+            pk  = slot.get("player_key") or ""
+            pi  = yr_info.get(pk, {})
+            wk_pts = float(
+                (yr_stats.get(wk_key, {}).get(pk) or {}).get("fantasy_points") or 0
+            ) if isinstance(yr_stats.get(wk_key, {}).get(pk), dict) else 0
+
+            players_out.append({
+                "player_key":        pk,
+                "name":              pi.get("name") or pk,
+                "position":          pi.get("position") or slot.get("selected_position"),
+                "nfl_team":          pi.get("nfl_team"),
+                "selected_position": slot.get("selected_position"),
+                "is_starting":       slot.get("is_starting", False),
+                "is_on_bench":       slot.get("is_on_bench", False),
+                "is_on_ir":          slot.get("is_on_ir", False),
+                "week_pts":          round(wk_pts, 2),
+            })
+
+        # Starters first (sorted by pts desc), then bench, then IR
+        players_out.sort(key=lambda p: (
+            0 if p["is_starting"] else (1 if p["is_on_bench"] else 2),
+            -p["week_pts"],
+        ))
+        return players_out
+
+    # ── build matchup objects ─────────────────────────────────────────────────
+    def _build_matchup(m: dict, week_num: int) -> dict:
+        teams = m.get("teams", [])
+        teams_out = []
+        for t in teams:
+            mid      = t.get("manager_id") or ""
+            ti       = _team_info(mid)
+            players  = _team_players(mid, week_num)
+            teams_out.append({
+                **ti,
+                "points":    t.get("points"),
+                "projected": t.get("projected"),
+                "is_winner": t.get("is_winner", False),
+                "players":   players,   # full detail — frontend collapses by default
+            })
+        # Sort so winner appears first
+        teams_out.sort(key=lambda t: 0 if t["is_winner"] else 1)
+        return {
+            "week":           week_num,
+            "week_start":     m.get("week_start"),
+            "week_end":       m.get("week_end"),
+            "is_consolation": m.get("is_consolation", False),
+            "winner_manager": m.get("winner_manager"),
+            "teams":          teams_out,
+        }
+
+    # ── assemble bracket by week ──────────────────────────────────────────────
+    bracket_weeks = []
+    for wk_entry in sorted(playoff_weeks, key=lambda w: w["week"]):
+        wk_num     = wk_entry["week"]
+        wk_matchups = wk_entry.get("matchups", [])
+        is_final_wk = (wk_num == last_playoff_week)
+
+        championship = None
+        third_place  = None
+        semifinals   = []
+        other        = []
+
+        for m in wk_matchups:
+            if not m.get("is_playoffs") and not m.get("is_consolation"):
+                continue
+            built = _build_matchup(m, wk_num)
+            if is_final_wk and not m.get("is_consolation"):
+                championship = built
+            elif is_final_wk and m.get("is_consolation"):
+                third_place  = built
+            elif not m.get("is_consolation"):
+                semifinals.append(built)
+            else:
+                other.append(built)
+
+        bracket_weeks.append({
+            "week":         wk_num,
+            "is_final_week":is_final_wk,
+            "championship": championship,
+            "third_place":  third_place,
+            "semifinals":   semifinals,
+            "other_games":  other,
+        })
+
+    # ── champion roster (all playoff weeks combined) ──────────────────────────
+    champion_mid = None
+    for mid, m in managers.items():
+        po = m.get("playoff", {})
+        rs = m.get("regular_season", {})
+        if (po.get("rank") or rs.get("rank")) == 1:
+            champion_mid = mid
+            break
+
+    champion_roster = None
+    if champion_mid and last_playoff_week:
+        yr_roster  = rosters.get(yr, {})
+        last_wk    = yr_roster.get(f"week_{last_playoff_week}", {})
+        champ_team = last_wk.get(champion_mid, {})
+        slots      = champ_team.get("players", [])
+
+        roster_players = []
+        for slot in slots:
+            if not isinstance(slot, dict): continue
+            pk  = slot.get("player_key") or ""
+            pi  = yr_info.get(pk, {})
+            pp  = round(playoff_pts.get(pk, 0), 2)
+            roster_players.append({
+                "player_key":        pk,
+                "name":              pi.get("name") or pk,
+                "position":          pi.get("position") or slot.get("selected_position"),
+                "nfl_team":          pi.get("nfl_team"),
+                "selected_position": slot.get("selected_position"),
+                "is_starting":       slot.get("is_starting", False),
+                "is_on_bench":       slot.get("is_on_bench", False),
+                "playoff_pts":       pp,
+            })
+
+        roster_players.sort(key=lambda p: (
+            0 if p["is_starting"] else 1,
+            -p["playoff_pts"],
+        ))
+
+        champ_info = _team_info(champion_mid)
+        champion_roster = {
+            **champ_info,
+            "total_playoff_pts": round(sum(p["playoff_pts"] for p in roster_players), 2),
+            "playoff_weeks":     playoff_week_nums,
+            "players":           roster_players,
+            "note":              f"Roster from week {last_playoff_week}. playoff_pts = sum across all playoff weeks.",
+        }
+
+    return {
+        "year":             int(yr),
+        "playoff_weeks":    playoff_week_nums,
+        "num_playoff_teams":len([m for m in managers.values() if m.get("playoff", {}).get("rank")]),
+        "bracket":          bracket_weeks,
+        "champion_roster":  champion_roster,
+        "_data_coverage": {
+            "has_matchups":    bool(yr_matchups),
+            "has_rosters":     bool(rosters.get(yr)),
+            "has_player_stats":bool(yr_stats),
+            "has_player_info": bool(yr_info),
+            "player_detail_available": bool(yr_stats and yr_info and rosters.get(yr)),
+        },
+    }
