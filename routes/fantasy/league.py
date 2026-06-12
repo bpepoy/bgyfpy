@@ -2252,25 +2252,57 @@ def build_rosters(
                 end_week     = int(settings.get("end_week")   or 17)
 
                 # Collect team_id list
-                teams_raw = _convert_to_dict(query.get_league_teams())
-                if isinstance(teams_raw, list): teams_list = teams_raw
-                elif isinstance(teams_raw, dict):
-                    teams_list = teams_raw.get("teams", list(teams_raw.values()))
-                else: teams_list = []
-
+                # Primary: get_league_teams() API call
+                # Fallback: extract from matchups.json (works for pre-2015 seasons
+                # where Yahoo's /teams endpoint returns "No valid server" 500 error)
                 team_info: list[dict] = []
-                for t in teams_list:
-                    t = _to_dict(t) if not isinstance(t, dict) else t
-                    tk = t.get("team_key") or (_to_dict(t.get("_extracted_data") or {})).get("team_key")
-                    if not tk: continue
-                    tid      = str(tk).split(".t.")[-1] if ".t." in str(tk) else None
-                    identity = get_manager_identity(team_key=tk)
-                    team_info.append({
-                        "team_key":     str(tk),
-                        "team_id":      tid,
-                        "manager_id":   identity["manager_id"]   if identity else str(tk),
-                        "display_name": identity["display_name"] if identity else str(tk),
-                    })
+                try:
+                    teams_raw = _convert_to_dict(query.get_league_teams())
+                    if isinstance(teams_raw, list): teams_list = teams_raw
+                    elif isinstance(teams_raw, dict):
+                        teams_list = teams_raw.get("teams", list(teams_raw.values()))
+                    else: teams_list = []
+
+                    for t in teams_list:
+                        t = _to_dict(t) if not isinstance(t, dict) else t
+                        tk = t.get("team_key") or (_to_dict(t.get("_extracted_data") or {})).get("team_key")
+                        if not tk: continue
+                        tid      = str(tk).split(".t.")[-1] if ".t." in str(tk) else None
+                        identity = get_manager_identity(team_key=tk)
+                        team_info.append({
+                            "team_key":     str(tk),
+                            "team_id":      tid,
+                            "manager_id":   identity["manager_id"]   if identity else str(tk),
+                            "display_name": identity["display_name"] if identity else str(tk),
+                        })
+                except Exception:
+                    pass
+
+                # Fallback: extract team_id + manager_id from matchups.json
+                # matchups[year][weeks][N][matchups][M][teams][T] has team_key and team_id
+                if not team_info:
+                    matchups_data = _load_json(_get_data_path("matchups.json"))
+                    yr_matchups   = matchups_data.get(str(yr), {})
+                    seen_tids: set = set()
+                    for wk_entry in yr_matchups.get("weeks", []):
+                        for m in wk_entry.get("matchups", []):
+                            for t in m.get("teams", []):
+                                tk  = t.get("team_key") or ""
+                                tid = t.get("team_id") or (
+                                    str(tk).split(".t.")[-1] if ".t." in str(tk) else None
+                                )
+                                mid = t.get("manager_id") or ""
+                                if tid and tid not in seen_tids and mid:
+                                    seen_tids.add(tid)
+                                    identity = get_manager_identity(manager_id=mid)
+                                    team_info.append({
+                                        "team_key":     tk,
+                                        "team_id":      tid,
+                                        "manager_id":   mid,
+                                        "display_name": t.get("display_name") or mid.title(),
+                                    })
+                        if len(team_info) >= 10:
+                            break  # all teams found, stop scanning weeks
 
                 season_rosters = existing.get(yr, {}) if (not force_clean and week) else {}
                 target_weeks   = [week] if week else list(range(start_week, end_week + 1))
@@ -2442,16 +2474,38 @@ def build_player_stats(
                 end_week   = int(settings.get("end_week")   or 17)
 
                 # Collect numeric team IDs
-                teams_raw  = _convert_to_dict(query.get_league_teams())
-                teams_list = teams_raw if isinstance(teams_raw, list) else (
-                    teams_raw.get("teams", list(teams_raw.values())) if isinstance(teams_raw, dict) else []
-                )
+                # Primary: get_league_teams() API call
+                # Fallback: extract from matchups.json for pre-2015 seasons
                 team_ids: list[str] = []
-                for t in teams_list:
-                    t  = _to_dict(t) if not isinstance(t, dict) else t
-                    tk = t.get("team_key") or (_to_dict(t.get("_extracted_data") or {})).get("team_key")
-                    if tk and ".t." in str(tk):
-                        team_ids.append(str(tk).split(".t.")[-1])
+                try:
+                    teams_raw  = _convert_to_dict(query.get_league_teams())
+                    teams_list = teams_raw if isinstance(teams_raw, list) else (
+                        teams_raw.get("teams", list(teams_raw.values())) if isinstance(teams_raw, dict) else []
+                    )
+                    for t in teams_list:
+                        t  = _to_dict(t) if not isinstance(t, dict) else t
+                        tk = t.get("team_key") or (_to_dict(t.get("_extracted_data") or {})).get("team_key")
+                        if tk and ".t." in str(tk):
+                            team_ids.append(str(tk).split(".t.")[-1])
+                except Exception:
+                    pass
+
+                if not team_ids:
+                    matchups_data = _load_json(_get_data_path("matchups.json"))
+                    yr_matchups   = matchups_data.get(str(yr), {})
+                    seen: set = set()
+                    for wk_entry in yr_matchups.get("weeks", []):
+                        for m in wk_entry.get("matchups", []):
+                            for t in m.get("teams", []):
+                                tk  = t.get("team_key") or ""
+                                tid = t.get("team_id") or (
+                                    str(tk).split(".t.")[-1] if ".t." in str(tk) else None
+                                )
+                                if tid and tid not in seen:
+                                    seen.add(tid)
+                                    team_ids.append(tid)
+                        if len(team_ids) >= 10:
+                            break
 
                 target_weeks = [week] if week else list(range(start_week, end_week + 1))
 
