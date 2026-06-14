@@ -289,3 +289,19 @@ def app_home():
         "era_pills":        era_pills,
         "sections":         sections,
     }
+
+
+@router.get("/home/debug")
+def home_debug():
+    """Temporary debug — shows exact file paths being read."""
+    import os
+    path = _data_path("results.json")
+    return {
+        "file":              __file__,
+        "resolved_root":     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "results_json_path": path,
+        "results_exists":    os.path.exists(path),
+        "data_dir":          os.path.dirname(path),
+        "data_dir_exists":   os.path.exists(os.path.dirname(path)),
+        "data_dir_contents": os.listdir(os.path.dirname(path)) if os.path.exists(os.path.dirname(path)) else [],
+    }
