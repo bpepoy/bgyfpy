@@ -32,7 +32,11 @@ def _load(filename: str) -> dict:
         return {}
     try:
         with open(path) as f:
-            return json.load(f)
+            raw = json.load(f)
+        # Unwrap /download endpoint wrapper: {"total_seasons":N, "years":[...], "data":{...}}
+        if isinstance(raw, dict) and "data" in raw and not any(str(k).isdigit() for k in raw):
+            return raw["data"]
+        return raw
     except Exception:
         return {}
 

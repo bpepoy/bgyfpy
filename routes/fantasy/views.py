@@ -54,11 +54,10 @@ def _load(filename: str) -> dict:
         return {}
     with open(path) as f:
         raw = json.load(f)
-    # Unwrap legacy double-wrapped shape {"total_seasons":N,"years":[...],"data":{...}}
-    if isinstance(raw, dict) and "data" in raw and "total_seasons" in raw:
+    # Unwrap /download endpoint wrapper: {"total_seasons":N, "years":[...], "data":{...}}
+    # Detect wrapper by: has "data" key AND no top-level digit keys
+    if isinstance(raw, dict) and "data" in raw and not any(str(k).isdigit() for k in raw):
         raw = raw["data"]
-        if isinstance(raw, dict) and "data" in raw and "total_seasons" in raw:
-            raw = raw["data"]
     return raw if isinstance(raw, dict) else {}
 
 
