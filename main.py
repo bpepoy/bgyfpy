@@ -1,29 +1,14 @@
-"""
-main.py — add these two lines to register the basketball router
-===============================================================
-
-1. Add the import near the other route imports:
-
-    from routes.basketball.league import router as basketball_league_router
-
-2. Add the include_router call near the others:
-
-    app.include_router(basketball_league_router)
-
-
-Full updated main.py for reference:
-"""
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from oauth import router as oauth_router
 from routes.auth import router as auth_router
+from routes.views import router as views_router
 from routes.fantasy.league import router as fantasy_league_router
 from routes.fantasy.teams import router as fantasy_teams_router
 from routes.fantasy.yahoo import router as yahoo_router
+from routes.fantasy.views import router as fantasy_views_router
 from routes.explore import router as explore_router
 from routes.basketball.league import router as basketball_league_router
-from routes.fantasy.views import router as fantasy_views_router
 import os
 
 app = FastAPI(
@@ -49,18 +34,17 @@ app.add_middleware(
 
 app.include_router(oauth_router)
 app.include_router(auth_router)
+app.include_router(views_router)
 app.include_router(fantasy_league_router)
 app.include_router(fantasy_teams_router)
+app.include_router(fantasy_views_router)
 app.include_router(explore_router)
 app.include_router(yahoo_router)
 app.include_router(basketball_league_router)
-app.include_router(fantasy_views_router)
-
 
 @app.get("/")
 def root():
     return {"message": "bgyfpy-backend is running", "version": "2.0.0"}
-
 
 @app.get("/health")
 def health_check():
