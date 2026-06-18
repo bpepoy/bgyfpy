@@ -548,7 +548,12 @@ def _load_json(path: str) -> dict:
             content = f.read().strip()
         if not content:
             return {}
-        return json.loads(content)
+        raw = json.loads(content)
+        # Unwrap /download endpoint wrapper: {"total_seasons":N, "years":[...], "data":{...}}
+        # Detect by: has "data" key AND no top-level digit keys
+        if isinstance(raw, dict) and "data" in raw and not any(str(k).isdigit() for k in raw):
+            return raw["data"]
+        return raw
     except (json.JSONDecodeError, ValueError):
         return {}
 
