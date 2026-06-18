@@ -4218,3 +4218,110 @@ def debug_era_player_stats(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/debug/stats-cutoff")
+def debug_stats_cutoff():
+    """
+    Tests get_player_stats_by_week across ALL years to find the exact
+    cutoff where Yahoo stops returning real stat values.
+
+    Tests week 1, player 1 from rosters.json for each year.
+    Returns a quick summary table — which years have real stats vs zeros.
+
+    Usage: GET /league/data/debug/stats-cutoff
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_league_key_for_season, _convert_to_dict,
+        )
+        from services.yahoo_service import get_query
+        import time
+
+        rosters_data = _load_json(_get_data_path("rosters.json"))
+        results      = []
+
+        # Test every year we have rosters for, newest first
+        test_years = sorted(
+            [yr for yr in rosters_data.keys() if str(yr).isdigit()],
+            reverse=True
+        )
+
+        for yr in test_years:
+            yr_rosters = rosters_data.get(yr, {})
+            wk_data    = yr_rosters.get("week_1", {})
+
+            # Get first available player key
+            player_key = None
+            manager_id = None
+            for mid, team in wk_data.items():
+                if not isinstance(team, dict): continue
+                players = team.get("players", [])
+                if players and isinstance(players[0], dict):
+                    player_key = players[0].get("player_key")
+                    manager_id = mid
+                    break
+
+            if not player_key:
+                results.append({"year": int(yr), "status": "no_roster_data"})
+                continue
+
+            try:
+                league_key = get_league_key_for_season(yr)
+                query      = get_query(league_key)
+                raw        = query.get_player_stats_by_week(player_key, 1)
+                p          = _convert_to_dict(raw) if not isinstance(raw, dict) else raw
+
+                pts_raw   = p.get("player_points") or {}
+                fp        = float(pts_raw.get("total") or 0) if isinstance(pts_raw, dict) else 0
+
+                ps_raw    = p.get("player_stats") or {}
+                stat_list = ps_raw.get("stats", []) if isinstance(ps_raw, dict) else []
+
+                # Count non-zero stats
+                nonzero = 0
+                for entry in stat_list:
+                    if not isinstance(entry, dict): continue
+                    stat = entry.get("stat", entry)
+                    val  = stat.get("value") if isinstance(stat, dict) else None
+                    try:
+                        if float(val or 0) != 0:
+                            nonzero += 1
+                    except (TypeError, ValueError):
+                        pass
+
+                results.append({
+                    "year":            int(yr),
+                    "player_key":      player_key,
+                    "fantasy_points":  fp,
+                    "total_stats":     len(stat_list),
+                    "nonzero_stats":   nonzero,
+                    "has_real_stats":  nonzero > 0,
+                    "status":          "✅ real stats" if nonzero > 0 else "❌ all zeros",
+                })
+                time.sleep(0.5)   # be gentle — many API calls
+
+            except Exception as e:
+                results.append({
+                    "year":   int(yr),
+                    "status": f"error: {str(e)[:120]}",
+                })
+                time.sleep(0.3)
+
+        # Find cutoff
+        real_years = [r["year"] for r in results if r.get("has_real_stats")]
+        zero_years = [r["year"] for r in results if r.get("has_real_stats") == False]
+        cutoff     = min(real_years) if real_years else None
+
+        return {
+            "summary": {
+                "years_with_real_stats": sorted(real_years, reverse=True),
+                "years_with_zeros_only": sorted(zero_years, reverse=True),
+                "cutoff_year":           cutoff,
+                "verdict": f"Stats available from {cutoff} onward" if cutoff else "No stats found",
+            },
+            "detail": results,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
