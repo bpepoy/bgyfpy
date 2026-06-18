@@ -2404,6 +2404,8 @@ def download_rosters():
 def build_player_stats(
     skip_existing: bool = Query(default=True),
     year: str          = Query(default=None),
+    year_from: int     = Query(default=None),
+    year_to: int       = Query(default=None),
     week: int          = Query(default=None, description="Single week, omit for all"),
     force_clean: bool  = Query(default=False),
 ):
@@ -2411,17 +2413,21 @@ def build_player_stats(
     Generates player_stats.json — weekly fantasy points and raw stat lines.
 
     LEAN SCHEMA: Only player_key + points + stats dict. Join with player_info.json
-    for name/position/nfl_team. Skips zero-stat players to keep files compact.
+    for name/position/nfl_team.
 
-    CONFIRMED from YFPY v17:
-      - Use get_team_roster_player_stats_by_week(team_id, week) → List[Player]
-        Gets all 10 teams' rostered players' stats: 10 calls/week, not 1,400+
-      - Must call _convert_to_dict on each Player item individually
-      - player_points.total = fantasy points for the week
-      - player_stats.stats = list of {"stat": {"stat_id": N, "value": V}}
+    Uses get_team_roster_player_stats_by_week(team_id, week) for all years:
+      - 10 API calls/week (one per team) — fast, within Render 30s timeout
+      - fantasy_points correct for ALL years including pre-2022
+      - stats breakdown available for 2022+ only
+      - pre-2022: stats:{} preserved as placeholder (Yahoo archive limitation,
+        confirmed via /league/data/debug/stats-cutoff)
 
-    Shape per player entry:
-        {"fantasy_points": 25.8, "stats": {"2": 19, "4": 152, "10": 2}}
+    Build one week at a time to avoid 502:
+        GET /league/data/player-stats/build-all?year=2021&week=1
+        GET /league/data/player-stats/build-all?year=2021&week=2  etc.
+
+    Or use year_from/year_to for multi-season builds (still week-by-week):
+        GET /league/data/player-stats/build-all?year_from=2019&year_to=2021&week=1
     """
     try:
         from services.fantasy.league_service import (
@@ -2435,8 +2441,17 @@ def build_player_stats(
 
         seasons_data = get_all_seasons(force_refresh=True)
         all_years    = sorted([str(s["year"]) for s in seasons_data.get("seasons", [])])
-        target_years = [year] if year else all_years
-        results      = {"success": [], "skipped": [], "failed": {}}
+
+        if year:
+            target_years = [year]
+        elif year_from or year_to:
+            lo = int(year_from) if year_from else 2007
+            hi = int(year_to)   if year_to   else 2025
+            target_years = [y for y in all_years if lo <= int(y) <= hi]
+        else:
+            target_years = all_years
+
+        results = {"success": [], "skipped": [], "failed": {}}
 
         def _to_dict(obj):
             if isinstance(obj, dict): return obj
@@ -2444,13 +2459,12 @@ def build_player_stats(
             except Exception: return {}
 
         def _extract_stats(p: dict) -> dict:
-            """Extract lean stats entry: just points + raw stat_id→value dict."""
             pts_raw        = p.get("player_points") or {}
             fantasy_points = float(pts_raw.get("total") or 0) if isinstance(pts_raw, dict) else float(p.get("player_points_value") or 0)
-
             stats_raw = p.get("player_stats") or {}
-            stat_list = stats_raw.get("stats", []) if isinstance(stats_raw, dict) else (stats_raw if isinstance(stats_raw, list) else [])
-
+            stat_list = stats_raw.get("stats", []) if isinstance(stats_raw, dict) else (
+                stats_raw if isinstance(stats_raw, list) else []
+            )
             stats_out: dict = {}
             for entry in stat_list:
                 if not isinstance(entry, dict): continue
@@ -2465,7 +2479,6 @@ def build_player_stats(
                             stats_out[str(sid)] = fval
                     except (TypeError, ValueError):
                         pass
-
             return {"fantasy_points": fantasy_points, "stats": stats_out}
 
         for yr in target_years:
@@ -2479,8 +2492,7 @@ def build_player_stats(
                 end_week   = int(settings.get("end_week")   or 17)
 
                 # Collect numeric team IDs
-                # Primary: get_league_teams() API call
-                # Fallback: extract from matchups.json for pre-2015 seasons
+                # Primary: get_league_teams(); fallback: matchups.json for old seasons
                 team_ids: list[str] = []
                 try:
                     teams_raw  = _convert_to_dict(query.get_league_teams())
@@ -2531,7 +2543,10 @@ def build_player_stats(
                                     player_list = [_to_dict(item) for item in converted]
                                 elif isinstance(converted, dict):
                                     inner = converted.get("players", [])
-                                    player_list = [_to_dict(item) for item in (inner if isinstance(inner, list) else list(inner.values()) if isinstance(inner, dict) else [])]
+                                    player_list = [_to_dict(item) for item in (
+                                        inner if isinstance(inner, list) else
+                                        list(inner.values()) if isinstance(inner, dict) else []
+                                    )]
                                 else:
                                     player_list = []
 
@@ -2558,14 +2573,18 @@ def build_player_stats(
         sorted_data = _year_sort(existing)
         _write_json(path, sorted_data)
         return {
-            "status": "complete", "seasons_updated": results["success"],
-            "seasons_skipped": results["skipped"], "seasons_failed": results["failed"],
-            "total_seasons": len(sorted_data), "file_written": path,
-            "note": "Join with player_info.json on player_key for name/position/nfl_team",
-            "next_step": "GET /league/data/player-stats/download to save locally",
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "note":            "stats:{} for pre-2022 is expected — Yahoo archive limitation confirmed.",
+            "next_step":       "GET /league/data/player-stats/download to save locally",
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/data/player-stats/status")
 def player_stats_status():
