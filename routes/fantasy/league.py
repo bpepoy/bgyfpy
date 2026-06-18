@@ -4051,3 +4051,165 @@ def download_punishment():
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Debug — era-correct player stats via get_player_stats_by_week()
+# ===========================================================================
+
+@router.get("/data/debug/era-player-stats")
+def debug_era_player_stats(
+    year: str = Query(default="2017"),
+    week: int = Query(default=1),
+):
+    """
+    Tests the individual player-level stats approach for pre-2021 seasons.
+
+    This debug endpoint:
+    1. Loads rosters.json to get era-correct player_keys for the year/week
+    2. Takes the first 3 players found
+    3. Calls get_player_stats_by_week(era_correct_player_key, week) for each
+    4. Returns the raw response so we can confirm stats{} is populated
+
+    If stats are populated here but empty in player_stats.json, the fix is
+    to switch build_player_stats to use this player-level approach for
+    pre-2021 seasons.
+
+    Usage:
+        GET /league/data/debug/era-player-stats?year=2017&week=1
+        GET /league/data/debug/era-player-stats?year=2020&week=3
+    """
+    try:
+        from services.fantasy.league_service import (
+            get_league_key_for_season, _convert_to_dict,
+        )
+        from services.yahoo_service import get_query
+        import time
+
+        # ── Step 1: load era-correct player keys from rosters.json ──────────
+        rosters_data = _load_json(_get_data_path("rosters.json"))
+        yr_rosters   = rosters_data.get(str(year), {})
+        wk_key       = f"week_{week}"
+        wk_rosters   = yr_rosters.get(wk_key, {})
+
+        if not wk_rosters:
+            return {
+                "error":   f"No rosters found for {year} week {week}",
+                "hint":    "Run /league/data/rosters/build-all first for this year/week",
+                "year":    year,
+                "week":    week,
+                "wk_key":  wk_key,
+                "yr_keys": list(yr_rosters.keys())[:5],
+            }
+
+        # Collect first 3 era-correct player_keys across all teams
+        sample_players = []
+        for mid, team_data in wk_rosters.items():
+            if not isinstance(team_data, dict): continue
+            players = team_data.get("players", [])
+            for slot in players:
+                if not isinstance(slot, dict): continue
+                pk = slot.get("player_key") or ""
+                if pk and pk not in [p["player_key"] for p in sample_players]:
+                    sample_players.append({
+                        "player_key":        pk,
+                        "manager_id":        mid,
+                        "selected_position": slot.get("selected_position"),
+                    })
+                if len(sample_players) >= 3:
+                    break
+            if len(sample_players) >= 3:
+                break
+
+        if not sample_players:
+            return {"error": "No player keys found in rosters", "year": year, "week": week}
+
+        # ── Step 2: call get_player_stats_by_week for each ──────────────────
+        league_key = get_league_key_for_season(year)
+        query      = get_query(league_key)
+
+        def _to_dict(obj):
+            if isinstance(obj, dict): return obj
+            try: return _convert_to_dict(obj)
+            except Exception: return {}
+
+        def _extract_stats(p: dict) -> dict:
+            pts_raw = p.get("player_points") or {}
+            fp      = float(pts_raw.get("total") or 0) if isinstance(pts_raw, dict) else float(p.get("player_points_value") or 0)
+
+            stats_raw = p.get("player_stats") or {}
+            stat_list = stats_raw.get("stats", []) if isinstance(stats_raw, dict) else (
+                stats_raw if isinstance(stats_raw, list) else []
+            )
+            stats_out = {}
+            for entry in stat_list:
+                if not isinstance(entry, dict): continue
+                stat = entry.get("stat", entry)
+                if not isinstance(stat, dict): continue
+                sid = stat.get("stat_id")
+                val = stat.get("value")
+                if sid is not None and val not in (None, "", "-"):
+                    try:
+                        fval = float(val)
+                        if fval != 0:
+                            stats_out[str(sid)] = fval
+                    except (TypeError, ValueError):
+                        pass
+            return {"fantasy_points": fp, "stats": stats_out, "raw_stat_count": len(stat_list)}
+
+        results = []
+        for sp in sample_players:
+            pk = sp["player_key"]
+            try:
+                raw       = query.get_player_stats_by_week(pk, week)
+                converted = _to_dict(raw)
+                extracted = _extract_stats(converted)
+
+                # Also grab raw player_stats sub-dict for inspection
+                ps_raw = converted.get("player_stats") or {}
+                if isinstance(ps_raw, dict):
+                    raw_stats_preview = ps_raw.get("stats", [])[:5]
+                else:
+                    raw_stats_preview = []
+
+                results.append({
+                    "player_key":         pk,
+                    "manager_id":         sp["manager_id"],
+                    "selected_position":  sp["selected_position"],
+                    "player_name":        converted.get("full_name") or (converted.get("name") or {}).get("full") or "unknown",
+                    "raw_type":           type(raw).__name__,
+                    "fantasy_points":     extracted["fantasy_points"],
+                    "stats_populated":    len(extracted["stats"]) > 0,
+                    "stats_count":        len(extracted["stats"]),
+                    "raw_stat_count":     extracted["raw_stat_count"],
+                    "stats_sample":       dict(list(extracted["stats"].items())[:5]),
+                    "raw_stats_preview":  raw_stats_preview,
+                    "player_stats_type":  type(ps_raw).__name__,
+                })
+                time.sleep(0.3)
+
+            except Exception as e:
+                results.append({
+                    "player_key": pk,
+                    "manager_id": sp["manager_id"],
+                    "error":      str(e)[:300],
+                })
+
+        all_populated = all(r.get("stats_populated", False) for r in results if "error" not in r)
+
+        return {
+            "year":          year,
+            "week":          week,
+            "league_key":    league_key,
+            "players_tested":len(results),
+            "all_stats_populated": all_populated,
+            "verdict": (
+                "✅ Stats populated — safe to rebuild player_stats with player-level approach"
+                if all_populated else
+                "❌ Stats still empty — Yahoo API limitation persists for this era"
+            ),
+            "results": results,
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
