@@ -179,9 +179,9 @@ def app_home():
 
     # ── era pills ─────────────────────────────────────────────────────────────
     era_pills = [
-        {"key": "all_time",    "label": "All-Time",    "icon": "infinity",
+        {"key": "all_time",    "label": "Overall",    "icon": "infinity",
          "years": f"{all_years[0]}–{all_years[-1]}"},
-        {"key": "darkness",    "label": "Darkness",    "icon": "moon",
+        {"key": "darkness",    "label": "Raphi Era",    "icon": "moon",
          "years": "2007–2009"},
         {"key": "sam_era",     "label": "Sam Era",     "icon": "user",
          "years": "2010–2013"},

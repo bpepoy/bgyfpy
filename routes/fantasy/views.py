@@ -27,12 +27,12 @@ router = APIRouter(prefix="/fantasy", tags=["Fantasy Views"])
 # Era definitions — used by /matchups toggle
 # ---------------------------------------------------------------------------
 ERAS = {
-    "all_time":    {"label": "All-Time",      "start": 2007, "end": 9999},
-    "darkness":    {"label": "Darkness Age",  "start": 2007, "end": 2011},
-    "sam_era":     {"label": "Sam Era",        "start": 2009, "end": 2018},
-    "frank_era":   {"label": "Frank Era",      "start": 2012, "end": 9999},
-    "jordan_era":  {"label": "Jordan Era",     "start": 2019, "end": 9999},
-    "auction_era": {"label": "Auction Era",    "start": 2023, "end": 9999},
+    "all_time":    {"label": "Overall",     "start": 2007, "end": 9999},
+    "darkness":    {"label": "Raphi Era",   "start": 2007, "end": 2011},
+    "sam_era":     {"label": "Sam Era",     "start": 2009, "end": 2018},
+    "frank_era":   {"label": "Frank Era",   "start": 2012, "end": 9999},
+    "jordan_era":  {"label": "Jordan Era",  "start": 2019, "end": 9999},
+    "auction_era": {"label": "Auction Era", "start": 2023, "end": 9999},
 }
 
 
@@ -2427,18 +2427,21 @@ def manager_matchups(
                                    -(x["combined"]["win_pct"] or 0)))
 
     # My overall totals across all opponents
-    total_rs = {"w":0,"l":0,"t":0,"g":0,"pf":0.0,"pa":0.0}
-    total_pl = {"w":0,"l":0,"t":0,"g":0}
+    total_rs = {"w": 0, "l": 0, "t": 0, "g": 0, "pf": 0.0, "pa": 0.0}
+    total_pl = {"w": 0, "l": 0, "t": 0, "g": 0}
     for o in opponents:
-        rs, pl = o["regular_season"], o["playoffs"]
-        for k in ["wins","losses","ties","games"]:
-            total_rs[k[0] if k != "games" else "g"] = total_rs.get(k[0] if k != "games" else "g", 0)
-        total_rs["w"] += rs["wins"]; total_rs["l"] += rs["losses"]
-        total_rs["t"] += rs["ties"]; total_rs["g"] += rs["games"]
-        total_rs["pf"]= round(total_rs["pf"] + (rs["avg_pf"] or 0) * rs["games"], 2)
-        total_rs["pa"]= round(total_rs["pa"] + (rs["avg_pa"] or 0) * rs["games"], 2)
-        total_pl["w"] += pl["wins"]; total_pl["l"] += pl["losses"]
-        total_pl["t"] += pl["ties"]; total_pl["g"] += pl["games"]
+        rs = o["regular_season"]
+        pl = o["playoffs"]
+        total_rs["w"]  += rs["wins"]
+        total_rs["l"]  += rs["losses"]
+        total_rs["t"]  += rs["ties"]
+        total_rs["g"]  += rs["games"]
+        total_rs["pf"]  = round(total_rs["pf"] + (rs["avg_pf"] or 0) * rs["games"], 2)
+        total_rs["pa"]  = round(total_rs["pa"] + (rs["avg_pa"] or 0) * rs["games"], 2)
+        total_pl["w"]  += pl["wins"]
+        total_pl["l"]  += pl["losses"]
+        total_pl["t"]  += pl["ties"]
+        total_pl["g"]  += pl["games"]
 
     return {
         "manager_id":     name,
@@ -2448,14 +2451,19 @@ def manager_matchups(
         "available_eras": {k: v["label"] for k, v in ERAS.items()},
         "summary": {
             "regular_season": {
-                "wins": total_rs["w"], "losses": total_rs["l"], "ties": total_rs["t"],
-                "games": total_rs["g"],
-                "avg_pf": round(total_rs["pf"] / total_rs["g"], 2) if total_rs["g"] else None,
-                "avg_pa": round(total_rs["pa"] / total_rs["g"], 2) if total_rs["g"] else None,
+                "wins":    total_rs["w"],
+                "losses":  total_rs["l"],
+                "ties":    total_rs["t"],
+                "games":   total_rs["g"],
+                "avg_pf":  round(total_rs["pf"] / total_rs["g"], 2) if total_rs["g"] else None,
+                "avg_pa":  round(total_rs["pa"] / total_rs["g"], 2) if total_rs["g"] else None,
+                "avg_diff":round((total_rs["pf"] - total_rs["pa"]) / total_rs["g"], 2) if total_rs["g"] else None,
             },
             "playoffs": {
-                "wins": total_pl["w"], "losses": total_pl["l"],
-                "ties": total_pl["t"], "games": total_pl["g"],
+                "wins":   total_pl["w"],
+                "losses": total_pl["l"],
+                "ties":   total_pl["t"],
+                "games":  total_pl["g"],
             },
         },
         "vs_opponents": opponents,
