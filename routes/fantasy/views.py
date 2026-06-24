@@ -1381,31 +1381,23 @@ def league_history():
 # ===========================================================================
 
 @router.get("/season/standings")
-def season_standings(year: int = Query(default=None, description="Season year e.g. 2025. Omit for all seasons.")):
+def season_standings(year: int = Query(default=None, description="Season year e.g. 2025. Omit for all finished seasons.")):
     """
-    Regular season standings for one or all seasons.
+    Regular season standings.
 
-    Per manager per season returns:
-      - wins, losses, ties, rank
-      - points_for (total + per-game average)
-      - points_against (total + per-game average)
-      - projected_points (total + per-game average — summed from matchups.json)
+    No year → all finished seasons newest first.
+    year    → that specific season.
+    For current/latest (including in-progress) use /season/standings/latest.
 
-    Projected points are summed from weekly matchup data across regular season
-    weeks only (is_playoffs=false). If matchups.json is unavailable for a year
-    the projected fields return null.
-
-    Query params:
-      year=2025   → single season
-      (omit)      → all finished seasons, newest first
+    Sort: seeds 1-4 by playoff_seed, seeds 5-10 by wins then points_for.
     """
-    results  = _load("results.json")
+    results  = _year_keyed(_load("results.json"))
     matchups = _load("matchups.json")
 
     if not results:
         raise HTTPException(status_code=404, detail="results.json not found.")
 
-    finished = _finished_seasons(_year_keyed(results))
+    finished = _finished_seasons(results)
     if not finished:
         raise HTTPException(status_code=404, detail="No finished seasons found.")
 
@@ -1413,85 +1405,14 @@ def season_standings(year: int = Query(default=None, description="Season year e.
     if year and str(year) not in finished:
         raise HTTPException(status_code=404, detail=f"Season {year} not found or not finished.")
 
-    seasons_out = []
-
-    for yr, season in target.items():
-        managers      = season.get("managers", {})
-        num_teams     = len(managers)
-
-        # ── projected points from matchups.json ──────────────────────────────
-        # Sum projected across all regular season weeks per manager
-        proj_by_mgr: dict = {}   # manager_id → total projected pts
-        yr_matchups = matchups.get(str(yr), {})
-        playoff_start = yr_matchups.get("playoff_start") or 99
-
-        for wk_entry in yr_matchups.get("weeks", []):
-            if wk_entry.get("week", 99) >= playoff_start:
-                continue   # skip playoff weeks
-            for m in wk_entry.get("matchups", []):
-                if m.get("is_playoffs"):
-                    continue
-                for team in m.get("teams", []):
-                    mid  = team.get("manager_id") or ""
-                    proj = team.get("projected") or 0
-                    if mid:
-                        proj_by_mgr[mid] = round(proj_by_mgr.get(mid, 0) + proj, 2)
-
-        # ── build standings rows ──────────────────────────────────────────────
-        rows = []
-        for mid, m in managers.items():
-            rs = m.get("regular_season", {})
-
-            wins   = rs.get("wins")   or 0
-            losses = rs.get("losses") or 0
-            ties   = rs.get("ties")   or 0
-            games  = wins + losses + (ties or 0)
-
-            pf     = rs.get("points_for")     or 0
-            pa     = rs.get("points_against") or 0
-            proj   = proj_by_mgr.get(mid)
-
-            # playoff_seed = regular season finish rank (1-10)
-            # This is the stable ordering unaffected by consolation bracket results
-            playoff_seed = rs.get("rank")
-
-            rows.append({
-                "playoff_seed":     playoff_seed,    # sort key — reg season rank
-                "manager_id":       mid,
-                "display_name":     m.get("display_name") or mid.title(),
-                "team_name":        m.get("team_name"),
-                "wins":             wins,
-                "losses":           losses,
-                "ties":             ties,
-                "games_played":     games,
-                "points_for":       round(pf, 2),
-                "points_for_avg":   round(pf / games, 2) if games else None,
-                "points_against":   round(pa, 2),
-                "points_against_avg": round(pa / games, 2) if games else None,
-                "projected_total":  round(proj, 2) if proj is not None else None,
-                "projected_avg":    round(proj / games, 2) if (proj is not None and games) else None,
-                "made_playoffs":    bool(playoff_seed and playoff_seed <= 4),
-            })
-
-        # Sort by regular season rank (playoff seed) — stable, unaffected by consolation
-        rows.sort(key=lambda x: (x.get("playoff_seed") or 99))
-
-        seasons_out.append({
-            "year":              int(yr),
-            "num_teams":         num_teams,
-            "has_projected":     bool(proj_by_mgr),
-            "standings":         rows,
-        })
-
-    seasons_out.sort(key=lambda x: -x["year"])
+    seasons_out = sorted(
+        [_build_standings(yr, s, matchups, True) for yr, s in target.items()],
+        key=lambda x: -x["year"]
+    )
 
     if year:
         return seasons_out[0]
-
-    return {
-        "total_seasons": len(seasons_out),
-        "seasons":       seasons_out,
-    }
+    return {"total_seasons": len(seasons_out), "seasons": seasons_out}
 
 
 # ===========================================================================
@@ -2373,3 +2294,314 @@ def league_records():
             ],
         },
     }
+
+
+# ===========================================================================
+# GET /fantasy/{name}/matchups
+# ===========================================================================
+
+@router.get("/{name}/matchups")
+def manager_matchups(
+    name: str,
+    era: str = Query(default="all_time"),
+):
+    """
+    A manager's record vs every opponent — regular season + playoffs combined.
+
+    For each opponent shows:
+      - RS: wins, losses, ties, avg PF, avg PA, avg diff
+      - Playoffs: wins, losses, ties
+      - Combined W-L-T and record string
+      - Last matchup date and result
+
+    Sorted by most games played (longest rivalries first).
+    Filterable by era.
+    """
+    matchups_data = _year_keyed(_load("matchups.json"))
+    results       = _year_keyed(_load("results.json"))
+
+    if not matchups_data:
+        raise HTTPException(status_code=404, detail="matchups.json not found.")
+
+    era_def = ERAS.get(era)
+    if not era_def:
+        raise HTTPException(status_code=400, detail=f"Unknown era: {era}")
+
+    all_ids = _all_manager_ids(results)
+    if name not in all_ids:
+        raise HTTPException(status_code=404, detail=f"Manager '{name}' not found.")
+
+    display = _display_name(name, results)
+
+    # Accumulator per opponent
+    def _acc():
+        return {
+            "rs":  {"w":0,"l":0,"t":0,"g":0,"pf":0.0,"pa":0.0},
+            "pl":  {"w":0,"l":0,"t":0,"g":0},
+            "last":None,
+        }
+
+    opp_map: dict = {}
+
+    for yr, season in matchups_data.items():
+        if not (era_def["start"] <= int(yr) <= era_def["end"]):
+            continue
+
+        yr_settings = (results.get(yr) or {})
+        playoff_start = season.get("playoff_start") or 99
+
+        for wk_entry in season.get("weeks", []):
+            wk_num = wk_entry.get("week", 0)
+            is_po  = wk_num >= playoff_start
+
+            for m in wk_entry.get("matchups", []):
+                if m.get("is_consolation"): continue
+                teams = m.get("teams", [])
+                if len(teams) != 2: continue
+
+                me  = next((t for t in teams if t.get("manager_id") == name), None)
+                opp = next((t for t in teams if t.get("manager_id") != name), None)
+                if not me or not opp: continue
+
+                opp_id = opp.get("manager_id") or ""
+                if not opp_id: continue
+                if opp_id not in opp_map:
+                    opp_map[opp_id] = _acc()
+
+                bucket = opp_map[opp_id]["pl"] if is_po else opp_map[opp_id]["rs"]
+                pts_me  = float(me.get("points")  or 0)
+                pts_opp = float(opp.get("points") or 0)
+                tied    = m.get("is_tied", False)
+
+                bucket["g"]  += 1
+                bucket["pf"]  = round(bucket["pf"] + pts_me,  2)
+                bucket["pa"]  = round(bucket["pa"] + pts_opp, 2)
+                if tied:          bucket["t"] += 1
+                elif me.get("is_winner"): bucket["w"] += 1
+                else:             bucket["l"] += 1
+
+                # Track last matchup
+                last = opp_map[opp_id]["last"]
+                if last is None or (int(yr), wk_num) > (last["year"], last["week"]):
+                    opp_map[opp_id]["last"] = {
+                        "year":      int(yr),
+                        "week":      wk_num,
+                        "is_playoff":is_po,
+                        "my_pts":    round(pts_me, 2),
+                        "opp_pts":   round(pts_opp, 2),
+                        "result":    "W" if me.get("is_winner") else ("T" if tied else "L"),
+                    }
+
+    # Format output
+    opponents = []
+    for opp_id, data in opp_map.items():
+        rs, pl = data["rs"], data["pl"]
+        cw = rs["w"] + pl["w"]
+        cl = rs["l"] + pl["l"]
+        ct = rs["t"] + pl["t"]
+        cg = rs["g"] + pl["g"]
+        opponents.append({
+            "manager_id":    opp_id,
+            "display_name":  _display_name(opp_id, results),
+            "regular_season": {
+                "wins":    rs["w"], "losses": rs["l"], "ties": rs["t"],
+                "games":   rs["g"],
+                "avg_pf":  round(rs["pf"] / rs["g"], 2) if rs["g"] else None,
+                "avg_pa":  round(rs["pa"] / rs["g"], 2) if rs["g"] else None,
+                "avg_diff":round((rs["pf"] - rs["pa"]) / rs["g"], 2) if rs["g"] else None,
+            },
+            "playoffs": {
+                "wins": pl["w"], "losses": pl["l"],
+                "ties": pl["t"], "games": pl["g"],
+            },
+            "combined": {
+                "wins": cw, "losses": cl, "ties": ct, "games": cg,
+                "record_str": f"{cw}-{cl}" + (f"-{ct}" if ct else ""),
+                "win_pct": round(cw / cg, 4) if cg else None,
+            },
+            "last_matchup": data["last"],
+        })
+
+    # Sort: most combined games first, then by win pct desc
+    opponents.sort(key=lambda x: (-x["combined"]["games"],
+                                   -(x["combined"]["win_pct"] or 0)))
+
+    # My overall totals across all opponents
+    total_rs = {"w":0,"l":0,"t":0,"g":0,"pf":0.0,"pa":0.0}
+    total_pl = {"w":0,"l":0,"t":0,"g":0}
+    for o in opponents:
+        rs, pl = o["regular_season"], o["playoffs"]
+        for k in ["wins","losses","ties","games"]:
+            total_rs[k[0] if k != "games" else "g"] = total_rs.get(k[0] if k != "games" else "g", 0)
+        total_rs["w"] += rs["wins"]; total_rs["l"] += rs["losses"]
+        total_rs["t"] += rs["ties"]; total_rs["g"] += rs["games"]
+        total_rs["pf"]= round(total_rs["pf"] + (rs["avg_pf"] or 0) * rs["games"], 2)
+        total_rs["pa"]= round(total_rs["pa"] + (rs["avg_pa"] or 0) * rs["games"], 2)
+        total_pl["w"] += pl["wins"]; total_pl["l"] += pl["losses"]
+        total_pl["t"] += pl["ties"]; total_pl["g"] += pl["games"]
+
+    return {
+        "manager_id":     name,
+        "display_name":   display,
+        "era":            era,
+        "era_label":      era_def["label"],
+        "available_eras": {k: v["label"] for k, v in ERAS.items()},
+        "summary": {
+            "regular_season": {
+                "wins": total_rs["w"], "losses": total_rs["l"], "ties": total_rs["t"],
+                "games": total_rs["g"],
+                "avg_pf": round(total_rs["pf"] / total_rs["g"], 2) if total_rs["g"] else None,
+                "avg_pa": round(total_rs["pa"] / total_rs["g"], 2) if total_rs["g"] else None,
+            },
+            "playoffs": {
+                "wins": total_pl["w"], "losses": total_pl["l"],
+                "ties": total_pl["t"], "games": total_pl["g"],
+            },
+        },
+        "vs_opponents": opponents,
+    }
+
+
+# ===========================================================================
+# GET /fantasy/season/standings/{year}  +  update base to show latest/active
+# ===========================================================================
+
+@router.get("/season/standings/latest")
+def season_standings_latest():
+    """
+    Standings for the most recent season — finished OR in-progress.
+    Used for the default Season > Standings view.
+    """
+    results  = _year_keyed(_load("results.json"))
+    matchups = _load("matchups.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    # Most recent year regardless of is_finished
+    latest_yr = next(iter(results))
+    season    = results[latest_yr]
+    is_finished = season.get("is_finished", False)
+
+    return _build_standings(latest_yr, season, matchups, is_finished)
+
+
+@router.get("/season/standings/{year}")
+def season_standings_by_year(year: int):
+    """
+    Standings for a specific season year.
+    Works for both finished and in-progress seasons.
+    """
+    results  = _year_keyed(_load("results.json"))
+    matchups = _load("matchups.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    yr_str = str(year)
+    if yr_str not in results:
+        raise HTTPException(status_code=404, detail=f"Season {year} not found.")
+
+    season      = results[yr_str]
+    is_finished = season.get("is_finished", False)
+    return _build_standings(yr_str, season, matchups, is_finished)
+
+
+def _build_standings(yr: str, season: dict, matchups_raw: dict, is_finished: bool) -> dict:
+    """Shared standings builder used by both /latest and /{year}."""
+    managers  = season.get("managers", {})
+    num_teams = len(managers)
+
+    # Projected pts from matchups
+    yr_matchups   = matchups_raw.get(str(yr), {})
+    playoff_start = yr_matchups.get("playoff_start") or 99
+    proj_by_mgr: dict = {}
+    for wk_entry in yr_matchups.get("weeks", []):
+        if wk_entry.get("week", 99) >= playoff_start: continue
+        for m in wk_entry.get("matchups", []):
+            if m.get("is_playoffs"): continue
+            for team in m.get("teams", []):
+                mid  = team.get("manager_id") or ""
+                proj = team.get("projected") or 0
+                if mid:
+                    proj_by_mgr[mid] = round(proj_by_mgr.get(mid, 0) + proj, 2)
+
+    rows = []
+    for mid, m in managers.items():
+        rs   = m.get("regular_season", {})
+        wins   = rs.get("wins")   or 0
+        losses = rs.get("losses") or 0
+        ties   = rs.get("ties")   or 0
+        games  = wins + losses + ties
+        pf     = rs.get("points_for")     or 0
+        pa     = rs.get("points_against") or 0
+        proj   = proj_by_mgr.get(mid)
+        seed   = rs.get("rank")   # regular season rank = playoff seed
+
+        rows.append({
+            "playoff_seed":       seed,
+            "manager_id":         mid,
+            "display_name":       m.get("display_name") or mid.title(),
+            "team_name":          m.get("team_name"),
+            "wins":               wins,
+            "losses":             losses,
+            "ties":               ties,
+            "games_played":       games,
+            "points_for":         round(pf, 2),
+            "points_for_avg":     round(pf / games, 2) if games else None,
+            "points_against":     round(pa, 2),
+            "points_against_avg": round(pa / games, 2) if games else None,
+            "projected_total":    round(proj, 2) if proj is not None else None,
+            "projected_avg":      round(proj / games, 2) if (proj is not None and games) else None,
+            "made_playoffs":      bool(seed and seed <= 4),
+        })
+
+    # Sort:
+    #   Seeds 1-4  → by playoff_seed (Yahoo already ranked them correctly)
+    #   Seeds 5-10 → by wins desc, then points_for desc (tie breaker)
+    #   Unseeded (in-progress season) → wins desc, points_for desc throughout
+    playoff_rows = [r for r in rows if r["playoff_seed"] and r["playoff_seed"] <= 4]
+    bubble_rows  = [r for r in rows if r["playoff_seed"] and r["playoff_seed"] > 4]
+    unseeded     = [r for r in rows if not r["playoff_seed"]]
+
+    playoff_rows.sort(key=lambda x: x["playoff_seed"])
+    bubble_rows.sort(key=lambda x: (-x["wins"], -(x["points_for"] or 0)))
+    unseeded.sort(key=lambda x: (-x["wins"], -(x["points_for"] or 0)))
+
+    sorted_rows = playoff_rows + bubble_rows + unseeded
+
+    return {
+        "year":          int(yr),
+        "is_finished":   is_finished,
+        "num_teams":     num_teams,
+        "has_projected": bool(proj_by_mgr),
+        "standings":     sorted_rows,
+    }
+
+
+# ===========================================================================
+# GET /fantasy/season/playoffs/{year}
+# ===========================================================================
+
+@router.get("/season/playoffs/{year}")
+def season_playoffs_by_year(year: int):
+    """
+    Full playoff picture for a specific season year.
+    Same response shape as GET /fantasy/season/playoffs.
+    """
+    results      = _year_keyed(_load("results.json"))
+    matchups_raw = _load("matchups.json")
+    rosters      = _load("rosters.json")
+    player_stats = _load("player_stats.json")
+    player_info  = _load("player_info.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    yr = str(year)
+    if yr not in results:
+        raise HTTPException(status_code=404, detail=f"Season {year} not found.")
+
+    # Reuse all the logic from season_playoffs but for a specific year
+    # by delegating to the existing function with the year param
+    return season_playoffs(year=year)
