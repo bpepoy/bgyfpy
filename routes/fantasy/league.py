@@ -4503,41 +4503,60 @@ def build_payouts(
             )
 
             yr_payouts: dict = {}
+            has_weekly_payouts = yr_int in PAYOUT_POSITION_ROTATION
 
             for wk_key in week_keys:
                 wk_num = int(wk_key.split("_")[1])
-                payout_pos = get_payout_position(yr_int, wk_num)
+                payout_pos = get_payout_position(yr_int, wk_num) if has_weekly_payouts else None
 
                 wk_roster = yr_rosters.get(wk_key, {})
                 wk_stats  = yr_stats.get(wk_key, {})
 
-                # ── position payout: highest starter points at payout_pos ──────
-                pos_scores: dict = {}  # manager_id → total pts at that position
-                for mid, team in wk_roster.items():
-                    if not isinstance(team, dict): continue
-                    total = 0.0
-                    for slot in team.get("players", []):
-                        if not isinstance(slot, dict): continue
-                        if not slot.get("is_starting"): continue
-                        pk  = slot.get("player_key") or ""
-                        pi  = yr_info.get(pk, {})
-                        pos = pi.get("position") or slot.get("selected_position") or ""
-                        pos = pos.split("/")[0].strip() if "/" in pos else pos
-                        if pos != payout_pos: continue
-                        pd = wk_stats.get(pk)
-                        pts = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0
-                        total += pts
-                    if total > 0:
-                        pos_scores[mid] = round(total, 2)
+                # ── position payout: SINGLE highest-scoring starter at payout_pos ──
+                # Uses the best individual player (not summed) so e.g. if Jake starts
+                # two RBs (40pts + 5pts) and Brian starts two RBs (35pts + 20pts),
+                # Jake wins because his single best RB (40) beats Brian's (35).
+                pos_best: dict = {}    # manager_id → {pts, player_key, player_name}
+                if has_weekly_payouts:
+                    for mid, team in wk_roster.items():
+                        if not isinstance(team, dict): continue
+                        for slot in team.get("players", []):
+                            if not isinstance(slot, dict): continue
+                            if not slot.get("is_starting"): continue
+                            pk  = slot.get("player_key") or ""
+                            pi  = yr_info.get(pk, {})
+                            pos = pi.get("position") or slot.get("selected_position") or ""
+                            pos = pos.split("/")[0].strip() if "/" in pos else pos
+                            if pos != payout_pos: continue
+                            pd  = wk_stats.get(pk)
+                            pts = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0.0
+                            # Keep only the single best player for this manager at this pos
+                            if mid not in pos_best or pts > pos_best[mid]["pts"]:
+                                pos_best[mid] = {
+                                    "pts":         pts,
+                                    "player_key":  pk,
+                                    "player_name": pi.get("name") or pk,
+                                }
 
-                pos_winners = []
+                pos_winners     = []
                 pos_payout_each = None
-                if pos_scores:
-                    max_pos = max(pos_scores.values())
-                    pos_winners = [m for m, v in pos_scores.items() if v == max_pos]
-                    pos_payout_each = round(10 / len(pos_winners), 2)
+                pos_winner_info = []
+                if pos_best:
+                    max_pos = max(v["pts"] for v in pos_best.values())
+                    if max_pos > 0:
+                        for mid, info in pos_best.items():
+                            if info["pts"] == max_pos:
+                                pos_winners.append(mid)
+                                pos_winner_info.append({
+                                    "manager_id":  mid,
+                                    "player_key":  info["player_key"],
+                                    "player_name": info["player_name"],
+                                    "score":       round(max_pos, 2),
+                                })
+                        pos_payout_each = round(20 / len(pos_winners), 2)
 
                 # ── total payout: highest team points from matchups.json ───────
+                # Available for all years (matchups.json covers 2007+)
                 total_scores: dict = {}
                 for wk_entry in yr_matchups.get("weeks", []):
                     if wk_entry.get("week") != wk_num: continue
@@ -4548,29 +4567,39 @@ def build_payouts(
                             if mid:
                                 total_scores[mid] = float(pts)
 
-                total_winners = []
+                total_winners     = []
                 total_payout_each = None
-                if total_scores:
+                if total_scores and has_weekly_payouts:
                     max_total = max(total_scores.values())
-                    total_winners = [m for m, v in total_scores.items() if v == max_total]
-                    total_payout_each = round(10 / len(total_winners), 2)
+                    if max_total > 0:
+                        total_winners = [m for m, v in total_scores.items() if v == max_total]
+                        total_payout_each = round(20 / len(total_winners), 2)
 
-                yr_payouts[wk_key] = {
-                    "week":               wk_num,
-                    "position_payout": {
-                        "position":       payout_pos,
-                        "winners":        pos_winners,
-                        "winning_score":  max(pos_scores.values()) if pos_scores else None,
-                        "payout_each":    pos_payout_each,
-                        "all_scores":     pos_scores,
-                    },
-                    "total_points_payout": {
-                        "winners":        total_winners,
-                        "winning_score":  round(max(total_scores.values()), 2) if total_scores else None,
-                        "payout_each":    total_payout_each,
-                        "all_scores":     {k: round(v, 2) for k, v in total_scores.items()},
-                    },
-                }
+                # Build weekly entry — skip weekly payouts for pre-2023 seasons
+                wk_entry_out: dict = {"week": wk_num}
+                if has_weekly_payouts:
+                    wk_entry_out["position_payout"] = {
+                        "position":        payout_pos,
+                        "winners":         pos_winner_info,   # includes player name/key
+                        "winning_score":   round(max(v["pts"] for v in pos_best.values()), 2) if pos_best else None,
+                        "payout_each":     pos_payout_each,
+                        "all_best_scores": {
+                            mid: {"score": round(info["pts"], 2),
+                                  "player_key": info["player_key"],
+                                  "player_name": info["player_name"]}
+                            for mid, info in pos_best.items()
+                        },
+                    }
+                    wk_entry_out["total_points_payout"] = {
+                        "winners":      total_winners,
+                        "winning_score":round(max(total_scores.values()), 2) if total_scores else None,
+                        "payout_each":  total_payout_each,
+                        "all_scores":   {k: round(v, 2) for k, v in total_scores.items()},
+                    }
+                else:
+                    wk_entry_out["note"] = "Weekly position/points payouts not tracked pre-2023"
+
+                yr_payouts[wk_key] = wk_entry_out
 
             # ── season-level payouts ──────────────────────────────────────────
             # Derive from matchups (regular season only) + results
@@ -4768,7 +4797,7 @@ def build_ices(
                         pd  = wk_stats.get(pk)
                         pts = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0.0
 
-                        if pts == 0.0:
+                        if pts <= 0.0:
                             pi  = yr_info.get(pk, {})
                             pos = pi.get("position") or slot.get("selected_position") or ""
                             yr_ices.append({
