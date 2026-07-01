@@ -29,6 +29,82 @@ router = APIRouter(prefix="/league", tags=["League"])
 
 
 # ===========================================================================
+# Payout position rotation — 40-season deterministic schedule
+# ===========================================================================
+# Each season gets a randomized order of [QB, WR, RB, TE, DEF] for the
+# weekly position-payout rotation. Week N's payout position = rotation[year][(N-1) % 5].
+# So week 1, 6, 11 all use rotation[year][0]; week 2, 7, 12 use rotation[year][1]; etc.
+#
+# Generated once with a fixed random seed (42) so it is fully reproducible —
+# anyone can regenerate this exact table by running the same seed. Never needs
+# to be touched again. Covers 2023–2062 (40 seasons, auction era onward).
+#
+# To regenerate (should never be necessary):
+#   import random
+#   random.seed(42)
+#   positions = ["QB", "WR", "RB", "TE", "DEF"]
+#   for yr in range(2023, 2063):
+#       shuffled = positions.copy()
+#       random.shuffle(shuffled)
+#       rotation[yr] = shuffled
+
+PAYOUT_POSITION_ROTATION = {
+    2023: ["TE", "QB", "DEF", "RB", "WR"],
+    2024: ["WR", "QB", "TE", "DEF", "RB"],
+    2025: ["QB", "DEF", "RB", "TE", "WR"],
+    2026: ["RB", "DEF", "TE", "WR", "QB"],
+    2027: ["TE", "QB", "RB", "DEF", "WR"],
+    2028: ["WR", "RB", "QB", "TE", "DEF"],
+    2029: ["DEF", "TE", "WR", "RB", "QB"],
+    2030: ["QB", "RB", "DEF", "WR", "TE"],
+    2031: ["RB", "WR", "TE", "QB", "DEF"],
+    2032: ["TE", "DEF", "QB", "RB", "WR"],
+    2033: ["WR", "QB", "RB", "DEF", "TE"],
+    2034: ["DEF", "RB", "WR", "TE", "QB"],
+    2035: ["QB", "TE", "DEF", "WR", "RB"],
+    2036: ["RB", "QB", "WR", "TE", "DEF"],
+    2037: ["TE", "WR", "DEF", "QB", "RB"],
+    2038: ["WR", "DEF", "QB", "RB", "TE"],
+    2039: ["DEF", "QB", "RB", "TE", "WR"],
+    2040: ["QB", "RB", "TE", "DEF", "WR"],
+    2041: ["RB", "TE", "QB", "WR", "DEF"],
+    2042: ["WR", "RB", "DEF", "QB", "TE"],
+    2043: ["DEF", "WR", "TE", "RB", "QB"],
+    2044: ["TE", "DEF", "RB", "QB", "WR"],
+    2045: ["RB", "WR", "DEF", "QB", "TE"],
+    2046: ["TE", "DEF", "QB", "WR", "RB"],
+    2047: ["TE", "WR", "RB", "DEF", "QB"],
+    2048: ["TE", "RB", "QB", "DEF", "WR"],
+    2049: ["TE", "WR", "RB", "QB", "DEF"],
+    2050: ["WR", "RB", "TE", "DEF", "QB"],
+    2051: ["DEF", "TE", "RB", "QB", "WR"],
+    2052: ["RB", "WR", "QB", "TE", "DEF"],
+    2053: ["WR", "TE", "QB", "RB", "DEF"],
+    2054: ["DEF", "QB", "WR", "RB", "TE"],
+    2055: ["QB", "DEF", "TE", "WR", "RB"],
+    2056: ["RB", "QB", "DEF", "TE", "WR"],
+    2057: ["WR", "DEF", "RB", "QB", "TE"],
+    2058: ["TE", "QB", "DEF", "WR", "RB"],
+    2059: ["QB", "RB", "WR", "DEF", "TE"],
+    2060: ["DEF", "WR", "QB", "TE", "RB"],
+    2061: ["RB", "TE", "WR", "QB", "DEF"],
+    2062: ["TE", "RB", "DEF", "QB", "WR"],
+}
+
+
+def get_payout_position(year: int, week: int) -> str:
+    """
+    Returns which position pays out for a given year/week.
+    Week N position = PAYOUT_POSITION_ROTATION[year][(N-1) % 5]
+    so weeks 1/6/11/16 share position[0], weeks 2/7/12/17 share position[1], etc.
+    """
+    rotation = PAYOUT_POSITION_ROTATION.get(year)
+    if not rotation:
+        return None
+    return rotation[(week - 1) % 5]
+
+
+# ===========================================================================
 # Seasons / Settings
 # ===========================================================================
 
@@ -4342,5 +4418,420 @@ def debug_stats_cutoff():
             "detail": results,
         }
 
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Data generation — payouts.json
+# ===========================================================================
+
+@router.get("/data/payouts/build-all")
+def build_payouts(
+    skip_existing: bool = Query(default=True),
+    year: str          = Query(default=None),
+    year_from: int     = Query(default=None),
+    year_to: int       = Query(default=None),
+    force_clean: bool  = Query(default=False),
+):
+    """
+    Generates payouts.json — weekly $10 position payout + $10 total points payout.
+
+    Pure derivation from existing JSON — no Yahoo API calls needed:
+      - rosters.json    → who started which players each week
+      - player_stats.json → fantasy_points per player per week
+      - matchups.json   → each team's total points for the week
+
+    Rules:
+      - Position payout ($10): highest total fantasy_points among STARTERS
+        at the week's rotating position (see PAYOUT_POSITION_ROTATION / get_payout_position)
+      - Total payout ($10): highest team total points for the week (from matchups.json)
+      - Ties split the $10 evenly among tied winners
+
+    Requires rosters.json AND player_stats.json to be built first for that year.
+    Only generates payouts for years where PAYOUT_POSITION_ROTATION has an entry
+    (2007–2046).
+
+    Usage:
+        GET /league/data/payouts/build-all?year=2025
+        GET /league/data/payouts/build-all?year_from=2015&year_to=2020
+    """
+    try:
+        path     = _get_data_path("payouts.json")
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+
+        rosters_data = _load_json(_get_data_path("rosters.json"))
+        stats_data   = _load_json(_get_data_path("player_stats.json"))
+        matchups_data= _load_json(_get_data_path("matchups.json"))
+        info_data    = _load_json(_get_data_path("player_info.json"))
+
+        all_years = sorted(rosters_data.keys(), key=lambda x: int(x) if str(x).isdigit() else 0)
+
+        if year:
+            target_years = [year]
+        elif year_from or year_to:
+            lo = int(year_from) if year_from else 2007
+            hi = int(year_to)   if year_to   else 2025
+            target_years = [y for y in all_years if str(y).isdigit() and lo <= int(y) <= hi]
+        else:
+            target_years = [y for y in all_years if str(y).isdigit()]
+
+        results = {"success": [], "skipped": [], "failed": {}}
+
+        for yr in target_years:
+            yr_int = int(yr)
+            if yr_int not in PAYOUT_POSITION_ROTATION:
+                results["failed"][yr] = f"No payout rotation defined for {yr} (outside 2007-2046)"
+                continue
+
+            yr_rosters = rosters_data.get(yr, {})
+            yr_stats   = stats_data.get(yr, {})
+            yr_matchups= matchups_data.get(yr, {})
+            yr_info    = info_data.get(yr, {}).get("players", {})
+
+            if not yr_rosters or not yr_stats:
+                results["failed"][yr] = "Missing rosters.json or player_stats.json for this year"
+                continue
+
+            if skip_existing and not force_clean and yr in existing and existing[yr]:
+                results["skipped"].append(int(yr))
+                continue
+
+            week_keys = sorted(
+                [k for k in yr_rosters.keys() if k.startswith("week_")],
+                key=lambda x: int(x.split("_")[1])
+            )
+
+            yr_payouts: dict = {}
+
+            for wk_key in week_keys:
+                wk_num = int(wk_key.split("_")[1])
+                payout_pos = get_payout_position(yr_int, wk_num)
+
+                wk_roster = yr_rosters.get(wk_key, {})
+                wk_stats  = yr_stats.get(wk_key, {})
+
+                # ── position payout: highest starter points at payout_pos ──────
+                pos_scores: dict = {}  # manager_id → total pts at that position
+                for mid, team in wk_roster.items():
+                    if not isinstance(team, dict): continue
+                    total = 0.0
+                    for slot in team.get("players", []):
+                        if not isinstance(slot, dict): continue
+                        if not slot.get("is_starting"): continue
+                        pk  = slot.get("player_key") or ""
+                        pi  = yr_info.get(pk, {})
+                        pos = pi.get("position") or slot.get("selected_position") or ""
+                        pos = pos.split("/")[0].strip() if "/" in pos else pos
+                        if pos != payout_pos: continue
+                        pd = wk_stats.get(pk)
+                        pts = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0
+                        total += pts
+                    if total > 0:
+                        pos_scores[mid] = round(total, 2)
+
+                pos_winners = []
+                pos_payout_each = None
+                if pos_scores:
+                    max_pos = max(pos_scores.values())
+                    pos_winners = [m for m, v in pos_scores.items() if v == max_pos]
+                    pos_payout_each = round(10 / len(pos_winners), 2)
+
+                # ── total payout: highest team points from matchups.json ───────
+                total_scores: dict = {}
+                for wk_entry in yr_matchups.get("weeks", []):
+                    if wk_entry.get("week") != wk_num: continue
+                    for m in wk_entry.get("matchups", []):
+                        for t in m.get("teams", []):
+                            mid = t.get("manager_id") or ""
+                            pts = t.get("points") or 0
+                            if mid:
+                                total_scores[mid] = float(pts)
+
+                total_winners = []
+                total_payout_each = None
+                if total_scores:
+                    max_total = max(total_scores.values())
+                    total_winners = [m for m, v in total_scores.items() if v == max_total]
+                    total_payout_each = round(10 / len(total_winners), 2)
+
+                yr_payouts[wk_key] = {
+                    "week":               wk_num,
+                    "position_payout": {
+                        "position":       payout_pos,
+                        "winners":        pos_winners,
+                        "winning_score":  max(pos_scores.values()) if pos_scores else None,
+                        "payout_each":    pos_payout_each,
+                        "all_scores":     pos_scores,
+                    },
+                    "total_points_payout": {
+                        "winners":        total_winners,
+                        "winning_score":  round(max(total_scores.values()), 2) if total_scores else None,
+                        "payout_each":    total_payout_each,
+                        "all_scores":     {k: round(v, 2) for k, v in total_scores.items()},
+                    },
+                }
+
+            # ── season-level payouts ──────────────────────────────────────────
+            # Derive from matchups (regular season only) + results
+            # Payouts: $700 champion, $200 runner-up, $100 3rd place,
+            #          $200 regular season #1 seed, $200 regular season high points
+            results_data = _load_json(_get_data_path("results.json"))
+            yr_results   = results_data.get(str(yr), {})
+            managers_r   = yr_results.get("managers", {})
+
+            # Regular season #1 seed and high points
+            reg_seed1_mid   = None
+            reg_highpts_mid = None
+            reg_highpts_val = None
+
+            for mid, m in managers_r.items():
+                rs = m.get("regular_season", {})
+                if rs.get("rank") == 1:
+                    reg_seed1_mid = mid
+                pf = rs.get("points_for") or 0
+                if reg_highpts_val is None or pf > reg_highpts_val:
+                    reg_highpts_val = pf
+                    reg_highpts_mid = mid
+
+            # Playoff finishes (champion=1, runner-up=2, 3rd=3)
+            playoff_places: dict = {}
+            for mid, m in managers_r.items():
+                po = m.get("playoff", {})
+                if po.get("finish"):
+                    playoff_places[mid] = po.get("finish")
+
+            champion_mid   = next((m for m, f in playoff_places.items() if f == 1), None)
+            runnerup_mid   = next((m for m, f in playoff_places.items() if f == 2), None)
+            third_mid      = next((m for m, f in playoff_places.items() if f == 3), None)
+
+            yr_payouts["season"] = {
+                "champion": {
+                    "manager_id":  champion_mid,
+                    "payout":      700,
+                },
+                "runner_up": {
+                    "manager_id":  runnerup_mid,
+                    "payout":      200,
+                },
+                "third_place": {
+                    "manager_id":  third_mid,
+                    "payout":      100,
+                },
+                "regular_season_1_seed": {
+                    "manager_id":  reg_seed1_mid,
+                    "payout":      200,
+                    "note":        "Highest regular season win % (Yahoo rank 1)",
+                },
+                "regular_season_high_points": {
+                    "manager_id":  reg_highpts_mid,
+                    "total_points":round(reg_highpts_val, 2) if reg_highpts_val else None,
+                    "payout":      200,
+                    "note":        "Highest cumulative regular season points for",
+                },
+                "note": "Season payouts populated after is_finished=true. Run after season ends.",
+            }
+
+            existing[yr] = yr_payouts
+            results["success"].append(int(yr))
+
+        sorted_data = _year_sort(existing)
+        _write_json(path, sorted_data)
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "file_written":    path,
+            "next_step":       "GET /league/data/payouts/download to save locally",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/payouts/status")
+def payouts_status():
+    """Shows which years have payouts built."""
+    try:
+        data = _load_json(_get_data_path("payouts.json"))
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        summary = [
+            {"year": int(yr), "weeks_tracked": len(v)}
+            for yr, v in sorted(data.items(), reverse=True)
+        ]
+        return {"total_seasons": len(data), "seasons": summary}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/payouts/download")
+def download_payouts():
+    """Returns current payouts.json for local save."""
+    try:
+        data = _load_json(_get_data_path("payouts.json"))
+        if not data:
+            raise HTTPException(status_code=404, detail="payouts.json not found. Run build-all first.")
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Data generation — ices.json
+# ===========================================================================
+
+@router.get("/data/ices/build-all")
+def build_ices(
+    skip_existing: bool = Query(default=True),
+    year: str          = Query(default=None),
+    year_from: int     = Query(default=None),
+    year_to: int       = Query(default=None),
+    force_clean: bool  = Query(default=False),
+):
+    """
+    Generates ices.json — every starter (any position, including DEF/K) who
+    scored exactly 0.0 fantasy points in a week they were started.
+
+    Pure derivation — no Yahoo API calls:
+      - rosters.json     → is_starting flag per player per week
+      - player_stats.json → fantasy_points per player per week
+      - player_info.json → player name/position for display
+
+    An "ice" occurs when: is_starting == true AND fantasy_points == 0.0
+    (player_key present in stats with exactly 0, OR absent entirely —
+    both count, since a started player with no recorded stats also scored 0)
+
+    Requires rosters.json AND player_stats.json built first for that year.
+
+    Usage:
+        GET /league/data/ices/build-all?year=2025
+        GET /league/data/ices/build-all?year_from=2015&year_to=2020
+    """
+    try:
+        path     = _get_data_path("ices.json")
+        existing = {} if force_clean else {k: v for k, v in _load_json(path).items() if str(k).isdigit()}
+
+        rosters_data = _load_json(_get_data_path("rosters.json"))
+        stats_data   = _load_json(_get_data_path("player_stats.json"))
+        info_data    = _load_json(_get_data_path("player_info.json"))
+
+        all_years = sorted(rosters_data.keys(), key=lambda x: int(x) if str(x).isdigit() else 0)
+
+        if year:
+            target_years = [year]
+        elif year_from or year_to:
+            lo = int(year_from) if year_from else 2007
+            hi = int(year_to)   if year_to   else 2025
+            target_years = [y for y in all_years if str(y).isdigit() and lo <= int(y) <= hi]
+        else:
+            target_years = [y for y in all_years if str(y).isdigit()]
+
+        results = {"success": [], "skipped": [], "failed": {}}
+
+        for yr in target_years:
+            yr_rosters = rosters_data.get(yr, {})
+            yr_stats   = stats_data.get(yr, {})
+            yr_info    = info_data.get(yr, {}).get("players", {})
+
+            if not yr_rosters:
+                results["failed"][yr] = "Missing rosters.json for this year"
+                continue
+
+            if skip_existing and not force_clean and yr in existing and existing[yr]:
+                results["skipped"].append(int(yr))
+                continue
+
+            week_keys = sorted(
+                [k for k in yr_rosters.keys() if k.startswith("week_")],
+                key=lambda x: int(x.split("_")[1])
+            )
+
+            yr_ices: list = []
+
+            for wk_key in week_keys:
+                wk_num    = int(wk_key.split("_")[1])
+                wk_roster = yr_rosters.get(wk_key, {})
+                wk_stats  = yr_stats.get(wk_key, {})
+
+                for mid, team in wk_roster.items():
+                    if not isinstance(team, dict): continue
+                    for slot in team.get("players", []):
+                        if not isinstance(slot, dict): continue
+                        if not slot.get("is_starting"): continue
+
+                        pk  = slot.get("player_key") or ""
+                        pd  = wk_stats.get(pk)
+                        pts = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0.0
+
+                        if pts == 0.0:
+                            pi  = yr_info.get(pk, {})
+                            pos = pi.get("position") or slot.get("selected_position") or ""
+                            yr_ices.append({
+                                "week":              wk_num,
+                                "manager_id":        mid,
+                                "player_key":        pk,
+                                "player_name":       pi.get("name") or pk,
+                                "position":          pos,
+                                "selected_position": slot.get("selected_position"),
+                                "nfl_team":          pi.get("nfl_team"),
+                            })
+
+            existing[yr] = yr_ices
+            results["success"].append(int(yr))
+
+        sorted_data = _year_sort(existing)
+        _write_json(path, sorted_data)
+
+        total_ices = sum(len(v) for v in sorted_data.values() if isinstance(v, list))
+
+        return {
+            "status":          "complete",
+            "seasons_updated": results["success"],
+            "seasons_skipped": results["skipped"],
+            "seasons_failed":  results["failed"],
+            "total_seasons":   len(sorted_data),
+            "total_ices_all_time": total_ices,
+            "file_written":    path,
+            "next_step":       "GET /league/data/ices/download to save locally",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/ices/status")
+def ices_status():
+    """Shows which years have ices built and total ice counts."""
+    try:
+        data = _load_json(_get_data_path("ices.json"))
+        if not data:
+            return {"status": "file_not_found", "years": []}
+        summary = [
+            {"year": int(yr), "total_ices": len(v) if isinstance(v, list) else 0}
+            for yr, v in sorted(data.items(), reverse=True)
+        ]
+        return {
+            "total_seasons": len(data),
+            "total_ices_all_time": sum(s["total_ices"] for s in summary),
+            "seasons": summary,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/ices/download")
+def download_ices():
+    """Returns current ices.json for local save."""
+    try:
+        data = _load_json(_get_data_path("ices.json"))
+        if not data:
+            raise HTTPException(status_code=404, detail="ices.json not found. Run build-all first.")
+        return {"total_seasons": len(data), "years": sorted(data.keys(), reverse=True), "data": data}
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

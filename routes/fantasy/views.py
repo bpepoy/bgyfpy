@@ -18,6 +18,7 @@ GET /fantasy/teams/matchups/{name}         — head-to-head record vs all oppone
 """
 
 from fastapi import APIRouter, HTTPException, Query
+from routes.fantasy.league import PAYOUT_POSITION_ROTATION, get_payout_position
 import os, json
 
 router = APIRouter(prefix="/fantasy", tags=["Fantasy Views"])
@@ -1064,10 +1065,54 @@ def league_rules():
         pt = c.get("position_type") or "O"
         by_pos.setdefault(pt, []).append(c)
 
+    # ── payout schedule for current/next season ──────────────────────────────
+    # Prize structure — league constants (2023 auction era onward)
+    ENTRY_FEE         = 200   # $ per member per season
+    NUM_TEAMS         = latest.get("num_teams") or 10
+    TOTAL_POT         = ENTRY_FEE * NUM_TEAMS   # $2000
+
+    # Season prizes
+    PRIZE_CHAMPION    = 700
+    PRIZE_2ND         = 200
+    PRIZE_3RD         = 100
+    PRIZE_RS_1SEED    = 200   # regular season #1 seed
+    PRIZE_RS_HIGHPTS  = 200   # regular season highest total points
+
+    # Weekly prizes ($40/week × 15 regular season weeks = $600)
+    WEEKLY_POS_POT    = 20    # $ to highest starter at rotating position
+    WEEKLY_TOTAL_POT  = 20    # $ to team with highest total points
+    WEEKLY_REG_WEEKS  = 15    # regular season weeks
+
+    season_prizes_total = PRIZE_CHAMPION + PRIZE_2ND + PRIZE_3RD + PRIZE_RS_1SEED + PRIZE_RS_HIGHPTS
+    weekly_prizes_total = (WEEKLY_POS_POT + WEEKLY_TOTAL_POT) * WEEKLY_REG_WEEKS
+
+    # Build weekly payout schedule for the current/latest season
+    end_wk        = latest.get("end_week") or 17
+    playoff_start = latest.get("playoff_start_week") or 16
+    yr_int        = int(latest_yr)
+
+    weekly_schedule = []
+    for wk in range(1, end_wk + 1):
+        is_po = wk >= playoff_start
+        pos   = get_payout_position(yr_int, wk) if not is_po else None
+        entry: dict = {
+            "week":       wk,
+            "is_playoffs":is_po,
+        }
+        if is_po:
+            entry["note"] = "Playoff week — no weekly payout"
+        else:
+            entry["position_payout"]  = pos
+            entry["position_pot"]     = WEEKLY_POS_POT
+            entry["total_points_pot"] = WEEKLY_TOTAL_POT
+            entry["total_pot"]        = WEEKLY_POS_POT + WEEKLY_TOTAL_POT
+            entry["note"]             = f"${WEEKLY_POS_POT} to highest {pos} starter · ${WEEKLY_TOTAL_POT} to highest team total"
+        weekly_schedule.append(entry)
+
     return {
         "year":              int(latest_yr),
         "draft_type":        latest.get("draft_type"),
-        "num_teams":         latest.get("num_teams"),
+        "num_teams":         NUM_TEAMS,
         "uses_faab":         latest.get("uses_faab"),
         "faab_budget":       latest.get("faab_budget"),
         "playoff_teams":     latest.get("playoff_teams"),
@@ -1079,6 +1124,33 @@ def league_rules():
         "scoring_stats":     scoring,
         "display_only_stats":display,
         "total_scoring_stats":len(scoring),
+        "payout_rules": {
+            "entry_fee":    ENTRY_FEE,
+            "total_pot":    TOTAL_POT,
+            "pot_breakdown": {
+                "season_prizes":  season_prizes_total,
+                "weekly_prizes":  weekly_prizes_total,
+                "total_accounted":season_prizes_total + weekly_prizes_total,
+            },
+            "season_prizes": {
+                "champion":                  PRIZE_CHAMPION,
+                "2nd_place":                 PRIZE_2ND,
+                "3rd_place":                 PRIZE_3RD,
+                "regular_season_1st_seed":   PRIZE_RS_1SEED,
+                "regular_season_high_points":PRIZE_RS_HIGHPTS,
+                "note": "Regular season prizes awarded at end of regular season. Playoff prizes after championship.",
+            },
+            "weekly_prizes": {
+                "position_high_score":  WEEKLY_POS_POT,
+                "total_high_score":     WEEKLY_TOTAL_POT,
+                "total_per_week":       WEEKLY_POS_POT + WEEKLY_TOTAL_POT,
+                "regular_season_weeks": WEEKLY_REG_WEEKS,
+                "total_weekly_pot":     weekly_prizes_total,
+                "note": "Ties split pot evenly. Position rotates each week per PAYOUT_POSITION_ROTATION (2023+).",
+            },
+            "weekly_schedule":        weekly_schedule,
+            "position_rotation_note": "Randomized 5-position cycle per season (QB/WR/RB/TE/DEF). Seed=42, covers 2023-2062.",
+        },
     }
 
 
