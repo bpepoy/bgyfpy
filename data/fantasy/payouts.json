@@ -1,0 +1,5540 @@
+{
+  "total_seasons": 19,
+  "years": [
+    "2025",
+    "2024",
+    "2023",
+    "2022",
+    "2021",
+    "2020",
+    "2019",
+    "2018",
+    "2017",
+    "2016",
+    "2015",
+    "2014",
+    "2013",
+    "2012",
+    "2011",
+    "2010",
+    "2009",
+    "2008",
+    "2007"
+  ],
+  "data": {
+    "2025": {
+      "week_1": {
+        "week": 1,
+        "position_payout": {
+          "position": "QB",
+          "winners": [
+            {
+              "manager_id": "joey",
+              "player_key": "461.p.30977",
+              "player_name": "Josh Allen",
+              "score": 42.7
+            }
+          ],
+          "winning_score": 42.7,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 8.6,
+              "player_key": "461.p.40875",
+              "player_name": "Bo Nix"
+            },
+            "jordan": {
+              "score": 19.95,
+              "player_key": "461.p.31833",
+              "player_name": "Kyler Murray"
+            },
+            "blake": {
+              "score": 9.95,
+              "player_key": "461.p.32671",
+              "player_name": "Joe Burrow"
+            },
+            "frank": {
+              "score": 24.25,
+              "player_key": "461.p.30971",
+              "player_name": "Baker Mayfield"
+            },
+            "nick": {
+              "score": 25.8,
+              "player_key": "461.p.32723",
+              "player_name": "Jalen Hurts"
+            },
+            "brian": {
+              "score": 28.6,
+              "player_key": "461.p.30123",
+              "player_name": "Patrick Mahomes"
+            },
+            "joey": {
+              "score": 42.7,
+              "player_key": "461.p.30977",
+              "player_name": "Josh Allen"
+            },
+            "kyle": {
+              "score": 12.1,
+              "player_key": "461.p.33389",
+              "player_name": "Trevor Lawrence"
+            },
+            "rob": {
+              "score": 22.45,
+              "player_key": "461.p.40896",
+              "player_name": "Jayden Daniels"
+            },
+            "jake": {
+              "score": 31.45,
+              "player_key": "461.p.31002",
+              "player_name": "Lamar Jackson"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "rob"
+          ],
+          "winning_score": 131.75,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 76.5,
+            "brian": 84.6,
+            "jordan": 93.35,
+            "frank": 118.95,
+            "blake": 85.95,
+            "joey": 124.3,
+            "nick": 103.8,
+            "rob": 131.75,
+            "kyle": 100.1,
+            "jake": 116.75
+          }
+        }
+      },
+      "week_2": {
+        "week": 2,
+        "position_payout": {
+          "position": "DEF",
+          "winners": [
+            {
+              "manager_id": "frank",
+              "player_key": "461.p.100033",
+              "player_name": "Ravens",
+              "score": 18
+            }
+          ],
+          "winning_score": 18,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 2,
+              "player_key": "461.p.100006",
+              "player_name": "Cowboys"
+            },
+            "jordan": {
+              "score": 7,
+              "player_key": "461.p.100021",
+              "player_name": "Eagles"
+            },
+            "blake": {
+              "score": 2,
+              "player_key": "461.p.100007",
+              "player_name": "Broncos"
+            },
+            "frank": {
+              "score": 18,
+              "player_key": "461.p.100033",
+              "player_name": "Ravens"
+            },
+            "nick": {
+              "score": 10,
+              "player_key": "461.p.100008",
+              "player_name": "Lions"
+            },
+            "brian": {
+              "score": 5,
+              "player_key": "461.p.100016",
+              "player_name": "Vikings"
+            },
+            "joey": {
+              "score": 6,
+              "player_key": "461.p.100023",
+              "player_name": "Steelers"
+            },
+            "kyle": {
+              "score": 14,
+              "player_key": "461.p.100022",
+              "player_name": "Cardinals"
+            },
+            "rob": {
+              "score": 6,
+              "player_key": "461.p.100025",
+              "player_name": "49ers"
+            },
+            "jake": {
+              "score": 9,
+              "player_key": "461.p.100014",
+              "player_name": "Rams"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "frank"
+          ],
+          "winning_score": 154.85,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 106.8,
+            "blake": 91.1,
+            "jordan": 90.3,
+            "brian": 135.9,
+            "frank": 154.85,
+            "kyle": 97.2,
+            "nick": 101.05,
+            "joey": 113.3,
+            "rob": 99.2,
+            "jake": 124.05
+          }
+        }
+      },
+      "week_3": {
+        "week": 3,
+        "position_payout": {
+          "position": "RB",
+          "winners": [
+            {
+              "manager_id": "jake",
+              "player_key": "461.p.32711",
+              "player_name": "Jonathan Taylor",
+              "score": 31.3
+            }
+          ],
+          "winning_score": 31.3,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 23.6,
+              "player_key": "461.p.34320",
+              "player_name": "Jordan Mason"
+            },
+            "jordan": {
+              "score": 21.1,
+              "player_key": "461.p.41922",
+              "player_name": "Cam Skattebo"
+            },
+            "blake": {
+              "score": 17.5,
+              "player_key": "461.p.33996",
+              "player_name": "Kenneth Walker III"
+            },
+            "frank": {
+              "score": 19.3,
+              "player_key": "461.p.34019",
+              "player_name": "James Cook III"
+            },
+            "nick": {
+              "score": 24.4,
+              "player_key": "461.p.40059",
+              "player_name": "Jahmyr Gibbs"
+            },
+            "brian": {
+              "score": 28.9,
+              "player_key": "461.p.31905",
+              "player_name": "David Montgomery"
+            },
+            "joey": {
+              "score": 12.6,
+              "player_key": "461.p.40118",
+              "player_name": "De'Von Achane"
+            },
+            "kyle": {
+              "score": 10.2,
+              "player_key": "461.p.29279",
+              "player_name": "Derrick Henry"
+            },
+            "rob": {
+              "score": 18.2,
+              "player_key": "461.p.34120",
+              "player_name": "Kyren Williams"
+            },
+            "jake": {
+              "score": 31.3,
+              "player_key": "461.p.32711",
+              "player_name": "Jonathan Taylor"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 138.1,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 126.95,
+            "jordan": 94.25,
+            "blake": 91.8,
+            "nick": 128.9,
+            "frank": 99.95,
+            "rob": 106.4,
+            "brian": 138.1,
+            "kyle": 102.45,
+            "joey": 118.55,
+            "jake": 117.8
+          }
+        }
+      },
+      "week_4": {
+        "week": 4,
+        "position_payout": {
+          "position": "TE",
+          "winners": [
+            {
+              "manager_id": "kyle",
+              "player_key": "461.p.41799",
+              "player_name": "Tyler Warren",
+              "score": 15.8
+            }
+          ],
+          "winning_score": 15.8,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 9.3,
+              "player_key": "461.p.40048",
+              "player_name": "Dalton Kincaid"
+            },
+            "jordan": {
+              "score": 13.5,
+              "player_key": "461.p.34085",
+              "player_name": "Jake Ferguson"
+            },
+            "blake": {
+              "score": 8.1,
+              "player_key": "461.p.40102",
+              "player_name": "Tucker Kraft"
+            },
+            "frank": {
+              "score": 10.9,
+              "player_key": "461.p.29269",
+              "player_name": "Hunter Henry"
+            },
+            "nick": {
+              "score": 7.3,
+              "player_key": "461.p.26686",
+              "player_name": "Travis Kelce"
+            },
+            "brian": {
+              "score": 5.4,
+              "player_key": "461.p.40064",
+              "player_name": "Sam LaPorta"
+            },
+            "joey": {
+              "score": 4.3,
+              "player_key": "461.p.33113",
+              "player_name": "Juwan Johnson"
+            },
+            "kyle": {
+              "score": 15.8,
+              "player_key": "461.p.41799",
+              "player_name": "Tyler Warren"
+            },
+            "rob": {
+              "score": 7.1,
+              "player_key": "461.p.40878",
+              "player_name": "Brock Bowers"
+            },
+            "jake": {
+              "score": 8.7,
+              "player_key": "461.p.34010",
+              "player_name": "Trey McBride"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "zef"
+          ],
+          "winning_score": 152.2,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 152.2,
+            "nick": 107.8,
+            "jordan": 119.2,
+            "kyle": 89.95,
+            "blake": 96.75,
+            "jake": 98.05,
+            "frank": 150.1,
+            "joey": 148.55,
+            "brian": 140.1,
+            "rob": 106.5
+          }
+        }
+      },
+      "week_5": {
+        "week": 5,
+        "position_payout": {
+          "position": "WR",
+          "winners": [
+            {
+              "manager_id": "rob",
+              "player_key": "461.p.41804",
+              "player_name": "Emeka Egbuka",
+              "score": 27.8
+            }
+          ],
+          "winning_score": 27.8,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 23.2,
+              "player_key": "461.p.40041",
+              "player_name": "Jaxon Smith-Njigba"
+            },
+            "jordan": {
+              "score": 15.8,
+              "player_key": "461.p.32692",
+              "player_name": "Justin Jefferson"
+            },
+            "blake": {
+              "score": 15.4,
+              "player_key": "461.p.33398",
+              "player_name": "DeVonta Smith"
+            },
+            "frank": {
+              "score": 19.5,
+              "player_key": "461.p.40168",
+              "player_name": "Puka Nacua"
+            },
+            "nick": {
+              "score": 12.4,
+              "player_key": "461.p.32704",
+              "player_name": "Michael Pittman Jr."
+            },
+            "brian": {
+              "score": 26,
+              "player_key": "461.p.33393",
+              "player_name": "Ja'Marr Chase"
+            },
+            "joey": {
+              "score": 16.1,
+              "player_key": "461.p.33965",
+              "player_name": "Garrett Wilson"
+            },
+            "kyle": {
+              "score": 19.4,
+              "player_key": "461.p.34659",
+              "player_name": "Rashid Shaheed"
+            },
+            "rob": {
+              "score": 27.8,
+              "player_key": "461.p.41804",
+              "player_name": "Emeka Egbuka"
+            },
+            "jake": {
+              "score": 12.4,
+              "player_key": "461.p.40908",
+              "player_name": "Ladd McConkey"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "rob"
+          ],
+          "winning_score": 150.25,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 111.45,
+            "kyle": 99.4,
+            "jordan": 104.3,
+            "rob": 150.25,
+            "blake": 113,
+            "frank": 121.75,
+            "nick": 104.1,
+            "jake": 117.8,
+            "brian": 147.35,
+            "joey": 128.15
+          }
+        }
+      },
+      "week_6": {
+        "week": 6,
+        "position_payout": {
+          "position": "QB",
+          "winners": [
+            {
+              "manager_id": "brian",
+              "player_key": "461.p.30123",
+              "player_name": "Patrick Mahomes",
+              "score": 34.05
+            }
+          ],
+          "winning_score": 34.05,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 24.95,
+              "player_key": "461.p.29369",
+              "player_name": "Dak Prescott"
+            },
+            "jordan": {
+              "score": 24.6,
+              "player_key": "461.p.31838",
+              "player_name": "Daniel Jones"
+            },
+            "blake": {
+              "score": 17.55,
+              "player_key": "461.p.32696",
+              "player_name": "Jordan Love"
+            },
+            "frank": {
+              "score": 22.2,
+              "player_key": "461.p.30971",
+              "player_name": "Baker Mayfield"
+            },
+            "nick": {
+              "score": 23.45,
+              "player_key": "461.p.32723",
+              "player_name": "Jalen Hurts"
+            },
+            "brian": {
+              "score": 34.05,
+              "player_key": "461.p.30123",
+              "player_name": "Patrick Mahomes"
+            },
+            "joey": {
+              "score": 17.2,
+              "player_key": "461.p.30977",
+              "player_name": "Josh Allen"
+            },
+            "kyle": {
+              "score": 21.4,
+              "player_key": "461.p.32676",
+              "player_name": "Justin Herbert"
+            },
+            "rob": {
+              "score": 23.75,
+              "player_key": "461.p.40896",
+              "player_name": "Jayden Daniels"
+            },
+            "jake": {
+              "score": 11.15,
+              "player_key": "461.p.9265",
+              "player_name": "Matthew Stafford"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 145.45,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 113.95,
+            "jake": 113.35,
+            "jordan": 97.5,
+            "joey": 142.1,
+            "blake": 84.55,
+            "brian": 145.45,
+            "frank": 101.3,
+            "nick": 103.05,
+            "kyle": 91.9,
+            "rob": 101.75
+          }
+        }
+      },
+      "week_7": {
+        "week": 7,
+        "position_payout": {
+          "position": "DEF",
+          "winners": [
+            {
+              "manager_id": "jordan",
+              "player_key": "461.p.100005",
+              "player_name": "Browns",
+              "score": 26
+            }
+          ],
+          "winning_score": 26,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 16,
+              "player_key": "461.p.100003",
+              "player_name": "Bears"
+            },
+            "jordan": {
+              "score": 26,
+              "player_key": "461.p.100005",
+              "player_name": "Browns"
+            },
+            "blake": {
+              "score": 5,
+              "player_key": "461.p.100007",
+              "player_name": "Broncos"
+            },
+            "frank": {
+              "score": 12,
+              "player_key": "461.p.100021",
+              "player_name": "Eagles"
+            },
+            "nick": {
+              "score": 10,
+              "player_key": "461.p.100009",
+              "player_name": "Packers"
+            },
+            "brian": {
+              "score": 15,
+              "player_key": "461.p.100014",
+              "player_name": "Rams"
+            },
+            "joey": {
+              "score": 1,
+              "player_key": "461.p.100023",
+              "player_name": "Steelers"
+            },
+            "kyle": {
+              "score": 21,
+              "player_key": "461.p.100017",
+              "player_name": "Patriots"
+            },
+            "rob": {
+              "score": 12,
+              "player_key": "461.p.100026",
+              "player_name": "Seahawks"
+            },
+            "jake": {
+              "score": 12,
+              "player_key": "461.p.100012",
+              "player_name": "Chiefs"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 145.7,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 135.3,
+            "rob": 127,
+            "jordan": 141.9,
+            "blake": 95.85,
+            "frank": 77.9,
+            "jake": 122.65,
+            "nick": 131,
+            "brian": 145.7,
+            "joey": 116.65,
+            "kyle": 119
+          }
+        }
+      },
+      "week_8": {
+        "week": 8,
+        "position_payout": {
+          "position": "RB",
+          "winners": [
+            {
+              "manager_id": "jake",
+              "player_key": "461.p.32711",
+              "player_name": "Jonathan Taylor",
+              "score": 36.4
+            }
+          ],
+          "winning_score": 36.4,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 13.1,
+              "player_key": "461.p.41902",
+              "player_name": "Woody Marks"
+            },
+            "jordan": {
+              "score": 24,
+              "player_key": "461.p.40196",
+              "player_name": "Chase Brown"
+            },
+            "blake": {
+              "score": 9.4,
+              "player_key": "461.p.33514",
+              "player_name": "Chuba Hubbard"
+            },
+            "frank": {
+              "score": 33.6,
+              "player_key": "461.p.34019",
+              "player_name": "James Cook III"
+            },
+            "nick": {
+              "score": 8.3,
+              "player_key": "461.p.34447",
+              "player_name": "Jaylen Warren"
+            },
+            "brian": {
+              "score": 15.7,
+              "player_key": "461.p.40119",
+              "player_name": "Tyjae Spears"
+            },
+            "joey": {
+              "score": 17.6,
+              "player_key": "461.p.40118",
+              "player_name": "De'Von Achane"
+            },
+            "kyle": {
+              "score": 31.4,
+              "player_key": "461.p.30972",
+              "player_name": "Saquon Barkley"
+            },
+            "rob": {
+              "score": 31.9,
+              "player_key": "461.p.33991",
+              "player_name": "Breece Hall"
+            },
+            "jake": {
+              "score": 36.4,
+              "player_key": "461.p.32711",
+              "player_name": "Jonathan Taylor"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "jake"
+          ],
+          "winning_score": 151.45,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 71.3,
+            "frank": 104.2,
+            "jordan": 109.4,
+            "nick": 107.95,
+            "blake": 124.4,
+            "kyle": 133.05,
+            "brian": 136.25,
+            "jake": 151.45,
+            "joey": 98.55,
+            "rob": 102.55
+          }
+        }
+      },
+      "week_9": {
+        "week": 9,
+        "position_payout": {
+          "position": "TE",
+          "winners": [
+            {
+              "manager_id": "zef",
+              "player_key": "461.p.40878",
+              "player_name": "Brock Bowers",
+              "score": 37.3
+            }
+          ],
+          "winning_score": 37.3,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 37.3,
+              "player_key": "461.p.40878",
+              "player_name": "Brock Bowers"
+            },
+            "jordan": {
+              "score": 5.5,
+              "player_key": "461.p.34085",
+              "player_name": "Jake Ferguson"
+            },
+            "blake": {
+              "score": 3,
+              "player_key": "461.p.40102",
+              "player_name": "Tucker Kraft"
+            },
+            "frank": {
+              "score": 6.6,
+              "player_key": "461.p.26658",
+              "player_name": "Zach Ertz"
+            },
+            "nick": {
+              "score": 10.6,
+              "player_key": "461.p.26686",
+              "player_name": "Travis Kelce"
+            },
+            "brian": {
+              "score": 18.7,
+              "player_key": "461.p.40064",
+              "player_name": "Sam LaPorta"
+            },
+            "joey": {
+              "score": 19.1,
+              "player_key": "461.p.40048",
+              "player_name": "Dalton Kincaid"
+            },
+            "kyle": {
+              "score": 5.1,
+              "player_key": "461.p.41799",
+              "player_name": "Tyler Warren"
+            },
+            "rob": {
+              "score": 0,
+              "player_key": "461.p.30136",
+              "player_name": "Evan Engram"
+            },
+            "jake": {
+              "score": 14,
+              "player_key": "461.p.34010",
+              "player_name": "Trey McBride"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "joey"
+          ],
+          "winning_score": 175.65,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 110.8,
+            "joey": 175.65,
+            "jordan": 107.3,
+            "jake": 107.9,
+            "blake": 89.35,
+            "rob": 89.85,
+            "frank": 98.1,
+            "brian": 132,
+            "nick": 125.2,
+            "kyle": 103.2
+          }
+        }
+      },
+      "week_10": {
+        "week": 10,
+        "position_payout": {
+          "position": "WR",
+          "winners": [
+            {
+              "manager_id": "joey",
+              "player_key": "461.p.33963",
+              "player_name": "Drake London",
+              "score": 21.4
+            }
+          ],
+          "winning_score": 21.4,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 18.9,
+              "player_key": "461.p.33966",
+              "player_name": "Chris Olave"
+            },
+            "jordan": {
+              "score": 14.1,
+              "player_key": "461.p.32887",
+              "player_name": "Jauan Jennings"
+            },
+            "blake": {
+              "score": 14.9,
+              "player_key": "461.p.33398",
+              "player_name": "DeVonta Smith"
+            },
+            "frank": {
+              "score": 20.9,
+              "player_key": "461.p.33967",
+              "player_name": "Jameson Williams"
+            },
+            "nick": {
+              "score": 17.8,
+              "player_key": "461.p.40041",
+              "player_name": "Jaxon Smith-Njigba"
+            },
+            "brian": {
+              "score": 16.9,
+              "player_key": "461.p.33394",
+              "player_name": "Jaylen Waddle"
+            },
+            "joey": {
+              "score": 21.4,
+              "player_key": "461.p.33963",
+              "player_name": "Drake London"
+            },
+            "kyle": {
+              "score": 19.1,
+              "player_key": "461.p.33477",
+              "player_name": "Nico Collins"
+            },
+            "rob": {
+              "score": 20.5,
+              "player_key": "461.p.41804",
+              "player_name": "Emeka Egbuka"
+            },
+            "jake": {
+              "score": 18.7,
+              "player_key": "461.p.40908",
+              "player_name": "Ladd McConkey"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "jake"
+          ],
+          "winning_score": 160.9,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 111.4,
+            "brian": 101.3,
+            "jordan": 80.75,
+            "frank": 122,
+            "blake": 89.3,
+            "joey": 152.4,
+            "nick": 130.75,
+            "rob": 136.4,
+            "kyle": 117.6,
+            "jake": 160.9
+          }
+        }
+      },
+      "week_11": {
+        "week": 11,
+        "position_payout": {
+          "position": "QB",
+          "winners": [
+            {
+              "manager_id": "joey",
+              "player_key": "461.p.30977",
+              "player_name": "Josh Allen",
+              "score": 45.85
+            }
+          ],
+          "winning_score": 45.85,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 27,
+              "player_key": "461.p.29369",
+              "player_name": "Dak Prescott"
+            },
+            "jordan": {
+              "score": 11.85,
+              "player_key": "461.p.8795",
+              "player_name": "Joe Flacco"
+            },
+            "blake": {
+              "score": 16.1,
+              "player_key": "461.p.30123",
+              "player_name": "Patrick Mahomes"
+            },
+            "frank": {
+              "score": 18.55,
+              "player_key": "461.p.30971",
+              "player_name": "Baker Mayfield"
+            },
+            "nick": {
+              "score": 15.85,
+              "player_key": "461.p.32723",
+              "player_name": "Jalen Hurts"
+            },
+            "brian": {
+              "score": 18.25,
+              "player_key": "461.p.40881",
+              "player_name": "Drake Maye"
+            },
+            "joey": {
+              "score": 45.85,
+              "player_key": "461.p.30977",
+              "player_name": "Josh Allen"
+            },
+            "kyle": {
+              "score": 4.15,
+              "player_key": "461.p.32676",
+              "player_name": "Justin Herbert"
+            },
+            "rob": {
+              "score": 14.5,
+              "player_key": "461.p.9265",
+              "player_name": "Matthew Stafford"
+            },
+            "jake": {
+              "score": 6.65,
+              "player_key": "461.p.31002",
+              "player_name": "Lamar Jackson"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "nick"
+          ],
+          "winning_score": 138.25,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 83,
+            "blake": 89,
+            "jordan": 79.85,
+            "brian": 125.55,
+            "frank": 126.25,
+            "kyle": 114.95,
+            "nick": 138.25,
+            "joey": 110.25,
+            "rob": 102.2,
+            "jake": 86.65
+          }
+        }
+      },
+      "week_12": {
+        "week": 12,
+        "position_payout": {
+          "position": "DEF",
+          "winners": [
+            {
+              "manager_id": "jordan",
+              "player_key": "461.p.100005",
+              "player_name": "Browns",
+              "score": 18
+            },
+            {
+              "manager_id": "blake",
+              "player_key": "461.p.100001",
+              "player_name": "Falcons",
+              "score": 18
+            },
+            {
+              "manager_id": "brian",
+              "player_key": "461.p.100009",
+              "player_name": "Packers",
+              "score": 18
+            },
+            {
+              "manager_id": "rob",
+              "player_key": "461.p.100034",
+              "player_name": "Texans",
+              "score": 18
+            }
+          ],
+          "winning_score": 18,
+          "payout_each": 5,
+          "all_best_scores": {
+            "zef": {
+              "score": 13,
+              "player_key": "461.p.100033",
+              "player_name": "Ravens"
+            },
+            "jordan": {
+              "score": 18,
+              "player_key": "461.p.100005",
+              "player_name": "Browns"
+            },
+            "blake": {
+              "score": 18,
+              "player_key": "461.p.100001",
+              "player_name": "Falcons"
+            },
+            "frank": {
+              "score": 6,
+              "player_key": "461.p.100002",
+              "player_name": "Bills"
+            },
+            "nick": {
+              "score": 5,
+              "player_key": "461.p.100013",
+              "player_name": "Raiders"
+            },
+            "brian": {
+              "score": 18,
+              "player_key": "461.p.100009",
+              "player_name": "Packers"
+            },
+            "joey": {
+              "score": 6,
+              "player_key": "461.p.100026",
+              "player_name": "Seahawks"
+            },
+            "kyle": {
+              "score": 12,
+              "player_key": "461.p.100017",
+              "player_name": "Patriots"
+            },
+            "rob": {
+              "score": 18,
+              "player_key": "461.p.100034",
+              "player_name": "Texans"
+            },
+            "jake": {
+              "score": 5,
+              "player_key": "461.p.100008",
+              "player_name": "Lions"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "nick"
+          ],
+          "winning_score": 178.25,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 126.05,
+            "jordan": 118.05,
+            "blake": 100.5,
+            "nick": 178.25,
+            "frank": 94.35,
+            "rob": 111.95,
+            "brian": 129.7,
+            "kyle": 100.85,
+            "joey": 100.35,
+            "jake": 93.55
+          }
+        }
+      },
+      "week_13": {
+        "week": 13,
+        "position_payout": {
+          "position": "RB",
+          "winners": [
+            {
+              "manager_id": "nick",
+              "player_key": "461.p.40055",
+              "player_name": "Bijan Robinson",
+              "score": 27.8
+            }
+          ],
+          "winning_score": 27.8,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 8.9,
+              "player_key": "461.p.33100",
+              "player_name": "Rico Dowdle"
+            },
+            "jordan": {
+              "score": 19.7,
+              "player_key": "461.p.41845",
+              "player_name": "RJ Harvey"
+            },
+            "blake": {
+              "score": 11.8,
+              "player_key": "461.p.31905",
+              "player_name": "David Montgomery"
+            },
+            "frank": {
+              "score": 17.2,
+              "player_key": "461.p.34019",
+              "player_name": "James Cook III"
+            },
+            "nick": {
+              "score": 27.8,
+              "player_key": "461.p.40055",
+              "player_name": "Bijan Robinson"
+            },
+            "brian": {
+              "score": 15.4,
+              "player_key": "461.p.30121",
+              "player_name": "Christian McCaffrey"
+            },
+            "joey": {
+              "score": 19.4,
+              "player_key": "461.p.40118",
+              "player_name": "De'Von Achane"
+            },
+            "kyle": {
+              "score": 16.9,
+              "player_key": "461.p.29279",
+              "player_name": "Derrick Henry"
+            },
+            "rob": {
+              "score": 14.6,
+              "player_key": "461.p.33991",
+              "player_name": "Breece Hall"
+            },
+            "jake": {
+              "score": 20.2,
+              "player_key": "461.p.41052",
+              "player_name": "Kimani Vidal"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "frank"
+          ],
+          "winning_score": 132.8,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 102,
+            "nick": 114.7,
+            "jordan": 100.85,
+            "kyle": 100.45,
+            "blake": 95.05,
+            "jake": 122.3,
+            "frank": 132.8,
+            "joey": 123.85,
+            "brian": 102.3,
+            "rob": 86.45
+          }
+        }
+      },
+      "week_14": {
+        "week": 14,
+        "position_payout": {
+          "position": "TE",
+          "winners": [
+            {
+              "manager_id": "zef",
+              "player_key": "461.p.40878",
+              "player_name": "Brock Bowers",
+              "score": 12.6
+            }
+          ],
+          "winning_score": 12.6,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 12.6,
+              "player_key": "461.p.40878",
+              "player_name": "Brock Bowers"
+            },
+            "jordan": {
+              "score": 8.3,
+              "player_key": "461.p.34085",
+              "player_name": "Jake Ferguson"
+            },
+            "blake": {
+              "score": 12,
+              "player_key": "461.p.33392",
+              "player_name": "Kyle Pitts Sr."
+            },
+            "frank": {
+              "score": 3.7,
+              "player_key": "461.p.31107",
+              "player_name": "Dalton Schultz"
+            },
+            "nick": {
+              "score": 1.3,
+              "player_key": "461.p.26686",
+              "player_name": "Travis Kelce"
+            },
+            "brian": {
+              "score": 1.2,
+              "player_key": "461.p.41951",
+              "player_name": "Oronde Gadsden"
+            },
+            "joey": {
+              "score": 12.1,
+              "player_key": "461.p.40048",
+              "player_name": "Dalton Kincaid"
+            },
+            "kyle": {
+              "score": 4.2,
+              "player_key": "461.p.40078",
+              "player_name": "Brenton Strange"
+            },
+            "rob": {
+              "score": 2.2,
+              "player_key": "461.p.28592",
+              "player_name": "Darren Waller"
+            },
+            "jake": {
+              "score": 8.3,
+              "player_key": "461.p.34010",
+              "player_name": "Trey McBride"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "joey"
+          ],
+          "winning_score": 145.65,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 105.2,
+            "kyle": 85.45,
+            "jordan": 112.2,
+            "rob": 112.95,
+            "blake": 86.4,
+            "frank": 141.65,
+            "nick": 84.9,
+            "jake": 68.8,
+            "brian": 102.8,
+            "joey": 145.65
+          }
+        }
+      },
+      "week_15": {
+        "week": 15,
+        "position_payout": {
+          "position": "WR",
+          "winners": [
+            {
+              "manager_id": "zef",
+              "player_key": "461.p.33500",
+              "player_name": "Amon-Ra St. Brown",
+              "score": 34.9
+            }
+          ],
+          "winning_score": 34.9,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 34.9,
+              "player_key": "461.p.33500",
+              "player_name": "Amon-Ra St. Brown"
+            },
+            "jordan": {
+              "score": 17.2,
+              "player_key": "461.p.32887",
+              "player_name": "Jauan Jennings"
+            },
+            "blake": {
+              "score": 12.6,
+              "player_key": "461.p.40892",
+              "player_name": "Ricky Pearsall"
+            },
+            "frank": {
+              "score": 23.4,
+              "player_key": "461.p.40168",
+              "player_name": "Puka Nacua"
+            },
+            "nick": {
+              "score": 14.3,
+              "player_key": "461.p.40039",
+              "player_name": "Zay Flowers"
+            },
+            "brian": {
+              "score": 18.2,
+              "player_key": "461.p.33393",
+              "player_name": "Ja'Marr Chase"
+            },
+            "joey": {
+              "score": 13.9,
+              "player_key": "461.p.40121",
+              "player_name": "Michael Wilson"
+            },
+            "kyle": {
+              "score": 22,
+              "player_key": "461.p.33477",
+              "player_name": "Nico Collins"
+            },
+            "rob": {
+              "score": 14.8,
+              "player_key": "461.p.40041",
+              "player_name": "Jaxon Smith-Njigba"
+            },
+            "jake": {
+              "score": 15.1,
+              "player_key": "461.p.40883",
+              "player_name": "Brian Thomas Jr."
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "kyle"
+          ],
+          "winning_score": 171.9,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 127,
+            "jake": 115.3,
+            "jordan": 69.95,
+            "joey": 102.75,
+            "blake": 109.25,
+            "brian": 109.25,
+            "frank": 157.5,
+            "nick": 127.95,
+            "kyle": 171.9,
+            "rob": 115.4
+          }
+        }
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_17": {
+        "week": 17,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "brian",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "frank",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "zef",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "brian",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "joey",
+          "total_points": 1901.05,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2024": {
+      "week_1": {
+        "week": 1,
+        "position_payout": {
+          "position": "WR",
+          "winners": [
+            {
+              "manager_id": "kyle",
+              "player_key": "449.p.30182",
+              "player_name": "Cooper Kupp",
+              "score": 25
+            }
+          ],
+          "winning_score": 25,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 20.4,
+              "player_key": "449.p.31883",
+              "player_name": "A.J. Brown"
+            },
+            "jordan": {
+              "score": 7.5,
+              "player_key": "449.p.30994",
+              "player_name": "DJ Moore"
+            },
+            "blake": {
+              "score": 11.9,
+              "player_key": "449.p.33398",
+              "player_name": "DeVonta Smith"
+            },
+            "frank": {
+              "score": 16.2,
+              "player_key": "449.p.31868",
+              "player_name": "Deebo Samuel"
+            },
+            "nick": {
+              "score": 14.7,
+              "player_key": "449.p.33477",
+              "player_name": "Nico Collins"
+            },
+            "brian": {
+              "score": 19.8,
+              "player_key": "449.p.40877",
+              "player_name": "Xavier Worthy"
+            },
+            "joey": {
+              "score": 18.9,
+              "player_key": "449.p.28534",
+              "player_name": "Stefon Diggs"
+            },
+            "kyle": {
+              "score": 25,
+              "player_key": "449.p.30182",
+              "player_name": "Cooper Kupp"
+            },
+            "rob": {
+              "score": 22.5,
+              "player_key": "449.p.29399",
+              "player_name": "Tyreek Hill"
+            },
+            "jake": {
+              "score": 20.6,
+              "player_key": "449.p.27535",
+              "player_name": "Mike Evans"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 132.4,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 111,
+            "kyle": 82.55,
+            "jordan": 75.75,
+            "blake": 91.6,
+            "frank": 85.3,
+            "joey": 111.2,
+            "nick": 119.45,
+            "jake": 108.8,
+            "brian": 132.4,
+            "rob": 129.9
+          }
+        }
+      },
+      "week_2": {
+        "week": 2,
+        "position_payout": {
+          "position": "QB",
+          "winners": [
+            {
+              "manager_id": "joey",
+              "player_key": "449.p.31833",
+              "player_name": "Kyler Murray",
+              "score": 31.2
+            }
+          ],
+          "winning_score": 31.2,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 12.55,
+              "player_key": "449.p.33399",
+              "player_name": "Justin Fields"
+            },
+            "jordan": {
+              "score": 14.45,
+              "player_key": "449.p.30123",
+              "player_name": "Patrick Mahomes"
+            },
+            "blake": {
+              "score": 25.65,
+              "player_key": "449.p.32723",
+              "player_name": "Jalen Hurts"
+            },
+            "frank": {
+              "score": 15.7,
+              "player_key": "449.p.40896",
+              "player_name": "Jayden Daniels"
+            },
+            "nick": {
+              "score": 18.85,
+              "player_key": "449.p.31002",
+              "player_name": "Lamar Jackson"
+            },
+            "brian": {
+              "score": 11.15,
+              "player_key": "449.p.30977",
+              "player_name": "Josh Allen"
+            },
+            "joey": {
+              "score": 31.2,
+              "player_key": "449.p.31833",
+              "player_name": "Kyler Murray"
+            },
+            "kyle": {
+              "score": 15.85,
+              "player_key": "449.p.29369",
+              "player_name": "Dak Prescott"
+            },
+            "rob": {
+              "score": 20.65,
+              "player_key": "449.p.30971",
+              "player_name": "Baker Mayfield"
+            },
+            "jake": {
+              "score": 11.9,
+              "player_key": "449.p.40040",
+              "player_name": "Anthony Richardson Sr."
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "blake"
+          ],
+          "winning_score": 146.75,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 112.85,
+            "jake": 112.6,
+            "jordan": 103.25,
+            "joey": 111.4,
+            "blake": 146.75,
+            "brian": 89.85,
+            "frank": 120.5,
+            "nick": 115.35,
+            "kyle": 106.55,
+            "rob": 106.05
+          }
+        }
+      },
+      "week_3": {
+        "week": 3,
+        "position_payout": {
+          "position": "TE",
+          "winners": [
+            {
+              "manager_id": "jake",
+              "player_key": "449.p.31019",
+              "player_name": "Dallas Goedert",
+              "score": 22
+            }
+          ],
+          "winning_score": 22,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 6.9,
+              "player_key": "449.p.33392",
+              "player_name": "Kyle Pitts Sr."
+            },
+            "jordan": {
+              "score": 11.6,
+              "player_key": "449.p.40048",
+              "player_name": "Dalton Kincaid"
+            },
+            "blake": {
+              "score": 0,
+              "player_key": "449.p.31056",
+              "player_name": "Mark Andrews"
+            },
+            "frank": {
+              "score": 4,
+              "player_key": "449.p.34010",
+              "player_name": "Trey McBride"
+            },
+            "nick": {
+              "score": 4.6,
+              "player_key": "449.p.40064",
+              "player_name": "Sam LaPorta"
+            },
+            "brian": {
+              "score": 1.9,
+              "player_key": "449.p.29269",
+              "player_name": "Hunter Henry"
+            },
+            "joey": {
+              "score": 5,
+              "player_key": "449.p.26686",
+              "player_name": "Travis Kelce"
+            },
+            "kyle": {
+              "score": 0.9,
+              "player_key": "449.p.34095",
+              "player_name": "Isaiah Likely"
+            },
+            "rob": {
+              "score": 5.6,
+              "player_key": "449.p.40878",
+              "player_name": "Brock Bowers"
+            },
+            "jake": {
+              "score": 22,
+              "player_key": "449.p.31019",
+              "player_name": "Dallas Goedert"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 163.35,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 87.75,
+            "frank": 116.05,
+            "jordan": 117.55,
+            "brian": 163.35,
+            "blake": 67.75,
+            "kyle": 151.85,
+            "nick": 122.6,
+            "joey": 137,
+            "rob": 109.9,
+            "jake": 80.05
+          }
+        }
+      },
+      "week_4": {
+        "week": 4,
+        "position_payout": {
+          "position": "DEF",
+          "winners": [
+            {
+              "manager_id": "nick",
+              "player_key": "449.p.100025",
+              "player_name": "49ers",
+              "score": 24
+            }
+          ],
+          "winning_score": 24,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 10,
+              "player_key": "449.p.100016",
+              "player_name": "Vikings"
+            },
+            "jordan": {
+              "score": 6,
+              "player_key": "449.p.100020",
+              "player_name": "Jets"
+            },
+            "blake": {
+              "score": 12,
+              "player_key": "449.p.100005",
+              "player_name": "Browns"
+            },
+            "frank": {
+              "score": 2,
+              "player_key": "449.p.100023",
+              "player_name": "Steelers"
+            },
+            "nick": {
+              "score": 24,
+              "player_key": "449.p.100025",
+              "player_name": "49ers"
+            },
+            "brian": {
+              "score": 4,
+              "player_key": "449.p.100034",
+              "player_name": "Texans"
+            },
+            "joey": {
+              "score": 6,
+              "player_key": "449.p.100006",
+              "player_name": "Cowboys"
+            },
+            "kyle": {
+              "score": 9,
+              "player_key": "449.p.100003",
+              "player_name": "Bears"
+            },
+            "rob": {
+              "score": 7,
+              "player_key": "449.p.100012",
+              "player_name": "Chiefs"
+            },
+            "jake": {
+              "score": 2,
+              "player_key": "449.p.100015",
+              "player_name": "Dolphins"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "nick"
+          ],
+          "winning_score": 143.4,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 95.9,
+            "joey": 101.6,
+            "jordan": 104.35,
+            "nick": 143.4,
+            "blake": 105.7,
+            "jake": 129.95,
+            "frank": 115.45,
+            "rob": 90.3,
+            "brian": 101.4,
+            "kyle": 127.6
+          }
+        }
+      },
+      "week_5": {
+        "week": 5,
+        "position_payout": {
+          "position": "RB",
+          "winners": [
+            {
+              "manager_id": "joey",
+              "player_key": "449.p.32705",
+              "player_name": "D'Andre Swift",
+              "score": 19
+            }
+          ],
+          "winning_score": 19,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 15.9,
+              "player_key": "449.p.31856",
+              "player_name": "Josh Jacobs"
+            },
+            "jordan": {
+              "score": 15,
+              "player_key": "449.p.34120",
+              "player_name": "Kyren Williams"
+            },
+            "blake": {
+              "score": 9.6,
+              "player_key": "449.p.30180",
+              "player_name": "Alvin Kamara"
+            },
+            "frank": {
+              "score": 16.9,
+              "player_key": "449.p.34019",
+              "player_name": "James Cook III"
+            },
+            "nick": {
+              "score": 11.1,
+              "player_key": "449.p.33996",
+              "player_name": "Kenneth Walker III"
+            },
+            "brian": {
+              "score": 13.5,
+              "player_key": "449.p.41048",
+              "player_name": "Tyrone Tracy Jr."
+            },
+            "joey": {
+              "score": 19,
+              "player_key": "449.p.32705",
+              "player_name": "D'Andre Swift"
+            },
+            "kyle": {
+              "score": 18.2,
+              "player_key": "449.p.30199",
+              "player_name": "Kareem Hunt"
+            },
+            "rob": {
+              "score": 8.1,
+              "player_key": "449.p.34047",
+              "player_name": "Rachaad White"
+            },
+            "jake": {
+              "score": 13.8,
+              "player_key": "449.p.34054",
+              "player_name": "Brian Robinson"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "jake"
+          ],
+          "winning_score": 156.15,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 114.15,
+            "nick": 112.6,
+            "jordan": 101.05,
+            "kyle": 129.5,
+            "blake": 117.3,
+            "frank": 116.2,
+            "brian": 121.35,
+            "jake": 156.15,
+            "joey": 118.6,
+            "rob": 102.4
+          }
+        }
+      },
+      "week_6": {
+        "week": 6,
+        "position_payout": {
+          "position": "WR",
+          "winners": [
+            {
+              "manager_id": "nick",
+              "player_key": "449.p.30197",
+              "player_name": "Chris Godwin Jr.",
+              "score": 30
+            }
+          ],
+          "winning_score": 30,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 20.6,
+              "player_key": "449.p.31883",
+              "player_name": "A.J. Brown"
+            },
+            "jordan": {
+              "score": 16.2,
+              "player_key": "449.p.33967",
+              "player_name": "Jameson Williams"
+            },
+            "blake": {
+              "score": 13.9,
+              "player_key": "449.p.33398",
+              "player_name": "DeVonta Smith"
+            },
+            "frank": {
+              "score": 20.7,
+              "player_key": "449.p.33965",
+              "player_name": "Garrett Wilson"
+            },
+            "nick": {
+              "score": 30,
+              "player_key": "449.p.30197",
+              "player_name": "Chris Godwin Jr."
+            },
+            "brian": {
+              "score": 9.7,
+              "player_key": "449.p.33393",
+              "player_name": "Ja'Marr Chase"
+            },
+            "joey": {
+              "score": 16.7,
+              "player_key": "449.p.28534",
+              "player_name": "Stefon Diggs"
+            },
+            "kyle": {
+              "score": 11.7,
+              "player_key": "449.p.33500",
+              "player_name": "Amon-Ra St. Brown"
+            },
+            "rob": {
+              "score": 18.4,
+              "player_key": "449.p.34088",
+              "player_name": "Romeo Doubs"
+            },
+            "jake": {
+              "score": 16.4,
+              "player_key": "449.p.33963",
+              "player_name": "Drake London"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "nick"
+          ],
+          "winning_score": 154.05,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 137.3,
+            "jordan": 105.45,
+            "blake": 87.6,
+            "joey": 113.2,
+            "frank": 128.05,
+            "brian": 120.45,
+            "nick": 154.05,
+            "rob": 77.4,
+            "kyle": 119.1,
+            "jake": 94.3
+          }
+        }
+      },
+      "week_7": {
+        "week": 7,
+        "position_payout": {
+          "position": "QB",
+          "winners": [
+            {
+              "manager_id": "nick",
+              "player_key": "449.p.31002",
+              "player_name": "Lamar Jackson",
+              "score": 37.25
+            }
+          ],
+          "winning_score": 37.25,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 23.6,
+              "player_key": "449.p.40881",
+              "player_name": "Drake Maye"
+            },
+            "jordan": {
+              "score": 30.7,
+              "player_key": "449.p.30971",
+              "player_name": "Baker Mayfield"
+            },
+            "blake": {
+              "score": 23.9,
+              "player_key": "449.p.32723",
+              "player_name": "Jalen Hurts"
+            },
+            "frank": {
+              "score": 5.3,
+              "player_key": "449.p.40896",
+              "player_name": "Jayden Daniels"
+            },
+            "nick": {
+              "score": 37.25,
+              "player_key": "449.p.31002",
+              "player_name": "Lamar Jackson"
+            },
+            "brian": {
+              "score": 24.25,
+              "player_key": "449.p.30977",
+              "player_name": "Josh Allen"
+            },
+            "joey": {
+              "score": 19.3,
+              "player_key": "449.p.34218",
+              "player_name": "Brock Purdy"
+            },
+            "kyle": {
+              "score": 19,
+              "player_key": "449.p.32696",
+              "player_name": "Jordan Love"
+            },
+            "rob": {
+              "score": 16.75,
+              "player_key": "449.p.32671",
+              "player_name": "Joe Burrow"
+            },
+            "jake": {
+              "score": 6.2,
+              "player_key": "449.p.40030",
+              "player_name": "C.J. Stroud"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 133.45,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 112.7,
+            "rob": 114.65,
+            "jordan": 86.1,
+            "jake": 98.7,
+            "blake": 101.7,
+            "nick": 126.25,
+            "frank": 79.3,
+            "kyle": 118.85,
+            "brian": 133.45,
+            "joey": 108.2
+          }
+        }
+      },
+      "week_8": {
+        "week": 8,
+        "position_payout": {
+          "position": "TE",
+          "winners": [
+            {
+              "manager_id": "jake",
+              "player_key": "449.p.34062",
+              "player_name": "Cade Otton",
+              "score": 24.6
+            }
+          ],
+          "winning_score": 24.6,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 3.9,
+              "player_key": "449.p.32713",
+              "player_name": "Cole Kmet"
+            },
+            "jordan": {
+              "score": 11.1,
+              "player_key": "449.p.40048",
+              "player_name": "Dalton Kincaid"
+            },
+            "blake": {
+              "score": 12.1,
+              "player_key": "449.p.31056",
+              "player_name": "Mark Andrews"
+            },
+            "frank": {
+              "score": 16.9,
+              "player_key": "449.p.34010",
+              "player_name": "Trey McBride"
+            },
+            "nick": {
+              "score": 13.8,
+              "player_key": "449.p.40064",
+              "player_name": "Sam LaPorta"
+            },
+            "brian": {
+              "score": 14.6,
+              "player_key": "449.p.30142",
+              "player_name": "David Njoku"
+            },
+            "joey": {
+              "score": 20,
+              "player_key": "449.p.26686",
+              "player_name": "Travis Kelce"
+            },
+            "kyle": {
+              "score": 11.6,
+              "player_key": "449.p.30136",
+              "player_name": "Evan Engram"
+            },
+            "rob": {
+              "score": 8.3,
+              "player_key": "449.p.40878",
+              "player_name": "Brock Bowers"
+            },
+            "jake": {
+              "score": 24.6,
+              "player_key": "449.p.34062",
+              "player_name": "Cade Otton"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "blake"
+          ],
+          "winning_score": 159.1,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 106.55,
+            "blake": 159.1,
+            "jordan": 113.7,
+            "rob": 96.1,
+            "frank": 138.55,
+            "jake": 138.45,
+            "nick": 119.2,
+            "brian": 117.85,
+            "joey": 134.25,
+            "kyle": 98.7
+          }
+        }
+      },
+      "week_9": {
+        "week": 9,
+        "position_payout": {
+          "position": "DEF",
+          "winners": [
+            {
+              "manager_id": "brian",
+              "player_key": "449.p.100024",
+              "player_name": "Chargers",
+              "score": 19
+            }
+          ],
+          "winning_score": 19,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 12,
+              "player_key": "449.p.100016",
+              "player_name": "Vikings"
+            },
+            "jordan": {
+              "score": 3,
+              "player_key": "449.p.100002",
+              "player_name": "Bills"
+            },
+            "blake": {
+              "score": 11,
+              "player_key": "449.p.100008",
+              "player_name": "Lions"
+            },
+            "frank": {
+              "score": 4,
+              "player_key": "449.p.100028",
+              "player_name": "Commanders"
+            },
+            "nick": {
+              "score": 2,
+              "player_key": "449.p.100012",
+              "player_name": "Chiefs"
+            },
+            "brian": {
+              "score": 19,
+              "player_key": "449.p.100024",
+              "player_name": "Chargers"
+            },
+            "joey": {
+              "score": 11,
+              "player_key": "449.p.100021",
+              "player_name": "Eagles"
+            },
+            "kyle": {
+              "score": 12,
+              "player_key": "449.p.100010",
+              "player_name": "Titans"
+            },
+            "rob": {
+              "score": 3,
+              "player_key": "449.p.100018",
+              "player_name": "Saints"
+            },
+            "jake": {
+              "score": 12,
+              "player_key": "449.p.100004",
+              "player_name": "Bengals"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "kyle"
+          ],
+          "winning_score": 150.55,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 97.75,
+            "brian": 123.75,
+            "jordan": 106.7,
+            "frank": 131.45,
+            "blake": 122.9,
+            "rob": 137.25,
+            "nick": 118.2,
+            "kyle": 150.55,
+            "joey": 123.6,
+            "jake": 133.2
+          }
+        }
+      },
+      "week_10": {
+        "week": 10,
+        "position_payout": {
+          "position": "RB",
+          "winners": [
+            {
+              "manager_id": "brian",
+              "player_key": "449.p.40055",
+              "player_name": "Bijan Robinson",
+              "score": 27.9
+            }
+          ],
+          "winning_score": 27.9,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 17.9,
+              "player_key": "449.p.40196",
+              "player_name": "Chase Brown"
+            },
+            "jordan": {
+              "score": 17.6,
+              "player_key": "449.p.30423",
+              "player_name": "Austin Ekeler"
+            },
+            "blake": {
+              "score": 13.7,
+              "player_key": "449.p.30121",
+              "player_name": "Christian McCaffrey"
+            },
+            "frank": {
+              "score": 15,
+              "player_key": "449.p.34019",
+              "player_name": "James Cook III"
+            },
+            "nick": {
+              "score": 12.1,
+              "player_key": "449.p.31905",
+              "player_name": "David Montgomery"
+            },
+            "brian": {
+              "score": 27.9,
+              "player_key": "449.p.40055",
+              "player_name": "Bijan Robinson"
+            },
+            "joey": {
+              "score": 11.8,
+              "player_key": "449.p.40059",
+              "player_name": "Jahmyr Gibbs"
+            },
+            "kyle": {
+              "score": 16.2,
+              "player_key": "449.p.40993",
+              "player_name": "Bucky Irving"
+            },
+            "rob": {
+              "score": 22.9,
+              "player_key": "449.p.33514",
+              "player_name": "Chuba Hubbard"
+            },
+            "jake": {
+              "score": 19.8,
+              "player_key": "449.p.30218",
+              "player_name": "James Conner"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 151.5,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 111.5,
+            "kyle": 96.3,
+            "jordan": 93.2,
+            "blake": 117.6,
+            "frank": 91.6,
+            "joey": 108.35,
+            "nick": 118.3,
+            "jake": 85.35,
+            "brian": 151.5,
+            "rob": 113.9
+          }
+        }
+      },
+      "week_11": {
+        "week": 11,
+        "position_payout": {
+          "position": "WR",
+          "winners": [
+            {
+              "manager_id": "kyle",
+              "player_key": "449.p.33500",
+              "player_name": "Amon-Ra St. Brown",
+              "score": 33.2
+            }
+          ],
+          "winning_score": 33.2,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 16.9,
+              "player_key": "449.p.40126",
+              "player_name": "Josh Downs"
+            },
+            "jordan": {
+              "score": 20.6,
+              "player_key": "449.p.33967",
+              "player_name": "Jameson Williams"
+            },
+            "blake": {
+              "score": 21.8,
+              "player_key": "449.p.40168",
+              "player_name": "Puka Nacua"
+            },
+            "frank": {
+              "score": 15.6,
+              "player_key": "449.p.29399",
+              "player_name": "Tyreek Hill"
+            },
+            "nick": {
+              "score": 25.6,
+              "player_key": "449.p.30182",
+              "player_name": "Cooper Kupp"
+            },
+            "brian": {
+              "score": 23,
+              "player_key": "449.p.33393",
+              "player_name": "Ja'Marr Chase"
+            },
+            "joey": {
+              "score": 25.3,
+              "player_key": "449.p.32703",
+              "player_name": "Tee Higgins"
+            },
+            "kyle": {
+              "score": 33.2,
+              "player_key": "449.p.33500",
+              "player_name": "Amon-Ra St. Brown"
+            },
+            "rob": {
+              "score": 13.6,
+              "player_key": "449.p.40042",
+              "player_name": "Jordan Addison"
+            },
+            "jake": {
+              "score": 20.1,
+              "player_key": "449.p.32887",
+              "player_name": "Jauan Jennings"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "zef"
+          ],
+          "winning_score": 174.45,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 174.45,
+            "jake": 107.05,
+            "jordan": 129.85,
+            "joey": 123.05,
+            "blake": 100.95,
+            "brian": 136.5,
+            "frank": 124.65,
+            "nick": 120.35,
+            "kyle": 112.55,
+            "rob": 110.6
+          }
+        }
+      },
+      "week_12": {
+        "week": 12,
+        "position_payout": {
+          "position": "QB",
+          "winners": [
+            {
+              "manager_id": "frank",
+              "player_key": "449.p.40896",
+              "player_name": "Jayden Daniels",
+              "score": 33.15
+            }
+          ],
+          "winning_score": 33.15,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 19.8,
+              "player_key": "449.p.32676",
+              "player_name": "Justin Herbert"
+            },
+            "jordan": {
+              "score": 22.15,
+              "player_key": "449.p.40875",
+              "player_name": "Bo Nix"
+            },
+            "blake": {
+              "score": 16.85,
+              "player_key": "449.p.32723",
+              "player_name": "Jalen Hurts"
+            },
+            "frank": {
+              "score": 33.15,
+              "player_key": "449.p.40896",
+              "player_name": "Jayden Daniels"
+            },
+            "nick": {
+              "score": 24.35,
+              "player_key": "449.p.31002",
+              "player_name": "Lamar Jackson"
+            },
+            "brian": {
+              "score": 14.9,
+              "player_key": "449.p.26662",
+              "player_name": "Geno Smith"
+            },
+            "joey": {
+              "score": 13.15,
+              "player_key": "449.p.31833",
+              "player_name": "Kyler Murray"
+            },
+            "kyle": {
+              "score": 21.6,
+              "player_key": "449.p.30971",
+              "player_name": "Baker Mayfield"
+            },
+            "rob": {
+              "score": 31.65,
+              "player_key": "449.p.32675",
+              "player_name": "Tua Tagovailoa"
+            },
+            "jake": {
+              "score": 13.45,
+              "player_key": "449.p.29235",
+              "player_name": "Jared Goff"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "frank"
+          ],
+          "winning_score": 144.55,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 140.4,
+            "frank": 144.55,
+            "jordan": 102.35,
+            "brian": 103.6,
+            "blake": 91.55,
+            "kyle": 105.3,
+            "nick": 106.35,
+            "joey": 106.45,
+            "rob": 133.55,
+            "jake": 81.85
+          }
+        }
+      },
+      "week_13": {
+        "week": 13,
+        "position_payout": {
+          "position": "TE",
+          "winners": [
+            {
+              "manager_id": "nick",
+              "player_key": "449.p.40878",
+              "player_name": "Brock Bowers",
+              "score": 25.2
+            }
+          ],
+          "winning_score": 25.2,
+          "payout_each": 20,
+          "all_best_scores": {
+            "jordan": {
+              "score": 7.6,
+              "player_key": "449.p.30136",
+              "player_name": "Evan Engram"
+            },
+            "blake": {
+              "score": 15.9,
+              "player_key": "449.p.31056",
+              "player_name": "Mark Andrews"
+            },
+            "frank": {
+              "score": 15.6,
+              "player_key": "449.p.34010",
+              "player_name": "Trey McBride"
+            },
+            "nick": {
+              "score": 25.2,
+              "player_key": "449.p.40878",
+              "player_name": "Brock Bowers"
+            },
+            "brian": {
+              "score": 21.7,
+              "player_key": "449.p.30142",
+              "player_name": "David Njoku"
+            },
+            "joey": {
+              "score": 10.3,
+              "player_key": "449.p.26686",
+              "player_name": "Travis Kelce"
+            },
+            "kyle": {
+              "score": 4.3,
+              "player_key": "449.p.31840",
+              "player_name": "T.J. Hockenson"
+            },
+            "rob": {
+              "score": 16.3,
+              "player_key": "449.p.30213",
+              "player_name": "Jonnu Smith"
+            },
+            "jake": {
+              "score": 1.2,
+              "player_key": "449.p.30259",
+              "player_name": "George Kittle"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 154,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 129.6,
+            "joey": 123.35,
+            "jordan": 101.1,
+            "nick": 102.5,
+            "blake": 112.1,
+            "jake": 116.1,
+            "frank": 142.1,
+            "rob": 106.85,
+            "brian": 154,
+            "kyle": 95.35
+          }
+        }
+      },
+      "week_14": {
+        "week": 14,
+        "position_payout": {
+          "position": "DEF",
+          "winners": [
+            {
+              "manager_id": "joey",
+              "player_key": "449.p.100025",
+              "player_name": "49ers",
+              "score": 13
+            }
+          ],
+          "winning_score": 13,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 9,
+              "player_key": "449.p.100016",
+              "player_name": "Vikings"
+            },
+            "jordan": {
+              "score": 12,
+              "player_key": "449.p.100018",
+              "player_name": "Saints"
+            },
+            "blake": {
+              "score": 10,
+              "player_key": "449.p.100027",
+              "player_name": "Buccaneers"
+            },
+            "frank": {
+              "score": 7,
+              "player_key": "449.p.100021",
+              "player_name": "Eagles"
+            },
+            "nick": {
+              "score": 5,
+              "player_key": "449.p.100012",
+              "player_name": "Chiefs"
+            },
+            "brian": {
+              "score": 8,
+              "player_key": "449.p.100026",
+              "player_name": "Seahawks"
+            },
+            "joey": {
+              "score": 13,
+              "player_key": "449.p.100025",
+              "player_name": "49ers"
+            },
+            "kyle": {
+              "score": 12,
+              "player_key": "449.p.100023",
+              "player_name": "Steelers"
+            },
+            "rob": {
+              "score": 10,
+              "player_key": "449.p.100004",
+              "player_name": "Bengals"
+            },
+            "jake": {
+              "score": 3,
+              "player_key": "449.p.100015",
+              "player_name": "Dolphins"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 191.2,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 116.7,
+            "nick": 123.65,
+            "jordan": 102.3,
+            "kyle": 74.9,
+            "blake": 143.6,
+            "frank": 141.75,
+            "brian": 191.2,
+            "jake": 127.25,
+            "joey": 135.05,
+            "rob": 143.65
+          }
+        }
+      },
+      "week_15": {
+        "week": 15,
+        "position_payout": {
+          "position": "RB",
+          "winners": [
+            {
+              "manager_id": "nick",
+              "player_key": "449.p.30218",
+              "player_name": "James Conner",
+              "score": 28.3
+            }
+          ],
+          "winning_score": 28.3,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 24.8,
+              "player_key": "449.p.40196",
+              "player_name": "Chase Brown"
+            },
+            "jordan": {
+              "score": 12.2,
+              "player_key": "449.p.34120",
+              "player_name": "Kyren Williams"
+            },
+            "blake": {
+              "score": 15,
+              "player_key": "449.p.30180",
+              "player_name": "Alvin Kamara"
+            },
+            "frank": {
+              "score": 25.8,
+              "player_key": "449.p.34019",
+              "player_name": "James Cook III"
+            },
+            "nick": {
+              "score": 28.3,
+              "player_key": "449.p.30218",
+              "player_name": "James Conner"
+            },
+            "brian": {
+              "score": 17.6,
+              "player_key": "449.p.30295",
+              "player_name": "Aaron Jones Sr."
+            },
+            "joey": {
+              "score": 25.9,
+              "player_key": "449.p.40059",
+              "player_name": "Jahmyr Gibbs"
+            },
+            "kyle": {
+              "score": 9.6,
+              "player_key": "449.p.32711",
+              "player_name": "Jonathan Taylor"
+            },
+            "rob": {
+              "score": 9,
+              "player_key": "449.p.33508",
+              "player_name": "Rhamondre Stevenson"
+            },
+            "jake": {
+              "score": 10.2,
+              "player_key": "449.p.34054",
+              "player_name": "Brian Robinson"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "jake"
+          ],
+          "winning_score": 166.1,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 112.15,
+            "jordan": 94.6,
+            "blake": 101.5,
+            "joey": 156.2,
+            "frank": 112.2,
+            "brian": 155.2,
+            "nick": 118.7,
+            "rob": 115.45,
+            "kyle": 125.55,
+            "jake": 166.1
+          }
+        }
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_17": {
+        "week": 17,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "frank",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "joey",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "brian",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "frank",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "brian",
+          "total_points": 1995.85,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2023": {
+      "week_1": {
+        "week": 1,
+        "position_payout": {
+          "position": "TE",
+          "winners": [
+            {
+              "manager_id": "brian",
+              "player_key": "423.p.31840",
+              "player_name": "T.J. Hockenson",
+              "score": 7.5
+            }
+          ],
+          "winning_score": 7.5,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 6.4,
+              "player_key": "423.p.40064",
+              "player_name": "Sam LaPorta"
+            },
+            "jordan": {
+              "score": 1.4,
+              "player_key": "423.p.31107",
+              "player_name": "Dalton Schultz"
+            },
+            "blake": {
+              "score": 3.3,
+              "player_key": "423.p.30157",
+              "player_name": "Gerald Everett"
+            },
+            "frank": {
+              "score": 5.1,
+              "player_key": "423.p.28592",
+              "player_name": "Darren Waller"
+            },
+            "nick": {
+              "score": 3.4,
+              "player_key": "423.p.30259",
+              "player_name": "George Kittle"
+            },
+            "brian": {
+              "score": 7.5,
+              "player_key": "423.p.31840",
+              "player_name": "T.J. Hockenson"
+            },
+            "joey": {
+              "score": 0,
+              "player_key": "423.p.31019",
+              "player_name": "Dallas Goedert"
+            },
+            "kyle": {
+              "score": 5.4,
+              "player_key": "423.p.33392",
+              "player_name": "Kyle Pitts Sr."
+            },
+            "jake": {
+              "score": 3.4,
+              "player_key": "423.p.30142",
+              "player_name": "David Njoku"
+            },
+            "rob": {
+              "score": 7.4,
+              "player_key": "423.p.30136",
+              "player_name": "Evan Engram"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "frank"
+          ],
+          "winning_score": 117.4,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 106.3,
+            "joey": 96.35,
+            "jordan": 84.35,
+            "nick": 106.7,
+            "blake": 114.95,
+            "frank": 117.4,
+            "brian": 90.6,
+            "kyle": 91.1,
+            "jake": 104.05,
+            "rob": 91.2
+          }
+        }
+      },
+      "week_2": {
+        "week": 2,
+        "position_payout": {
+          "position": "QB",
+          "winners": [
+            {
+              "manager_id": "rob",
+              "player_key": "423.p.32723",
+              "player_name": "Jalen Hurts",
+              "score": 27.15
+            }
+          ],
+          "winning_score": 27.15,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 16.85,
+              "player_key": "423.p.33399",
+              "player_name": "Justin Fields"
+            },
+            "jordan": {
+              "score": 11.4,
+              "player_key": "423.p.33389",
+              "player_name": "Trevor Lawrence"
+            },
+            "blake": {
+              "score": 25.25,
+              "player_key": "423.p.31002",
+              "player_name": "Lamar Jackson"
+            },
+            "frank": {
+              "score": 14.75,
+              "player_key": "423.p.32675",
+              "player_name": "Tua Tagovailoa"
+            },
+            "nick": {
+              "score": 26.4,
+              "player_key": "423.p.30977",
+              "player_name": "Josh Allen"
+            },
+            "brian": {
+              "score": 24.25,
+              "player_key": "423.p.30123",
+              "player_name": "Patrick Mahomes"
+            },
+            "joey": {
+              "score": 13.95,
+              "player_key": "423.p.30125",
+              "player_name": "Deshaun Watson"
+            },
+            "kyle": {
+              "score": 17.6,
+              "player_key": "423.p.32671",
+              "player_name": "Joe Burrow"
+            },
+            "jake": {
+              "score": 25.25,
+              "player_key": "423.p.32676",
+              "player_name": "Justin Herbert"
+            },
+            "rob": {
+              "score": 27.15,
+              "player_key": "423.p.32723",
+              "player_name": "Jalen Hurts"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 155.35,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 95.35,
+            "kyle": 133.6,
+            "jordan": 132.65,
+            "blake": 136.25,
+            "frank": 102.65,
+            "jake": 77.75,
+            "nick": 97,
+            "brian": 155.35,
+            "joey": 94.55,
+            "rob": 131.05
+          }
+        }
+      },
+      "week_3": {
+        "week": 3,
+        "position_payout": {
+          "position": "DEF",
+          "winners": [
+            {
+              "manager_id": "kyle",
+              "player_key": "423.p.100002",
+              "player_name": "Bills",
+              "score": 32
+            }
+          ],
+          "winning_score": 32,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 12,
+              "player_key": "423.p.100012",
+              "player_name": "Chiefs"
+            },
+            "jordan": {
+              "score": 8,
+              "player_key": "423.p.100033",
+              "player_name": "Ravens"
+            },
+            "blake": {
+              "score": 13,
+              "player_key": "423.p.100018",
+              "player_name": "Saints"
+            },
+            "frank": {
+              "score": 8,
+              "player_key": "423.p.100025",
+              "player_name": "49ers"
+            },
+            "nick": {
+              "score": 1,
+              "player_key": "423.p.100006",
+              "player_name": "Cowboys"
+            },
+            "brian": {
+              "score": 13,
+              "player_key": "423.p.100023",
+              "player_name": "Steelers"
+            },
+            "joey": {
+              "score": -4,
+              "player_key": "423.p.100030",
+              "player_name": "Jaguars"
+            },
+            "kyle": {
+              "score": 32,
+              "player_key": "423.p.100002",
+              "player_name": "Bills"
+            },
+            "jake": {
+              "score": 10,
+              "player_key": "423.p.100017",
+              "player_name": "Patriots"
+            },
+            "rob": {
+              "score": 12,
+              "player_key": "423.p.100021",
+              "player_name": "Eagles"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "frank"
+          ],
+          "winning_score": 157.3,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 139.65,
+            "brian": 112.5,
+            "jordan": 115.55,
+            "jake": 127.95,
+            "blake": 120.2,
+            "nick": 124.1,
+            "frank": 157.3,
+            "joey": 109.35,
+            "kyle": 141.15,
+            "rob": 101.55
+          }
+        }
+      },
+      "week_4": {
+        "week": 4,
+        "position_payout": {
+          "position": "RB",
+          "winners": [
+            {
+              "manager_id": "brian",
+              "player_key": "423.p.30121",
+              "player_name": "Christian McCaffrey",
+              "score": 45.2
+            }
+          ],
+          "winning_score": 45.2,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 15.9,
+              "player_key": "423.p.32705",
+              "player_name": "D'Andre Swift"
+            },
+            "jordan": {
+              "score": 33.1,
+              "player_key": "423.p.31905",
+              "player_name": "David Montgomery"
+            },
+            "blake": {
+              "score": 4.7,
+              "player_key": "423.p.31885",
+              "player_name": "Miles Sanders"
+            },
+            "frank": {
+              "score": 8.1,
+              "player_key": "423.p.30161",
+              "player_name": "Joe Mixon"
+            },
+            "nick": {
+              "score": 10.8,
+              "player_key": "423.p.33412",
+              "player_name": "Najee Harris"
+            },
+            "brian": {
+              "score": 45.2,
+              "player_key": "423.p.30121",
+              "player_name": "Christian McCaffrey"
+            },
+            "joey": {
+              "score": 16.2,
+              "player_key": "423.p.40055",
+              "player_name": "Bijan Robinson"
+            },
+            "kyle": {
+              "score": 23.9,
+              "player_key": "423.p.29279",
+              "player_name": "Derrick Henry"
+            },
+            "jake": {
+              "score": 14.9,
+              "player_key": "423.p.30180",
+              "player_name": "Alvin Kamara"
+            },
+            "rob": {
+              "score": 23.9,
+              "player_key": "423.p.31856",
+              "player_name": "Josh Jacobs"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 148.75,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 107.95,
+            "rob": 100.75,
+            "jordan": 141.85,
+            "joey": 96.7,
+            "blake": 114.8,
+            "brian": 148.75,
+            "frank": 71.7,
+            "kyle": 87.2,
+            "nick": 148.7,
+            "jake": 110.35
+          }
+        }
+      },
+      "week_5": {
+        "week": 5,
+        "position_payout": {
+          "position": "WR",
+          "winners": [
+            {
+              "manager_id": "zef",
+              "player_key": "423.p.30994",
+              "player_name": "DJ Moore",
+              "score": 45
+            }
+          ],
+          "winning_score": 45,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 45,
+              "player_key": "423.p.30994",
+              "player_name": "DJ Moore"
+            },
+            "jordan": {
+              "score": 11.4,
+              "player_key": "423.p.31017",
+              "player_name": "Christian Kirk"
+            },
+            "blake": {
+              "score": 19,
+              "player_key": "423.p.32798",
+              "player_name": "Gabe Davis"
+            },
+            "frank": {
+              "score": 17.1,
+              "player_key": "423.p.30996",
+              "player_name": "Calvin Ridley"
+            },
+            "nick": {
+              "score": 22.2,
+              "player_key": "423.p.27277",
+              "player_name": "Adam Thielen"
+            },
+            "brian": {
+              "score": 44.7,
+              "player_key": "423.p.33393",
+              "player_name": "Ja'Marr Chase"
+            },
+            "joey": {
+              "score": 16.6,
+              "player_key": "423.p.40168",
+              "player_name": "Puka Nacua"
+            },
+            "kyle": {
+              "score": 15.6,
+              "player_key": "423.p.30230",
+              "player_name": "Josh Reynolds"
+            },
+            "jake": {
+              "score": 15.7,
+              "player_key": "423.p.31883",
+              "player_name": "A.J. Brown"
+            },
+            "rob": {
+              "score": 18,
+              "player_key": "423.p.26650",
+              "player_name": "DeAndre Hopkins"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "zef"
+          ],
+          "winning_score": 195,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 195,
+            "frank": 133.4,
+            "jordan": 93.45,
+            "kyle": 69,
+            "blake": 93,
+            "jake": 101.8,
+            "nick": 126.85,
+            "joey": 96.7,
+            "brian": 118.35,
+            "rob": 114.55
+          }
+        }
+      },
+      "week_6": {
+        "week": 6,
+        "position_payout": {
+          "position": "TE",
+          "winners": [
+            {
+              "manager_id": "jordan",
+              "player_key": "423.p.26686",
+              "player_name": "Travis Kelce",
+              "score": 16.9
+            }
+          ],
+          "winning_score": 16.9,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 5.6,
+              "player_key": "423.p.40064",
+              "player_name": "Sam LaPorta"
+            },
+            "jordan": {
+              "score": 16.9,
+              "player_key": "423.p.26686",
+              "player_name": "Travis Kelce"
+            },
+            "blake": {
+              "score": 8.9,
+              "player_key": "423.p.31056",
+              "player_name": "Mark Andrews"
+            },
+            "frank": {
+              "score": 6.8,
+              "player_key": "423.p.28592",
+              "player_name": "Darren Waller"
+            },
+            "nick": {
+              "score": 0.6,
+              "player_key": "423.p.30259",
+              "player_name": "George Kittle"
+            },
+            "brian": {
+              "score": 8,
+              "player_key": "423.p.31840",
+              "player_name": "T.J. Hockenson"
+            },
+            "joey": {
+              "score": 6.7,
+              "player_key": "423.p.31019",
+              "player_name": "Dallas Goedert"
+            },
+            "kyle": {
+              "score": 0.7,
+              "player_key": "423.p.27648",
+              "player_name": "Logan Thomas"
+            },
+            "jake": {
+              "score": 3.2,
+              "player_key": "423.p.26658",
+              "player_name": "Zach Ertz"
+            },
+            "rob": {
+              "score": 7.6,
+              "player_key": "423.p.30136",
+              "player_name": "Evan Engram"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "frank"
+          ],
+          "winning_score": 141.3,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 127.7,
+            "jordan": 111.65,
+            "blake": 95.35,
+            "joey": 104.8,
+            "frank": 141.3,
+            "rob": 67,
+            "nick": 112.65,
+            "kyle": 71.75,
+            "brian": 115.4,
+            "jake": 111.05
+          }
+        }
+      },
+      "week_7": {
+        "week": 7,
+        "position_payout": {
+          "position": "QB",
+          "winners": [
+            {
+              "manager_id": "brian",
+              "player_key": "423.p.30123",
+              "player_name": "Patrick Mahomes",
+              "score": 38.1
+            }
+          ],
+          "winning_score": 38.1,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 26.05,
+              "player_key": "423.p.32723",
+              "player_name": "Jalen Hurts"
+            },
+            "jordan": {
+              "score": 20.1,
+              "player_key": "423.p.33389",
+              "player_name": "Trevor Lawrence"
+            },
+            "blake": {
+              "score": 37.45,
+              "player_key": "423.p.31002",
+              "player_name": "Lamar Jackson"
+            },
+            "frank": {
+              "score": 12.5,
+              "player_key": "423.p.32675",
+              "player_name": "Tua Tagovailoa"
+            },
+            "nick": {
+              "score": 26.95,
+              "player_key": "423.p.30977",
+              "player_name": "Josh Allen"
+            },
+            "brian": {
+              "score": 38.1,
+              "player_key": "423.p.30123",
+              "player_name": "Patrick Mahomes"
+            },
+            "joey": {
+              "score": 17.1,
+              "player_key": "423.p.32696",
+              "player_name": "Jordan Love"
+            },
+            "kyle": {
+              "score": 15.95,
+              "player_key": "423.p.26662",
+              "player_name": "Geno Smith"
+            },
+            "jake": {
+              "score": 13.45,
+              "player_key": "423.p.32676",
+              "player_name": "Justin Herbert"
+            },
+            "rob": {
+              "score": 12.2,
+              "player_key": "423.p.29235",
+              "player_name": "Jared Goff"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 143.5,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 109.25,
+            "nick": 131.95,
+            "jordan": 139.2,
+            "rob": 112.1,
+            "blake": 124.65,
+            "kyle": 87.55,
+            "frank": 63.2,
+            "brian": 143.5,
+            "joey": 94,
+            "jake": 115.55
+          }
+        }
+      },
+      "week_8": {
+        "week": 8,
+        "position_payout": {
+          "position": "DEF",
+          "winners": [
+            {
+              "manager_id": "joey",
+              "player_key": "423.p.100012",
+              "player_name": "Chiefs",
+              "score": 11
+            }
+          ],
+          "winning_score": 11,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 8,
+              "player_key": "423.p.100020",
+              "player_name": "Jets"
+            },
+            "jordan": {
+              "score": 8,
+              "player_key": "423.p.100033",
+              "player_name": "Ravens"
+            },
+            "blake": {
+              "score": 4,
+              "player_key": "423.p.100018",
+              "player_name": "Saints"
+            },
+            "frank": {
+              "score": 4,
+              "player_key": "423.p.100025",
+              "player_name": "49ers"
+            },
+            "nick": {
+              "score": 5,
+              "player_key": "423.p.100005",
+              "player_name": "Browns"
+            },
+            "brian": {
+              "score": 3,
+              "player_key": "423.p.100001",
+              "player_name": "Falcons"
+            },
+            "joey": {
+              "score": 11,
+              "player_key": "423.p.100012",
+              "player_name": "Chiefs"
+            },
+            "kyle": {
+              "score": 7,
+              "player_key": "423.p.100002",
+              "player_name": "Bills"
+            },
+            "jake": {
+              "score": 8,
+              "player_key": "423.p.100015",
+              "player_name": "Dolphins"
+            },
+            "rob": {
+              "score": 5,
+              "player_key": "423.p.100021",
+              "player_name": "Eagles"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "zef"
+          ],
+          "winning_score": 165.45,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 165.45,
+            "blake": 111.35,
+            "jordan": 104,
+            "frank": 89.7,
+            "nick": 124.3,
+            "rob": 111.2,
+            "brian": 131,
+            "joey": 90.1,
+            "kyle": 108.35,
+            "jake": 149.4
+          }
+        }
+      },
+      "week_9": {
+        "week": 9,
+        "position_payout": {
+          "position": "RB",
+          "winners": [
+            {
+              "manager_id": "zef",
+              "player_key": "423.p.31856",
+              "player_name": "Josh Jacobs",
+              "score": 21.8
+            }
+          ],
+          "winning_score": 21.8,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 21.8,
+              "player_key": "423.p.31856",
+              "player_name": "Josh Jacobs"
+            },
+            "jordan": {
+              "score": 12.8,
+              "player_key": "423.p.30972",
+              "player_name": "Saquon Barkley"
+            },
+            "blake": {
+              "score": 15.9,
+              "player_key": "423.p.30295",
+              "player_name": "Aaron Jones Sr."
+            },
+            "frank": {
+              "score": 15.3,
+              "player_key": "423.p.30161",
+              "player_name": "Joe Mixon"
+            },
+            "nick": {
+              "score": 14.6,
+              "player_key": "423.p.33412",
+              "player_name": "Najee Harris"
+            },
+            "brian": {
+              "score": 17.2,
+              "player_key": "423.p.31424",
+              "player_name": "Gus Edwards"
+            },
+            "joey": {
+              "score": 10.2,
+              "player_key": "423.p.34112",
+              "player_name": "Jerome Ford"
+            },
+            "kyle": {
+              "score": 20.9,
+              "player_key": "423.p.33508",
+              "player_name": "Rhamondre Stevenson"
+            },
+            "jake": {
+              "score": 17.7,
+              "player_key": "423.p.29279",
+              "player_name": "Derrick Henry"
+            },
+            "rob": {
+              "score": 8,
+              "player_key": "423.p.33991",
+              "player_name": "Breece Hall"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "zef"
+          ],
+          "winning_score": 120.25,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 120.25,
+            "jake": 113.8,
+            "jordan": 98.2,
+            "brian": 99.05,
+            "blake": 83.45,
+            "rob": 78.5,
+            "frank": 100.85,
+            "nick": 108.1,
+            "joey": 120,
+            "kyle": 116.4
+          }
+        }
+      },
+      "week_10": {
+        "week": 10,
+        "position_payout": {
+          "position": "WR",
+          "winners": [
+            {
+              "manager_id": "frank",
+              "player_key": "423.p.26699",
+              "player_name": "Keenan Allen",
+              "score": 35
+            }
+          ],
+          "winning_score": 35,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 34,
+              "player_key": "423.p.32687",
+              "player_name": "CeeDee Lamb"
+            },
+            "jordan": {
+              "score": 11.4,
+              "player_key": "423.p.31017",
+              "player_name": "Christian Kirk"
+            },
+            "blake": {
+              "score": 19.2,
+              "player_key": "423.p.28457",
+              "player_name": "Tyler Lockett"
+            },
+            "frank": {
+              "score": 35,
+              "player_key": "423.p.26699",
+              "player_name": "Keenan Allen"
+            },
+            "nick": {
+              "score": 26.5,
+              "player_key": "423.p.33500",
+              "player_name": "Amon-Ra St. Brown"
+            },
+            "brian": {
+              "score": 20.9,
+              "player_key": "423.p.33393",
+              "player_name": "Ja'Marr Chase"
+            },
+            "joey": {
+              "score": 15.7,
+              "player_key": "423.p.29288",
+              "player_name": "Tyler Boyd"
+            },
+            "kyle": {
+              "score": 23.3,
+              "player_key": "423.p.27535",
+              "player_name": "Mike Evans"
+            },
+            "jake": {
+              "score": 15.9,
+              "player_key": "423.p.40097",
+              "player_name": "Tank Dell"
+            },
+            "rob": {
+              "score": 8.9,
+              "player_key": "423.p.40042",
+              "player_name": "Jordan Addison"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "kyle"
+          ],
+          "winning_score": 145.15,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 107.2,
+            "joey": 106.5,
+            "jordan": 105.7,
+            "nick": 131.95,
+            "blake": 126.85,
+            "frank": 122.9,
+            "brian": 128.5,
+            "kyle": 145.15,
+            "jake": 117.05,
+            "rob": 110.65
+          }
+        }
+      },
+      "week_11": {
+        "week": 11,
+        "position_payout": {
+          "position": "TE",
+          "winners": [
+            {
+              "manager_id": "nick",
+              "player_key": "423.p.30259",
+              "player_name": "George Kittle",
+              "score": 18.9
+            }
+          ],
+          "winning_score": 18.9,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 5.3,
+              "player_key": "423.p.40064",
+              "player_name": "Sam LaPorta"
+            },
+            "jordan": {
+              "score": 11.9,
+              "player_key": "423.p.26686",
+              "player_name": "Travis Kelce"
+            },
+            "blake": {
+              "score": 3.3,
+              "player_key": "423.p.31056",
+              "player_name": "Mark Andrews"
+            },
+            "frank": {
+              "score": 3.5,
+              "player_key": "423.p.32713",
+              "player_name": "Cole Kmet"
+            },
+            "nick": {
+              "score": 18.9,
+              "player_key": "423.p.30259",
+              "player_name": "George Kittle"
+            },
+            "brian": {
+              "score": 7.5,
+              "player_key": "423.p.31840",
+              "player_name": "T.J. Hockenson"
+            },
+            "joey": {
+              "score": 10.2,
+              "player_key": "423.p.31107",
+              "player_name": "Dalton Schultz"
+            },
+            "kyle": {
+              "score": 6.8,
+              "player_key": "423.p.34010",
+              "player_name": "Trey McBride"
+            },
+            "jake": {
+              "score": 7.6,
+              "player_key": "423.p.40048",
+              "player_name": "Dalton Kincaid"
+            },
+            "rob": {
+              "score": 4.9,
+              "player_key": "423.p.30136",
+              "player_name": "Evan Engram"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "nick"
+          ],
+          "winning_score": 130.85,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 120.7,
+            "kyle": 111.3,
+            "jordan": 104.5,
+            "blake": 116.5,
+            "frank": 117.45,
+            "jake": 111.05,
+            "nick": 130.85,
+            "brian": 110.25,
+            "joey": 104.95,
+            "rob": 107.1
+          }
+        }
+      },
+      "week_12": {
+        "week": 12,
+        "position_payout": {
+          "position": "QB",
+          "winners": [
+            {
+              "manager_id": "kyle",
+              "player_key": "423.p.30977",
+              "player_name": "Josh Allen",
+              "score": 43.05
+            }
+          ],
+          "winning_score": 43.05,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 36.5,
+              "player_key": "423.p.32723",
+              "player_name": "Jalen Hurts"
+            },
+            "jordan": {
+              "score": 33.9,
+              "player_key": "423.p.40030",
+              "player_name": "C.J. Stroud"
+            },
+            "blake": {
+              "score": 16.75,
+              "player_key": "423.p.31002",
+              "player_name": "Lamar Jackson"
+            },
+            "frank": {
+              "score": 10.25,
+              "player_key": "423.p.32675",
+              "player_name": "Tua Tagovailoa"
+            },
+            "nick": {
+              "score": 23,
+              "player_key": "423.p.31833",
+              "player_name": "Kyler Murray"
+            },
+            "brian": {
+              "score": 23.8,
+              "player_key": "423.p.30123",
+              "player_name": "Patrick Mahomes"
+            },
+            "joey": {
+              "score": 35.55,
+              "player_key": "423.p.29369",
+              "player_name": "Dak Prescott"
+            },
+            "kyle": {
+              "score": 43.05,
+              "player_key": "423.p.30977",
+              "player_name": "Josh Allen"
+            },
+            "jake": {
+              "score": 12.55,
+              "player_key": "423.p.34218",
+              "player_name": "Brock Purdy"
+            },
+            "rob": {
+              "score": 12.75,
+              "player_key": "423.p.33399",
+              "player_name": "Justin Fields"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "brian"
+          ],
+          "winning_score": 167.4,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 150.9,
+            "brian": 167.4,
+            "jordan": 115.5,
+            "jake": 124.65,
+            "blake": 90.85,
+            "nick": 125.1,
+            "frank": 120.45,
+            "joey": 107.55,
+            "kyle": 157.25,
+            "rob": 93.85
+          }
+        }
+      },
+      "week_13": {
+        "week": 13,
+        "position_payout": {
+          "position": "DEF",
+          "winners": [
+            {
+              "manager_id": "blake",
+              "player_key": "423.p.100024",
+              "player_name": "Chargers",
+              "score": 17
+            },
+            {
+              "manager_id": "kyle",
+              "player_key": "423.p.100001",
+              "player_name": "Falcons",
+              "score": 17
+            }
+          ],
+          "winning_score": 17,
+          "payout_each": 10,
+          "all_best_scores": {
+            "zef": {
+              "score": 2,
+              "player_key": "423.p.100023",
+              "player_name": "Steelers"
+            },
+            "jordan": {
+              "score": 9,
+              "player_key": "423.p.100020",
+              "player_name": "Jets"
+            },
+            "blake": {
+              "score": 17,
+              "player_key": "423.p.100024",
+              "player_name": "Chargers"
+            },
+            "frank": {
+              "score": 4,
+              "player_key": "423.p.100030",
+              "player_name": "Jaguars"
+            },
+            "nick": {
+              "score": -1,
+              "player_key": "423.p.100005",
+              "player_name": "Browns"
+            },
+            "brian": {
+              "score": 10,
+              "player_key": "423.p.100014",
+              "player_name": "Rams"
+            },
+            "joey": {
+              "score": 2,
+              "player_key": "423.p.100012",
+              "player_name": "Chiefs"
+            },
+            "kyle": {
+              "score": 17,
+              "player_key": "423.p.100001",
+              "player_name": "Falcons"
+            },
+            "jake": {
+              "score": 2,
+              "player_key": "423.p.100006",
+              "player_name": "Cowboys"
+            },
+            "rob": {
+              "score": 10,
+              "player_key": "423.p.100027",
+              "player_name": "Buccaneers"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "zef"
+          ],
+          "winning_score": 159.5,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 159.5,
+            "rob": 134.85,
+            "jordan": 80.9,
+            "joey": 110.25,
+            "blake": 98.9,
+            "brian": 150.75,
+            "frank": 116.6,
+            "kyle": 148.05,
+            "nick": 89.25,
+            "jake": 143.6
+          }
+        }
+      },
+      "week_14": {
+        "week": 14,
+        "position_payout": {
+          "position": "RB",
+          "winners": [
+            {
+              "manager_id": "zef",
+              "player_key": "423.p.34019",
+              "player_name": "James Cook III",
+              "score": 22.6
+            }
+          ],
+          "winning_score": 22.6,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 22.6,
+              "player_key": "423.p.34019",
+              "player_name": "James Cook III"
+            },
+            "jordan": {
+              "score": 21.6,
+              "player_key": "423.p.30972",
+              "player_name": "Saquon Barkley"
+            },
+            "blake": {
+              "score": 15.7,
+              "player_key": "423.p.40059",
+              "player_name": "Jahmyr Gibbs"
+            },
+            "frank": {
+              "score": 22.5,
+              "player_key": "423.p.28654",
+              "player_name": "Raheem Mostert"
+            },
+            "nick": {
+              "score": 17.3,
+              "player_key": "423.p.40055",
+              "player_name": "Bijan Robinson"
+            },
+            "brian": {
+              "score": 15.8,
+              "player_key": "423.p.30121",
+              "player_name": "Christian McCaffrey"
+            },
+            "joey": {
+              "score": 13.1,
+              "player_key": "423.p.31960",
+              "player_name": "Tony Pollard"
+            },
+            "kyle": {
+              "score": 18.5,
+              "player_key": "423.p.30423",
+              "player_name": "Austin Ekeler"
+            },
+            "jake": {
+              "score": 17.6,
+              "player_key": "423.p.29279",
+              "player_name": "Derrick Henry"
+            },
+            "rob": {
+              "score": 20.5,
+              "player_key": "423.p.34047",
+              "player_name": "Rachaad White"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "blake"
+          ],
+          "winning_score": 152.5,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 94.15,
+            "frank": 118.7,
+            "jordan": 89.35,
+            "kyle": 134.55,
+            "blake": 152.5,
+            "jake": 117,
+            "nick": 104.95,
+            "joey": 92.95,
+            "brian": 83.45,
+            "rob": 151.65
+          }
+        }
+      },
+      "week_15": {
+        "week": 15,
+        "position_payout": {
+          "position": "WR",
+          "winners": [
+            {
+              "manager_id": "blake",
+              "player_key": "423.p.33394",
+              "player_name": "Jaylen Waddle",
+              "score": 24.2
+            }
+          ],
+          "winning_score": 24.2,
+          "payout_each": 20,
+          "all_best_scores": {
+            "zef": {
+              "score": 15.1,
+              "player_key": "423.p.32687",
+              "player_name": "CeeDee Lamb"
+            },
+            "jordan": {
+              "score": 23.1,
+              "player_key": "423.p.31908",
+              "player_name": "Terry McLaurin"
+            },
+            "blake": {
+              "score": 24.2,
+              "player_key": "423.p.33394",
+              "player_name": "Jaylen Waddle"
+            },
+            "frank": {
+              "score": 21.1,
+              "player_key": "423.p.30182",
+              "player_name": "Cooper Kupp"
+            },
+            "nick": {
+              "score": 20.7,
+              "player_key": "423.p.33500",
+              "player_name": "Amon-Ra St. Brown"
+            },
+            "brian": {
+              "score": 19.6,
+              "player_key": "423.p.40084",
+              "player_name": "Rashee Rice"
+            },
+            "joey": {
+              "score": 18.9,
+              "player_key": "423.p.28392",
+              "player_name": "Amari Cooper"
+            },
+            "kyle": {
+              "score": 20.1,
+              "player_key": "423.p.27581",
+              "player_name": "Davante Adams"
+            },
+            "jake": {
+              "score": 9.8,
+              "player_key": "423.p.32704",
+              "player_name": "Michael Pittman Jr."
+            },
+            "rob": {
+              "score": 13.7,
+              "player_key": "423.p.27535",
+              "player_name": "Mike Evans"
+            }
+          }
+        },
+        "total_points_payout": {
+          "winners": [
+            "zef"
+          ],
+          "winning_score": 154.65,
+          "payout_each": 20,
+          "all_scores": {
+            "zef": 154.65,
+            "jordan": 121,
+            "blake": 134.55,
+            "joey": 85,
+            "frank": 103,
+            "rob": 87.9,
+            "nick": 74.6,
+            "kyle": 115.2,
+            "brian": 140.85,
+            "jake": 123.5
+          }
+        }
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_17": {
+        "week": 17,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "nick",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "brian",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "zef",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "nick",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "zef",
+          "total_points": 1954,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2022": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_17": {
+        "week": 17,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "brian",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "jordan",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "zef",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "brian",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "brian",
+          "total_points": 1987.1,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2021": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "frank",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "joey",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "rob",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "frank",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "rob",
+          "total_points": 1917.25,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2020": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "jordan",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "kyle",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "zef",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "jordan",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "nick",
+          "total_points": 1784.95,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2019": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "blake",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "nick",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "joey",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "blake",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "joey",
+          "total_points": 1844.45,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2018": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "rob",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "kyle",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "blake",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "rob",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "sam",
+          "total_points": 1888.8,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2017": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "zef",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "blake",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "kyle",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "zef",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "kyle",
+          "total_points": 1626.35,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2016": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "frank",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "sam",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "zef",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "frank",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "zef",
+          "total_points": 1739.85,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2015": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "nick",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "jake",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "brian",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "nick",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "zef",
+          "total_points": 1709.8,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2014": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "joey",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "kyle",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "zef",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "joey",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "nick",
+          "total_points": 1883.45,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2013": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "zef",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "jake",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "sam",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "zef",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "joey",
+          "total_points": 1839.7,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2012": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "zef",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "brian",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "rob",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "zef",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "sam",
+          "total_points": 1757.55,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2011": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "joey",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "jake",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "brian",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "joey",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "joey",
+          "total_points": 1752.45,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2010": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "blake",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "zef",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "joey",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "blake",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "blake",
+          "total_points": 1717.55,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2009": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "zef",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "blake",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "brian",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "zef",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "blake",
+          "total_points": 1947.4,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2008": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "blake",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "kyle",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "jake",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "blake",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "reuben",
+          "total_points": 1598.35,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    },
+    "2007": {
+      "week_1": {
+        "week": 1,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_2": {
+        "week": 2,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_3": {
+        "week": 3,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_4": {
+        "week": 4,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_5": {
+        "week": 5,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_6": {
+        "week": 6,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_7": {
+        "week": 7,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_8": {
+        "week": 8,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_9": {
+        "week": 9,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_10": {
+        "week": 10,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_11": {
+        "week": 11,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_12": {
+        "week": 12,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_13": {
+        "week": 13,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_14": {
+        "week": 14,
+        "note": "Weekly position/points payouts not tracked pre-2023"
+      },
+      "week_15": {
+        "week": 15,
+        "note": "Playoff week — no weekly payout"
+      },
+      "week_16": {
+        "week": 16,
+        "note": "Playoff week — no weekly payout"
+      },
+      "season": {
+        "champion": {
+          "manager_id": "george",
+          "payout": 700
+        },
+        "runner_up": {
+          "manager_id": "jake",
+          "payout": 200
+        },
+        "third_place": {
+          "manager_id": "danny",
+          "payout": 100
+        },
+        "regular_season_1_seed": {
+          "manager_id": "george",
+          "payout": 200,
+          "note": "Highest regular season win % (Yahoo rank 1)"
+        },
+        "regular_season_high_points": {
+          "manager_id": "nick",
+          "total_points": 1789.97,
+          "payout": 200,
+          "note": "Highest cumulative regular season points for"
+        },
+        "note": "Season payouts populated after is_finished=true. Run after season ends."
+      }
+    }
+  }
+}
