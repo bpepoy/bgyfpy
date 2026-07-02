@@ -4508,6 +4508,12 @@ def build_payouts(
             for wk_key in week_keys:
                 wk_num = int(wk_key.split("_")[1])
                 payout_pos = get_payout_position(yr_int, wk_num) if has_weekly_payouts else None
+                # Skip playoff weeks — weekly payouts are regular season only (weeks 1-15)
+                if wk_num >= (yr_matchups.get("playoff_start") or 99) and wk_num != 0:
+                    wk_entry_out = {"week": wk_num, "note": "Playoff week — no weekly payout"}
+                    yr_payouts[wk_key] = wk_entry_out
+                    continue
+
 
                 wk_roster = yr_rosters.get(wk_key, {})
                 wk_stats  = yr_stats.get(wk_key, {})
@@ -4602,11 +4608,11 @@ def build_payouts(
                 yr_payouts[wk_key] = wk_entry_out
 
             # ── season-level payouts ──────────────────────────────────────────
-            # Derive from matchups (regular season only) + results
             # Payouts: $700 champion, $200 runner-up, $100 3rd place,
             #          $200 regular season #1 seed, $200 regular season high points
-            results_data = _load_json(_get_data_path("results.json"))
-            yr_results   = results_data.get(str(yr), {})
+            # Load results fresh; unwrap download wrapper if present
+            _results_raw = _load_json(_get_data_path("results.json"))
+            yr_results   = _results_raw.get(str(yr), {})
             managers_r   = yr_results.get("managers", {})
 
             # Regular season #1 seed and high points
@@ -4784,10 +4790,15 @@ def build_ices(
 
             yr_ices: list = []
 
+            # Get playoff start week to tag each ice as RS vs playoffs
+            yr_matchups_i   = matchups_data.get(yr, {})
+            playoff_start_i = yr_matchups_i.get("playoff_start") or 99
+
             for wk_key in week_keys:
-                wk_num    = int(wk_key.split("_")[1])
-                wk_roster = yr_rosters.get(wk_key, {})
-                wk_stats  = yr_stats.get(wk_key, {})
+                wk_num      = int(wk_key.split("_")[1])
+                is_playoffs = wk_num >= playoff_start_i
+                wk_roster   = yr_rosters.get(wk_key, {})
+                wk_stats    = yr_stats.get(wk_key, {})
 
                 for mid, team in wk_roster.items():
                     if not isinstance(team, dict): continue
@@ -4799,11 +4810,12 @@ def build_ices(
                         pd  = wk_stats.get(pk)
                         pts = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0.0
 
-                        if pts == 0.0:
+                        if pts <= 0.0:
                             pi  = yr_info.get(pk, {})
                             pos = pi.get("position") or slot.get("selected_position") or ""
                             yr_ices.append({
                                 "week":              wk_num,
+                                "is_playoffs":       is_playoffs,
                                 "manager_id":        mid,
                                 "player_key":        pk,
                                 "player_name":       pi.get("name") or pk,
