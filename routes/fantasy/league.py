@@ -4464,6 +4464,7 @@ def build_payouts(
         stats_data   = _load_json(_get_data_path("player_stats.json"))
         matchups_data= _load_json(_get_data_path("matchups.json"))
         info_data    = _load_json(_get_data_path("player_info.json"))
+        rules_data   = _load_json(_get_data_path("rules.json"))
 
         all_years = sorted(rosters_data.keys(), key=lambda x: int(x) if str(x).isdigit() else 0)
 
@@ -4509,7 +4510,7 @@ def build_payouts(
                 wk_num = int(wk_key.split("_")[1])
                 payout_pos = get_payout_position(yr_int, wk_num) if has_weekly_payouts else None
                 # Skip playoff weeks — weekly payouts are regular season only (weeks 1-15)
-                if wk_num >= (yr_matchups.get("playoff_start") or 99) and wk_num != 0:
+                if wk_num >= (rules_data.get(str(yr_int), {}).get("playoff_start_week") or yr_matchups.get("playoff_start") or 99) and wk_num != 0:
                     wk_entry_out = {"week": wk_num, "note": "Playoff week — no weekly payout"}
                     yr_payouts[wk_key] = wk_entry_out
                     continue
@@ -4630,17 +4631,19 @@ def build_payouts(
                     reg_highpts_mid = mid
 
             # Playoff finishes (champion=1, runner-up=2, 3rd=3)
-            # playoff.rank: 1=champion, 2=runner-up, 3=3rd place
-            # Falls back to regular_season.rank if playoff rank missing
+            # playoff.finish: 1=champion, 2=runner-up, 3=3rd place
+            # Only managers with made_playoffs=true have a finish value
             champion_mid  = None
             runnerup_mid  = None
             third_mid     = None
             for mid, m in managers_r.items():
-                po   = m.get("playoff", {})
-                rank = po.get("rank") or po.get("finish")
-                if rank == 1:   champion_mid = mid
-                elif rank == 2: runnerup_mid = mid
-                elif rank == 3: third_mid    = mid
+                po     = m.get("playoffs", {}) or m.get("playoff", {})
+                if not po.get("made_playoffs"):
+                    continue
+                finish = po.get("finish")
+                if finish == 1:   champion_mid = mid
+                elif finish == 2: runnerup_mid = mid
+                elif finish == 3: third_mid    = mid
 
             yr_payouts["season"] = {
                 "champion": {
@@ -4756,6 +4759,7 @@ def build_ices(
         rosters_data = _load_json(_get_data_path("rosters.json"))
         stats_data   = _load_json(_get_data_path("player_stats.json"))
         info_data    = _load_json(_get_data_path("player_info.json"))
+        rules_data   = _load_json(_get_data_path("rules.json"))
 
         all_years = sorted(rosters_data.keys(), key=lambda x: int(x) if str(x).isdigit() else 0)
 
@@ -4790,9 +4794,9 @@ def build_ices(
 
             yr_ices: list = []
 
-            # Get playoff start week to tag each ice as RS vs playoffs
-            yr_matchups_i   = matchups_data.get(yr, {})
-            playoff_start_i = yr_matchups_i.get("playoff_start") or 99
+            # Get playoff start week from rules.json
+            yr_rules        = rules_data.get(str(yr), {})
+            playoff_start_i = yr_rules.get("playoff_start_week") or 99
 
             for wk_key in week_keys:
                 wk_num      = int(wk_key.split("_")[1])
