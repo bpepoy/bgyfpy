@@ -1,0 +1,7003 @@
+{
+  "total_seasons": 19,
+  "years": [
+    "2025",
+    "2024",
+    "2023",
+    "2022",
+    "2021",
+    "2020",
+    "2019",
+    "2018",
+    "2017",
+    "2016",
+    "2015",
+    "2014",
+    "2013",
+    "2012",
+    "2011",
+    "2010",
+    "2009",
+    "2008",
+    "2007"
+  ],
+  "data": {
+    "2025": [
+      {
+        "week": 1,
+        "manager_id": "nick",
+        "player_key": "461.p.100008",
+        "player_name": "Lions",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 1,
+        "manager_id": "brian",
+        "player_key": "461.p.40877",
+        "player_name": "Xavier Worthy",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 3,
+        "manager_id": "blake",
+        "player_key": "461.p.32687",
+        "player_name": "CeeDee Lamb",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 4,
+        "manager_id": "jake",
+        "player_key": "461.p.100009",
+        "player_name": "Packers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 5,
+        "manager_id": "zef",
+        "player_key": "461.p.26658",
+        "player_name": "Zach Ertz",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 5,
+        "manager_id": "zef",
+        "player_key": "461.p.100026",
+        "player_name": "Seahawks",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 6,
+        "manager_id": "jordan",
+        "player_key": "461.p.100005",
+        "player_name": "Browns",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 7,
+        "manager_id": "frank",
+        "player_key": "461.p.33967",
+        "player_name": "Jameson Williams",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 7,
+        "manager_id": "nick",
+        "player_key": "461.p.40964",
+        "player_name": "Luke McCaffrey",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 7,
+        "manager_id": "nick",
+        "player_key": "461.p.30259",
+        "player_name": "George Kittle",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 7,
+        "manager_id": "kyle",
+        "player_key": "461.p.27535",
+        "player_name": "Mike Evans",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 7,
+        "manager_id": "rob",
+        "player_key": "461.p.28592",
+        "player_name": "Darren Waller",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 8,
+        "manager_id": "jordan",
+        "player_key": "461.p.34085",
+        "player_name": "Jake Ferguson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 8,
+        "manager_id": "jordan",
+        "player_key": "461.p.40051",
+        "player_name": "Quentin Johnston",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 9,
+        "manager_id": "zef",
+        "player_key": "461.p.30275",
+        "player_name": "Jeremy McNichols",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 9,
+        "manager_id": "rob",
+        "player_key": "461.p.30136",
+        "player_name": "Evan Engram",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 9,
+        "manager_id": "jake",
+        "player_key": "461.p.40901",
+        "player_name": "Rome Odunze",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 10,
+        "manager_id": "joey",
+        "player_key": "461.p.33965",
+        "player_name": "Garrett Wilson",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 11,
+        "manager_id": "jordan",
+        "player_key": "461.p.100024",
+        "player_name": "Chargers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 12,
+        "manager_id": "frank",
+        "player_key": "461.p.33967",
+        "player_name": "Jameson Williams",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 13,
+        "manager_id": "zef",
+        "player_key": "461.p.33500",
+        "player_name": "Amon-Ra St. Brown",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 13,
+        "manager_id": "nick",
+        "player_key": "461.p.40039",
+        "player_name": "Zay Flowers",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 14,
+        "manager_id": "blake",
+        "player_key": "461.p.34088",
+        "player_name": "Romeo Doubs",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 14,
+        "manager_id": "kyle",
+        "player_key": "461.p.100033",
+        "player_name": "Ravens",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 15,
+        "manager_id": "brian",
+        "player_key": "461.p.34095",
+        "player_name": "Isaiah Likely",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 16,
+        "manager_id": "jordan",
+        "player_key": "461.p.100006",
+        "player_name": "Cowboys",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 16,
+        "manager_id": "blake",
+        "player_key": "461.p.30123",
+        "player_name": "Patrick Mahomes",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 16,
+        "manager_id": "blake",
+        "player_key": "461.p.40892",
+        "player_name": "Ricky Pearsall",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 16,
+        "manager_id": "joey",
+        "player_key": "461.p.41003",
+        "player_name": "Theo Johnson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 17,
+        "manager_id": "blake",
+        "player_key": "461.p.30123",
+        "player_name": "Patrick Mahomes",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 17,
+        "manager_id": "frank",
+        "player_key": "461.p.30614",
+        "player_name": "Taysom Hill",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 17,
+        "manager_id": "nick",
+        "player_key": "461.p.30259",
+        "player_name": "George Kittle",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 17,
+        "manager_id": "jake",
+        "player_key": "461.p.31002",
+        "player_name": "Lamar Jackson",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Bal"
+      }
+    ],
+    "2024": [
+      {
+        "week": 1,
+        "manager_id": "blake",
+        "player_key": "449.p.30120",
+        "player_name": "Mike Williams",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 2,
+        "manager_id": "blake",
+        "player_key": "449.p.40911",
+        "player_name": "Keon Coleman",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 3,
+        "manager_id": "blake",
+        "player_key": "449.p.31056",
+        "player_name": "Mark Andrews",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 3,
+        "manager_id": "kyle",
+        "player_key": "449.p.100013",
+        "player_name": "Raiders",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 4,
+        "manager_id": "zef",
+        "player_key": "449.p.33392",
+        "player_name": "Kyle Pitts Sr.",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 4,
+        "manager_id": "zef",
+        "player_key": "449.p.40084",
+        "player_name": "Rashee Rice",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 4,
+        "manager_id": "blake",
+        "player_key": "449.p.31056",
+        "player_name": "Mark Andrews",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 6,
+        "manager_id": "zef",
+        "player_key": "449.p.31019",
+        "player_name": "Dallas Goedert",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 6,
+        "manager_id": "jordan",
+        "player_key": "449.p.40893",
+        "player_name": "Marvin Harrison Jr.",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 6,
+        "manager_id": "blake",
+        "player_key": "449.p.33413",
+        "player_name": "Travis Etienne Jr.",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 6,
+        "manager_id": "frank",
+        "player_key": "449.p.34019",
+        "player_name": "James Cook III",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 6,
+        "manager_id": "brian",
+        "player_key": "449.p.40114",
+        "player_name": "Tre Tucker",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 6,
+        "manager_id": "rob",
+        "player_key": "449.p.33966",
+        "player_name": "Chris Olave",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 6,
+        "manager_id": "rob",
+        "player_key": "449.p.34008",
+        "player_name": "Alec Pierce",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 7,
+        "manager_id": "zef",
+        "player_key": "449.p.40097",
+        "player_name": "Tank Dell",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 7,
+        "manager_id": "jordan",
+        "player_key": "449.p.31010",
+        "player_name": "Courtland Sutton",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 7,
+        "manager_id": "jordan",
+        "player_key": "449.p.100020",
+        "player_name": "Jets",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 7,
+        "manager_id": "frank",
+        "player_key": "449.p.31868",
+        "player_name": "Deebo Samuel",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 11,
+        "manager_id": "jordan",
+        "player_key": "449.p.40892",
+        "player_name": "Ricky Pearsall",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 12,
+        "manager_id": "blake",
+        "player_key": "449.p.40051",
+        "player_name": "Quentin Johnston",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 14,
+        "manager_id": "blake",
+        "player_key": "449.p.40063",
+        "player_name": "Jayden Reed",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 14,
+        "manager_id": "kyle",
+        "player_key": "449.p.28654",
+        "player_name": "Raheem Mostert",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 14,
+        "manager_id": "rob",
+        "player_key": "449.p.40908",
+        "player_name": "Ladd McConkey",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 15,
+        "manager_id": "zef",
+        "player_key": "449.p.33394",
+        "player_name": "Jaylen Waddle",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 15,
+        "manager_id": "blake",
+        "player_key": "449.p.32843",
+        "player_name": "Darnell Mooney",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 15,
+        "manager_id": "nick",
+        "player_key": "449.p.30182",
+        "player_name": "Cooper Kupp",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 17,
+        "manager_id": "blake",
+        "player_key": "449.p.32723",
+        "player_name": "Jalen Hurts",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 17,
+        "manager_id": "brian",
+        "player_key": "449.p.40078",
+        "player_name": "Brenton Strange",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 17,
+        "manager_id": "kyle",
+        "player_key": "449.p.100011",
+        "player_name": "Colts",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ind"
+      }
+    ],
+    "2023": [
+      {
+        "week": 1,
+        "manager_id": "brian",
+        "player_key": "423.p.33963",
+        "player_name": "Drake London",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 1,
+        "manager_id": "joey",
+        "player_key": "423.p.31019",
+        "player_name": "Dallas Goedert",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 1,
+        "manager_id": "rob",
+        "player_key": "423.p.32703",
+        "player_name": "Tee Higgins",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 2,
+        "manager_id": "zef",
+        "player_key": "423.p.100008",
+        "player_name": "Lions",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 2,
+        "manager_id": "brian",
+        "player_key": "423.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 2,
+        "manager_id": "joey",
+        "player_key": "423.p.30150",
+        "player_name": "Zay Jones",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 2,
+        "manager_id": "joey",
+        "player_key": "423.p.100019",
+        "player_name": "Giants",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 3,
+        "manager_id": "joey",
+        "player_key": "423.p.100030",
+        "player_name": "Jaguars",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 4,
+        "manager_id": "brian",
+        "player_key": "423.p.100023",
+        "player_name": "Steelers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 4,
+        "manager_id": "rob",
+        "player_key": "423.p.40042",
+        "player_name": "Jordan Addison",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 5,
+        "manager_id": "zef",
+        "player_key": "423.p.100028",
+        "player_name": "Commanders",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 5,
+        "manager_id": "nick",
+        "player_key": "423.p.100006",
+        "player_name": "Cowboys",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 7,
+        "manager_id": "zef",
+        "player_key": "423.p.100008",
+        "player_name": "Lions",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 7,
+        "manager_id": "frank",
+        "player_key": "423.p.33582",
+        "player_name": "Elijah Mitchell",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 7,
+        "manager_id": "kyle",
+        "player_key": "423.p.31896",
+        "player_name": "DK Metcalf",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 9,
+        "manager_id": "blake",
+        "player_key": "423.p.32798",
+        "player_name": "Gabe Davis",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 9,
+        "manager_id": "frank",
+        "player_key": "423.p.29281",
+        "player_name": "Michael Thomas",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 10,
+        "manager_id": "zef",
+        "player_key": "423.p.33971",
+        "player_name": "Jahan Dotson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 11,
+        "manager_id": "jake",
+        "player_key": "423.p.33965",
+        "player_name": "Garrett Wilson",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 13,
+        "manager_id": "jordan",
+        "player_key": "423.p.31908",
+        "player_name": "Terry McLaurin",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 13,
+        "manager_id": "nick",
+        "player_key": "423.p.100005",
+        "player_name": "Browns",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 13,
+        "manager_id": "brian",
+        "player_key": "423.p.33113",
+        "player_name": "Juwan Johnson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 13,
+        "manager_id": "joey",
+        "player_key": "423.p.31857",
+        "player_name": "Hollywood Brown",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 13,
+        "manager_id": "jake",
+        "player_key": "423.p.40097",
+        "player_name": "Tank Dell",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 15,
+        "manager_id": "nick",
+        "player_key": "423.p.40055",
+        "player_name": "Bijan Robinson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 15,
+        "manager_id": "kyle",
+        "player_key": "423.p.30202",
+        "player_name": "D'Onta Foreman",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 16,
+        "manager_id": "zef",
+        "player_key": "423.p.100011",
+        "player_name": "Colts",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 16,
+        "manager_id": "jordan",
+        "player_key": "423.p.40063",
+        "player_name": "Jayden Reed",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 16,
+        "manager_id": "jordan",
+        "player_key": "423.p.100004",
+        "player_name": "Bengals",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 16,
+        "manager_id": "joey",
+        "player_key": "423.p.31010",
+        "player_name": "Courtland Sutton",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 17,
+        "manager_id": "frank",
+        "player_key": "423.p.28654",
+        "player_name": "Raheem Mostert",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 17,
+        "manager_id": "frank",
+        "player_key": "423.p.32713",
+        "player_name": "Cole Kmet",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 17,
+        "manager_id": "joey",
+        "player_key": "423.p.28392",
+        "player_name": "Amari Cooper",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Buf"
+      }
+    ],
+    "2022": [
+      {
+        "week": 1,
+        "manager_id": "jordan",
+        "player_key": "414.p.32722",
+        "player_name": "Cam Akers",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 3,
+        "manager_id": "frank",
+        "player_key": "414.p.100024",
+        "player_name": "Chargers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 5,
+        "manager_id": "jordan",
+        "player_key": "414.p.32703",
+        "player_name": "Tee Higgins",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 5,
+        "manager_id": "frank",
+        "player_key": "414.p.28592",
+        "player_name": "Darren Waller",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 5,
+        "manager_id": "frank",
+        "player_key": "414.p.100015",
+        "player_name": "Dolphins",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 6,
+        "manager_id": "zef",
+        "player_key": "414.p.100030",
+        "player_name": "Jaguars",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 7,
+        "manager_id": "frank",
+        "player_key": "414.p.33138",
+        "player_name": "James Robinson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 9,
+        "manager_id": "frank",
+        "player_key": "414.p.29344",
+        "player_name": "Tyler Higbee",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAR"
+      },
+      {
+        "week": 10,
+        "manager_id": "blake",
+        "player_key": "414.p.32702",
+        "player_name": "Clyde Edwards-Helaire",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 11,
+        "manager_id": "brian",
+        "player_key": "414.p.33437",
+        "player_name": "Rondale Moore",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 11,
+        "manager_id": "joey",
+        "player_key": "414.p.33408",
+        "player_name": "Kadarius Toney",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 13,
+        "manager_id": "frank",
+        "player_key": "414.p.31010",
+        "player_name": "Courtland Sutton",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 14,
+        "manager_id": "jordan",
+        "player_key": "414.p.32703",
+        "player_name": "Tee Higgins",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 15,
+        "manager_id": "rob",
+        "player_key": "414.p.33443",
+        "player_name": "Pat Freiermuth",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 16,
+        "manager_id": "frank",
+        "player_key": "414.p.30157",
+        "player_name": "Gerald Everett",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 17,
+        "manager_id": "zef",
+        "player_key": "414.p.28534",
+        "player_name": "Stefon Diggs",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 17,
+        "manager_id": "jordan",
+        "player_key": "414.p.32671",
+        "player_name": "Joe Burrow",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 17,
+        "manager_id": "jordan",
+        "player_key": "414.p.32703",
+        "player_name": "Tee Higgins",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 17,
+        "manager_id": "blake",
+        "player_key": "414.p.32723",
+        "player_name": "Jalen Hurts",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 17,
+        "manager_id": "blake",
+        "player_key": "414.p.30161",
+        "player_name": "Joe Mixon",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 17,
+        "manager_id": "frank",
+        "player_key": "414.p.32798",
+        "player_name": "Gabe Davis",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 17,
+        "manager_id": "nick",
+        "player_key": "414.p.29279",
+        "player_name": "Derrick Henry",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 17,
+        "manager_id": "brian",
+        "player_key": "414.p.33393",
+        "player_name": "Ja'Marr Chase",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 17,
+        "manager_id": "joey",
+        "player_key": "414.p.32675",
+        "player_name": "Tua Tagovailoa",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 17,
+        "manager_id": "joey",
+        "player_key": "414.p.100002",
+        "player_name": "Bills",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 17,
+        "manager_id": "kyle",
+        "player_key": "414.p.30977",
+        "player_name": "Josh Allen",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 17,
+        "manager_id": "kyle",
+        "player_key": "414.p.31906",
+        "player_name": "Devin Singletary",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYG"
+      }
+    ],
+    "2021": [
+      {
+        "week": 1,
+        "manager_id": "jordan",
+        "player_key": "406.p.32695",
+        "player_name": "Brandon Aiyuk",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 4,
+        "manager_id": "brian",
+        "player_key": "406.p.27648",
+        "player_name": "Logan Thomas",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 4,
+        "manager_id": "joey",
+        "player_key": "406.p.100014",
+        "player_name": "Rams",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAR"
+      },
+      {
+        "week": 7,
+        "manager_id": "nick",
+        "player_key": "406.p.100033",
+        "player_name": "Ravens",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 7,
+        "manager_id": "joey",
+        "player_key": "406.p.32732",
+        "player_name": "AJ Dillon",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Car"
+      },
+      {
+        "week": 7,
+        "manager_id": "joey",
+        "player_key": "406.p.33476",
+        "player_name": "Trey Sermon",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "406.p.24057",
+        "player_name": "Emmanuel Sanders",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 9,
+        "manager_id": "frank",
+        "player_key": "406.p.100033",
+        "player_name": "Ravens",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 10,
+        "manager_id": "jordan",
+        "player_key": "406.p.31840",
+        "player_name": "T.J. Hockenson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 10,
+        "manager_id": "nick",
+        "player_key": "406.p.31012",
+        "player_name": "Mike Gesicki",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 10,
+        "manager_id": "nick",
+        "player_key": "406.p.100005",
+        "player_name": "Browns",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 11,
+        "manager_id": "kyle",
+        "player_key": "406.p.100002",
+        "player_name": "Bills",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 11,
+        "manager_id": "jake",
+        "player_key": "406.p.100010",
+        "player_name": "Titans",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 13,
+        "manager_id": "frank",
+        "player_key": "406.p.31171",
+        "player_name": "Boston Scott",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 14,
+        "manager_id": "nick",
+        "player_key": "406.p.31908",
+        "player_name": "Terry McLaurin",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 14,
+        "manager_id": "nick",
+        "player_key": "406.p.33644",
+        "player_name": "Jermar Jefferson",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 16,
+        "manager_id": "nick",
+        "player_key": "406.p.27548",
+        "player_name": "Brandin Cooks",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 16,
+        "manager_id": "nick",
+        "player_key": "406.p.30423",
+        "player_name": "Austin Ekeler",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 16,
+        "manager_id": "nick",
+        "player_key": "406.p.26060",
+        "player_name": "Cole Beasley",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 16,
+        "manager_id": "nick",
+        "player_key": "406.p.100005",
+        "player_name": "Browns",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 16,
+        "manager_id": "kyle",
+        "player_key": "406.p.30218",
+        "player_name": "James Conner",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 16,
+        "manager_id": "jake",
+        "player_key": "406.p.100024",
+        "player_name": "Chargers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 16,
+        "manager_id": "rob",
+        "player_key": "406.p.100017",
+        "player_name": "Patriots",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NE"
+      }
+    ],
+    "2020": [
+      {
+        "week": 4,
+        "manager_id": "jordan",
+        "player_key": "399.p.27548",
+        "player_name": "Brandin Cooks",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 4,
+        "manager_id": "jordan",
+        "player_key": "399.p.30996",
+        "player_name": "Calvin Ridley",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 5,
+        "manager_id": "zef",
+        "player_key": "399.p.30112",
+        "player_name": "Mo Alie-Cox",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 5,
+        "manager_id": "zef",
+        "player_key": "399.p.100012",
+        "player_name": "Chiefs",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 5,
+        "manager_id": "jordan",
+        "player_key": "399.p.32756",
+        "player_name": "Zack Moss",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 5,
+        "manager_id": "jordan",
+        "player_key": "399.p.100025",
+        "player_name": "49ers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 6,
+        "manager_id": "nick",
+        "player_key": "399.p.31888",
+        "player_name": "Mecole Hardman Jr.",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 6,
+        "manager_id": "nick",
+        "player_key": "399.p.100014",
+        "player_name": "Rams",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAR"
+      },
+      {
+        "week": 6,
+        "manager_id": "brian",
+        "player_key": "399.p.100010",
+        "player_name": "Titans",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 6,
+        "manager_id": "jake",
+        "player_key": "399.p.31012",
+        "player_name": "Mike Gesicki",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 7,
+        "manager_id": "blake",
+        "player_key": "399.p.30295",
+        "player_name": "Aaron Jones Sr.",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 7,
+        "manager_id": "frank",
+        "player_key": "399.p.27540",
+        "player_name": "Odell Beckham Jr.",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 8,
+        "manager_id": "jordan",
+        "player_key": "399.p.100010",
+        "player_name": "Titans",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "399.p.30209",
+        "player_name": "Kenny Golladay",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "399.p.100009",
+        "player_name": "Packers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 9,
+        "manager_id": "joey",
+        "player_key": "399.p.30118",
+        "player_name": "Corey Davis",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 11,
+        "manager_id": "rob",
+        "player_key": "399.p.31857",
+        "player_name": "Hollywood Brown",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 12,
+        "manager_id": "zef",
+        "player_key": "399.p.100005",
+        "player_name": "Browns",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 12,
+        "manager_id": "blake",
+        "player_key": "399.p.31056",
+        "player_name": "Mark Andrews",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 12,
+        "manager_id": "rob",
+        "player_key": "399.p.30213",
+        "player_name": "Jonnu Smith",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 13,
+        "manager_id": "frank",
+        "player_key": "399.p.100024",
+        "player_name": "Chargers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 13,
+        "manager_id": "joey",
+        "player_key": "399.p.32702",
+        "player_name": "Clyde Edwards-Helaire",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 14,
+        "manager_id": "blake",
+        "player_key": "399.p.28402",
+        "player_name": "DeVante Parker",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 14,
+        "manager_id": "blake",
+        "player_key": "399.p.30120",
+        "player_name": "Mike Williams",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 15,
+        "manager_id": "brian",
+        "player_key": "399.p.29238",
+        "player_name": "Ezekiel Elliott",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 15,
+        "manager_id": "jake",
+        "player_key": "399.p.27538",
+        "player_name": "Eric Ebron",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 16,
+        "manager_id": "blake",
+        "player_key": "399.p.28402",
+        "player_name": "DeVante Parker",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 16,
+        "manager_id": "blake",
+        "player_key": "399.p.100011",
+        "player_name": "Colts",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 16,
+        "manager_id": "nick",
+        "player_key": "399.p.100021",
+        "player_name": "Eagles",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 16,
+        "manager_id": "brian",
+        "player_key": "399.p.29269",
+        "player_name": "Hunter Henry",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 16,
+        "manager_id": "brian",
+        "player_key": "399.p.30118",
+        "player_name": "Corey Davis",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 16,
+        "manager_id": "brian",
+        "player_key": "399.p.100034",
+        "player_name": "Texans",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Hou"
+      }
+    ],
+    "2019": [
+      {
+        "week": 1,
+        "manager_id": "zef",
+        "player_key": "390.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 1,
+        "manager_id": "rob",
+        "player_key": "390.p.30118",
+        "player_name": "Corey Davis",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 1,
+        "manager_id": "nick",
+        "player_key": "390.p.100005",
+        "player_name": "Browns",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 2,
+        "manager_id": "brian",
+        "player_key": "390.p.5479",
+        "player_name": "Drew Brees",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 2,
+        "manager_id": "brian",
+        "player_key": "390.p.30142",
+        "player_name": "David Njoku",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 2,
+        "manager_id": "frank",
+        "player_key": "390.p.30132",
+        "player_name": "O.J. Howard",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 2,
+        "manager_id": "blake",
+        "player_key": "390.p.8826",
+        "player_name": "DeSean Jackson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 4,
+        "manager_id": "jake",
+        "player_key": "390.p.100033",
+        "player_name": "Ravens",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 4,
+        "manager_id": "kyle",
+        "player_key": "390.p.31888",
+        "player_name": "Mecole Hardman Jr.",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 5,
+        "manager_id": "zef",
+        "player_key": "390.p.8285",
+        "player_name": "Greg Olsen",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 5,
+        "manager_id": "nick",
+        "player_key": "390.p.27535",
+        "player_name": "Mike Evans",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 5,
+        "manager_id": "nick",
+        "player_key": "390.p.27532",
+        "player_name": "Sammy Watkins",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 5,
+        "manager_id": "jordan",
+        "player_key": "390.p.30971",
+        "player_name": "Baker Mayfield",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 5,
+        "manager_id": "blake",
+        "player_key": "390.p.28417",
+        "player_name": "Phillip Dorsett II",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 6,
+        "manager_id": "blake",
+        "player_key": "390.p.31090",
+        "player_name": "Will Dissly",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "390.p.27548",
+        "player_name": "Brandin Cooks",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 8,
+        "manager_id": "jordan",
+        "player_key": "390.p.30223",
+        "player_name": "Dede Westbrook",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 9,
+        "manager_id": "jake",
+        "player_key": "390.p.27277",
+        "player_name": "Adam Thielen",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 9,
+        "manager_id": "brian",
+        "player_key": "390.p.31021",
+        "player_name": "Anthony Miller",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 10,
+        "manager_id": "zef",
+        "player_key": "390.p.30182",
+        "player_name": "Cooper Kupp",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 10,
+        "manager_id": "rob",
+        "player_key": "390.p.30259",
+        "player_name": "George Kittle",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 10,
+        "manager_id": "jake",
+        "player_key": "390.p.28474",
+        "player_name": "David Johnson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 10,
+        "manager_id": "frank",
+        "player_key": "390.p.100006",
+        "player_name": "Cowboys",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 10,
+        "manager_id": "blake",
+        "player_key": "390.p.7520",
+        "player_name": "Robbie Gould",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 11,
+        "manager_id": "blake",
+        "player_key": "390.p.26664",
+        "player_name": "Robert Woods",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 11,
+        "manager_id": "joey",
+        "player_key": "390.p.29399",
+        "player_name": "Tyreek Hill",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 12,
+        "manager_id": "joey",
+        "player_key": "390.p.28392",
+        "player_name": "Amari Cooper",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 13,
+        "manager_id": "rob",
+        "player_key": "390.p.27532",
+        "player_name": "Sammy Watkins",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 13,
+        "manager_id": "brian",
+        "player_key": "390.p.30157",
+        "player_name": "Gerald Everett",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 13,
+        "manager_id": "blake",
+        "player_key": "390.p.28457",
+        "player_name": "Tyler Lockett",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 14,
+        "manager_id": "frank",
+        "player_key": "390.p.100030",
+        "player_name": "Jaguars",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 14,
+        "manager_id": "kyle",
+        "player_key": "390.p.25755",
+        "player_name": "Alshon Jeffery",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 14,
+        "manager_id": "blake",
+        "player_key": "390.p.31856",
+        "player_name": "Josh Jacobs",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 15,
+        "manager_id": "rob",
+        "player_key": "390.p.30997",
+        "player_name": "Rashaad Penny",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 15,
+        "manager_id": "brian",
+        "player_key": "390.p.31031",
+        "player_name": "DJ Chark",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 15,
+        "manager_id": "brian",
+        "player_key": "390.p.24913",
+        "player_name": "Bilal Powell",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 16,
+        "manager_id": "rob",
+        "player_key": "390.p.30997",
+        "player_name": "Rashaad Penny",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 16,
+        "manager_id": "frank",
+        "player_key": "390.p.30552",
+        "player_name": "Matt Breida",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 16,
+        "manager_id": "jordan",
+        "player_key": "390.p.31896",
+        "player_name": "DK Metcalf",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Pit"
+      }
+    ],
+    "2018": [
+      {
+        "week": 1,
+        "manager_id": "rob",
+        "player_key": "380.p.100024",
+        "player_name": "Chargers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 1,
+        "manager_id": "jake",
+        "player_key": "380.p.25105",
+        "player_name": "Doug Baldwin",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 1,
+        "manager_id": "blake",
+        "player_key": "380.p.100018",
+        "player_name": "Saints",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 2,
+        "manager_id": "jake",
+        "player_key": "380.p.100033",
+        "player_name": "Ravens",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 2,
+        "manager_id": "kyle",
+        "player_key": "380.p.25881",
+        "player_name": "Greg Zuerlein",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 3,
+        "manager_id": "nick",
+        "player_key": "380.p.25427",
+        "player_name": "Dan Bailey",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 4,
+        "manager_id": "brian",
+        "player_key": "380.p.30362",
+        "player_name": "Chris Carson",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 4,
+        "manager_id": "kyle",
+        "player_key": "380.p.30132",
+        "player_name": "O.J. Howard",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 4,
+        "manager_id": "blake",
+        "player_key": "380.p.24851",
+        "player_name": "Randall Cobb",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 4,
+        "manager_id": "blake",
+        "player_key": "380.p.27532",
+        "player_name": "Sammy Watkins",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 4,
+        "manager_id": "joey",
+        "player_key": "380.p.100016",
+        "player_name": "Vikings",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 5,
+        "manager_id": "nick",
+        "player_key": "380.p.27548",
+        "player_name": "Brandin Cooks",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 6,
+        "manager_id": "frank",
+        "player_key": "380.p.9520",
+        "player_name": "Ryan Succop",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 6,
+        "manager_id": "sam",
+        "player_key": "380.p.100030",
+        "player_name": "Jaguars",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 6,
+        "manager_id": "blake",
+        "player_key": "380.p.25883",
+        "player_name": "Alfred Morris",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 7,
+        "manager_id": "frank",
+        "player_key": "380.p.30552",
+        "player_name": "Matt Breida",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "380.p.30142",
+        "player_name": "David Njoku",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 9,
+        "manager_id": "frank",
+        "player_key": "380.p.100028",
+        "player_name": "Commanders",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 10,
+        "manager_id": "jake",
+        "player_key": "380.p.100020",
+        "player_name": "Jets",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 10,
+        "manager_id": "blake",
+        "player_key": "380.p.28234",
+        "player_name": "Taylor Gabriel",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 11,
+        "manager_id": "frank",
+        "player_key": "380.p.100024",
+        "player_name": "Chargers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 11,
+        "manager_id": "kyle",
+        "player_key": "380.p.27538",
+        "player_name": "Eric Ebron",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 11,
+        "manager_id": "blake",
+        "player_key": "380.p.23997",
+        "player_name": "Demaryius Thomas",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 12,
+        "manager_id": "rob",
+        "player_key": "380.p.30136",
+        "player_name": "Evan Engram",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 12,
+        "manager_id": "joey",
+        "player_key": "380.p.100030",
+        "player_name": "Jaguars",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 13,
+        "manager_id": "rob",
+        "player_key": "380.p.27789",
+        "player_name": "Trey Burton",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 13,
+        "manager_id": "blake",
+        "player_key": "380.p.3727",
+        "player_name": "Adam Vinatieri",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 15,
+        "manager_id": "nick",
+        "player_key": "380.p.26699",
+        "player_name": "Keenan Allen",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 16,
+        "manager_id": "frank",
+        "player_key": "380.p.100012",
+        "player_name": "Chiefs",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 16,
+        "manager_id": "sam",
+        "player_key": "380.p.24017",
+        "player_name": "Rob Gronkowski",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "TB"
+      }
+    ],
+    "2017": [
+      {
+        "week": 1,
+        "manager_id": "rob",
+        "player_key": "371.p.29269",
+        "player_name": "Hunter Henry",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 1,
+        "manager_id": "blake",
+        "player_key": "371.p.100034",
+        "player_name": "Texans",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 2,
+        "manager_id": "brian",
+        "player_key": "371.p.8813",
+        "player_name": "Jordy Nelson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 3,
+        "manager_id": "frank",
+        "player_key": "371.p.100033",
+        "player_name": "Ravens",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 3,
+        "manager_id": "joey",
+        "player_key": "371.p.100026",
+        "player_name": "Seahawks",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 3,
+        "manager_id": "brian",
+        "player_key": "371.p.26708",
+        "player_name": "Jordan Reed",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 3,
+        "manager_id": "blake",
+        "player_key": "371.p.29269",
+        "player_name": "Hunter Henry",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 4,
+        "manager_id": "kyle",
+        "player_key": "371.p.100027",
+        "player_name": "Buccaneers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 4,
+        "manager_id": "brian",
+        "player_key": "371.p.28026",
+        "player_name": "Willie Snead IV",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 5,
+        "manager_id": "jake",
+        "player_key": "371.p.30136",
+        "player_name": "Evan Engram",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 6,
+        "manager_id": "frank",
+        "player_key": "371.p.26810",
+        "player_name": "Andre Ellington",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 7,
+        "manager_id": "sam",
+        "player_key": "371.p.24062",
+        "player_name": "Eric Decker",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 9,
+        "manager_id": "brian",
+        "player_key": "371.p.100012",
+        "player_name": "Chiefs",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 9,
+        "manager_id": "rob",
+        "player_key": "371.p.100002",
+        "player_name": "Bills",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 12,
+        "manager_id": "brian",
+        "player_key": "371.p.7755",
+        "player_name": "Vernon Davis",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 12,
+        "manager_id": "rob",
+        "player_key": "371.p.9274",
+        "player_name": "Michael Crabtree",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 13,
+        "manager_id": "blake",
+        "player_key": "371.p.100008",
+        "player_name": "Lions",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 14,
+        "manager_id": "sam",
+        "player_key": "371.p.24070",
+        "player_name": "Jimmy Graham",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 14,
+        "manager_id": "brian",
+        "player_key": "371.p.100023",
+        "player_name": "Steelers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 16,
+        "manager_id": "sam",
+        "player_key": "371.p.29650",
+        "player_name": "J.D. McKissic",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 16,
+        "manager_id": "rob",
+        "player_key": "371.p.25755",
+        "player_name": "Alshon Jeffery",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 16,
+        "manager_id": "rob",
+        "player_key": "371.p.9274",
+        "player_name": "Michael Crabtree",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ari"
+      }
+    ],
+    "2016": [
+      {
+        "week": 3,
+        "manager_id": "frank",
+        "player_key": "359.p.24017",
+        "player_name": "Rob Gronkowski",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 3,
+        "manager_id": "joey",
+        "player_key": "359.p.27556",
+        "player_name": "Kelvin Benjamin",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 3,
+        "manager_id": "blake",
+        "player_key": "359.p.7924",
+        "player_name": "Delanie Walker",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 4,
+        "manager_id": "sam",
+        "player_key": "359.p.7867",
+        "player_name": "Stephen Gostkowski",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 5,
+        "manager_id": "joey",
+        "player_key": "359.p.25723",
+        "player_name": "Michael Floyd",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 7,
+        "manager_id": "joey",
+        "player_key": "359.p.8850",
+        "player_name": "Jamaal Charles",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 7,
+        "manager_id": "jake",
+        "player_key": "359.p.100002",
+        "player_name": "Bills",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 7,
+        "manager_id": "brian",
+        "player_key": "359.p.29470",
+        "player_name": "Dwayne Washington",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "359.p.28482",
+        "player_name": "Ty Montgomery II",
+        "position": "WR,RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "359.p.24815",
+        "player_name": "Mark Ingram II",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 9,
+        "manager_id": "joey",
+        "player_key": "359.p.27874",
+        "player_name": "Allen Hurns",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 11,
+        "manager_id": "frank",
+        "player_key": "359.p.24791",
+        "player_name": "A.J. Green",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 12,
+        "manager_id": "frank",
+        "player_key": "359.p.24017",
+        "player_name": "Rob Gronkowski",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 12,
+        "manager_id": "sam",
+        "player_key": "359.p.27548",
+        "player_name": "Brandin Cooks",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 12,
+        "manager_id": "kyle",
+        "player_key": "359.p.27538",
+        "player_name": "Eric Ebron",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 12,
+        "manager_id": "rob",
+        "player_key": "359.p.6663",
+        "player_name": "Antonio Gates",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 13,
+        "manager_id": "nick",
+        "player_key": "359.p.100015",
+        "player_name": "Dolphins",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 14,
+        "manager_id": "jake",
+        "player_key": "359.p.27618",
+        "player_name": "Donte Moncrief",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 14,
+        "manager_id": "brian",
+        "player_key": "359.p.26822",
+        "player_name": "Theo Riddick",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 14,
+        "manager_id": "brian",
+        "player_key": "359.p.29281",
+        "player_name": "Michael Thomas",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 14,
+        "manager_id": "rob",
+        "player_key": "359.p.100026",
+        "player_name": "Seahawks",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 14,
+        "manager_id": "nick",
+        "player_key": "359.p.23999",
+        "player_name": "Dez Bryant",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 15,
+        "manager_id": "zef",
+        "player_key": "359.p.100016",
+        "player_name": "Vikings",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 15,
+        "manager_id": "brian",
+        "player_key": "359.p.26822",
+        "player_name": "Theo Riddick",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 16,
+        "manager_id": "brian",
+        "player_key": "359.p.26822",
+        "player_name": "Theo Riddick",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 16,
+        "manager_id": "brian",
+        "player_key": "359.p.25741",
+        "player_name": "Doug Martin",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      }
+    ],
+    "2015": [
+      {
+        "week": 1,
+        "manager_id": "brian",
+        "player_key": "348.p.3727",
+        "player_name": "Adam Vinatieri",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 1,
+        "manager_id": "blake",
+        "player_key": "348.p.8826",
+        "player_name": "DeSean Jackson",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 3,
+        "manager_id": "zef",
+        "player_key": "348.p.26644",
+        "player_name": "Tyler Eifert",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 3,
+        "manager_id": "joey",
+        "player_key": "348.p.26697",
+        "player_name": "Terrance Williams",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 3,
+        "manager_id": "kyle",
+        "player_key": "348.p.27581",
+        "player_name": "Davante Adams",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "LAR"
+      },
+      {
+        "week": 3,
+        "manager_id": "nick",
+        "player_key": "348.p.8565",
+        "player_name": "Matt Prater",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 5,
+        "manager_id": "kyle",
+        "player_key": "348.p.7847",
+        "player_name": "Owen Daniels",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 5,
+        "manager_id": "rob",
+        "player_key": "348.p.28428",
+        "player_name": "Dorial Green-Beckham",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 6,
+        "manager_id": "rob",
+        "player_key": "348.p.100002",
+        "player_name": "Bills",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 7,
+        "manager_id": "zef",
+        "player_key": "348.p.26644",
+        "player_name": "Tyler Eifert",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 7,
+        "manager_id": "zef",
+        "player_key": "348.p.27120",
+        "player_name": "Brandon McManus",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 7,
+        "manager_id": "zef",
+        "player_key": "348.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 7,
+        "manager_id": "blake",
+        "player_key": "348.p.24318",
+        "player_name": "LeGarrette Blount",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "348.p.5228",
+        "player_name": "Tom Brady",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "348.p.7868",
+        "player_name": "Brandon Marshall",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "348.p.24791",
+        "player_name": "A.J. Green",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "348.p.8261",
+        "player_name": "Adrian Peterson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "348.p.24936",
+        "player_name": "Dion Lewis",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "348.p.26644",
+        "player_name": "Tyler Eifert",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "348.p.24851",
+        "player_name": "Randall Cobb",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "348.p.27120",
+        "player_name": "Brandon McManus",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "348.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "348.p.9265",
+        "player_name": "Matthew Stafford",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "LAR"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "348.p.8256",
+        "player_name": "Calvin Johnson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "348.p.27618",
+        "player_name": "Donte Moncrief",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "348.p.7241",
+        "player_name": "Frank Gore",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "348.p.25741",
+        "player_name": "Doug Martin",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "348.p.6791",
+        "player_name": "Benjamin Watson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "348.p.26660",
+        "player_name": "Giovani Bernard",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "348.p.6558",
+        "player_name": "Josh Brown",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 8,
+        "manager_id": "frank",
+        "player_key": "348.p.100001",
+        "player_name": "Falcons",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "348.p.25785",
+        "player_name": "Russell Wilson",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "348.p.23997",
+        "player_name": "Demaryius Thomas",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "348.p.5521",
+        "player_name": "Steve Smith",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "348.p.28398",
+        "player_name": "Todd Gurley",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "348.p.27709",
+        "player_name": "Alfred Blue",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "348.p.7924",
+        "player_name": "Delanie Walker",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "348.p.27646",
+        "player_name": "Martavis Bryant",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "348.p.7867",
+        "player_name": "Stephen Gostkowski",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "348.p.100014",
+        "player_name": "Rams",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAR"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "348.p.25711",
+        "player_name": "Andrew Luck",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "348.p.24057",
+        "player_name": "Emmanuel Sanders",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "348.p.28534",
+        "player_name": "Stefon Diggs",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "348.p.26671",
+        "player_name": "Le'Veon Bell",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "348.p.27631",
+        "player_name": "Devonta Freeman",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "348.p.26686",
+        "player_name": "Travis Kelce",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "348.p.9010",
+        "player_name": "Justin Forsett",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "348.p.4269",
+        "player_name": "Phil Dawson",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "348.p.100026",
+        "player_name": "Seahawks",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "348.p.8780",
+        "player_name": "Matt Ryan",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "348.p.24171",
+        "player_name": "Antonio Brown",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "348.p.27540",
+        "player_name": "Odell Beckham Jr.",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "348.p.24400",
+        "player_name": "Chris Ivory",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "348.p.28465",
+        "player_name": "Duke Johnson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "348.p.6405",
+        "player_name": "Jason Witten",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "348.p.6762",
+        "player_name": "Larry Fitzgerald",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "348.p.28685",
+        "player_name": "Josh Lambo",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "348.p.100016",
+        "player_name": "Vikings",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "348.p.6763",
+        "player_name": "Philip Rivers",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "348.p.27591",
+        "player_name": "Jarvis Landry",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "348.p.27619",
+        "player_name": "John Brown",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "348.p.25807",
+        "player_name": "Lamar Miller",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "348.p.26684",
+        "player_name": "Eddie Lacy",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "348.p.25820",
+        "player_name": "Ladarius Green",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "348.p.24035",
+        "player_name": "Golden Tate",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "348.p.28103",
+        "player_name": "Chandler Catanzaro",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "348.p.100034",
+        "player_name": "Texans",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "348.p.5479",
+        "player_name": "Drew Brees",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "348.p.9496",
+        "player_name": "Julian Edelman",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "348.p.9274",
+        "player_name": "Michael Crabtree",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "348.p.8821",
+        "player_name": "Matt Forte",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "348.p.8781",
+        "player_name": "Darren McFadden",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "348.p.8907",
+        "player_name": "Gary Barnidge",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "348.p.9283",
+        "player_name": "Jeremy Maclin",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "348.p.3727",
+        "player_name": "Adam Vinatieri",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "348.p.100029",
+        "player_name": "Panthers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Car"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "348.p.6337",
+        "player_name": "Carson Palmer",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "348.p.26699",
+        "player_name": "Keenan Allen",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "348.p.25755",
+        "player_name": "Alshon Jeffery",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "348.p.8790",
+        "player_name": "Jonathan Stewart",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "348.p.24843",
+        "player_name": "Shane Vereen",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "348.p.8838",
+        "player_name": "Martellus Bennett",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "348.p.7492",
+        "player_name": "Nate Washington",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "348.p.26534",
+        "player_name": "Justin Tucker",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "348.p.100023",
+        "player_name": "Steelers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "348.p.24822",
+        "player_name": "Andy Dalton",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "348.p.24793",
+        "player_name": "Julio Jones",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "348.p.27535",
+        "player_name": "Mike Evans",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "348.p.24815",
+        "player_name": "Mark Ingram II",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "348.p.26804",
+        "player_name": "Latavius Murray",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "348.p.24017",
+        "player_name": "Rob Gronkowski",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "348.p.24070",
+        "player_name": "Jimmy Graham",
+        "position": "TE",
+        "selected_position": "W/R/T",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "348.p.25885",
+        "player_name": "Blair Walsh",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "348.p.100022",
+        "player_name": "Cardinals",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "348.p.7200",
+        "player_name": "Aaron Rodgers",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "348.p.26650",
+        "player_name": "DeAndre Hopkins",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "348.p.28392",
+        "player_name": "Amari Cooper",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "348.p.27583",
+        "player_name": "Jeremy Hill",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "348.p.8266",
+        "player_name": "Marshawn Lynch",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "348.p.8285",
+        "player_name": "Greg Olsen",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "348.p.24318",
+        "player_name": "LeGarrette Blount",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "348.p.9066",
+        "player_name": "Stephen Hauschka",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "348.p.100020",
+        "player_name": "Jets",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 9,
+        "manager_id": "kyle",
+        "player_key": "348.p.26684",
+        "player_name": "Eddie Lacy",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 9,
+        "manager_id": "brian",
+        "player_key": "348.p.100009",
+        "player_name": "Packers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 10,
+        "manager_id": "joey",
+        "player_key": "348.p.4256",
+        "player_name": "Peyton Manning",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 10,
+        "manager_id": "sam",
+        "player_key": "348.p.24057",
+        "player_name": "Emmanuel Sanders",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 10,
+        "manager_id": "rob",
+        "player_key": "348.p.28026",
+        "player_name": "Willie Snead IV",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 11,
+        "manager_id": "frank",
+        "player_key": "348.p.27538",
+        "player_name": "Eric Ebron",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 11,
+        "manager_id": "blake",
+        "player_key": "348.p.100021",
+        "player_name": "Eagles",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 12,
+        "manager_id": "frank",
+        "player_key": "348.p.6624",
+        "player_name": "Tony Romo",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 12,
+        "manager_id": "blake",
+        "player_key": "348.p.100021",
+        "player_name": "Eagles",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 13,
+        "manager_id": "rob",
+        "player_key": "348.p.100034",
+        "player_name": "Texans",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 14,
+        "manager_id": "blake",
+        "player_key": "348.p.28392",
+        "player_name": "Amari Cooper",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 15,
+        "manager_id": "joey",
+        "player_key": "348.p.28424",
+        "player_name": "T.J. Yeldon",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 15,
+        "manager_id": "sam",
+        "player_key": "348.p.28513",
+        "player_name": "Javorius Allen",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 15,
+        "manager_id": "sam",
+        "player_key": "348.p.9037",
+        "player_name": "Danny Amendola",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 15,
+        "manager_id": "brian",
+        "player_key": "348.p.100029",
+        "player_name": "Panthers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Car"
+      },
+      {
+        "week": 15,
+        "manager_id": "blake",
+        "player_key": "348.p.100003",
+        "player_name": "Bears",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 16,
+        "manager_id": "joey",
+        "player_key": "348.p.23999",
+        "player_name": "Dez Bryant",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 16,
+        "manager_id": "joey",
+        "player_key": "348.p.28424",
+        "player_name": "T.J. Yeldon",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Buf"
+      }
+    ],
+    "2014": [
+      {
+        "week": 1,
+        "manager_id": "rob",
+        "player_key": "331.p.100014",
+        "player_name": "Rams",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAR"
+      },
+      {
+        "week": 2,
+        "manager_id": "frank",
+        "player_key": "331.p.100026",
+        "player_name": "Seahawks",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 2,
+        "manager_id": "jake",
+        "player_key": "331.p.24791",
+        "player_name": "A.J. Green",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 2,
+        "manager_id": "brian",
+        "player_key": "331.p.25741",
+        "player_name": "Doug Martin",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 2,
+        "manager_id": "blake",
+        "player_key": "331.p.100023",
+        "player_name": "Steelers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 2,
+        "manager_id": "rob",
+        "player_key": "331.p.25774",
+        "player_name": "Dwayne Allen",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 3,
+        "manager_id": "joey",
+        "player_key": "331.p.9527",
+        "player_name": "Arian Foster",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 3,
+        "manager_id": "sam",
+        "player_key": "331.p.100029",
+        "player_name": "Panthers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Car"
+      },
+      {
+        "week": 4,
+        "manager_id": "frank",
+        "player_key": "331.p.100017",
+        "player_name": "Patriots",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 4,
+        "manager_id": "sam",
+        "player_key": "331.p.100029",
+        "player_name": "Panthers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Car"
+      },
+      {
+        "week": 6,
+        "manager_id": "kyle",
+        "player_key": "331.p.100004",
+        "player_name": "Bengals",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 7,
+        "manager_id": "frank",
+        "player_key": "331.p.100026",
+        "player_name": "Seahawks",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 7,
+        "manager_id": "jake",
+        "player_key": "331.p.24070",
+        "player_name": "Jimmy Graham",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 8,
+        "manager_id": "jake",
+        "player_key": "331.p.25723",
+        "player_name": "Michael Floyd",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "331.p.7751",
+        "player_name": "Reggie Bush",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 8,
+        "manager_id": "blake",
+        "player_key": "331.p.100003",
+        "player_name": "Bears",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 9,
+        "manager_id": "brian",
+        "player_key": "331.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 9,
+        "manager_id": "blake",
+        "player_key": "331.p.7505",
+        "player_name": "Nick Novak",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 9,
+        "manager_id": "kyle",
+        "player_key": "331.p.6763",
+        "player_name": "Philip Rivers",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 10,
+        "manager_id": "blake",
+        "player_key": "331.p.24822",
+        "player_name": "Andy Dalton",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 13,
+        "manager_id": "jake",
+        "player_key": "331.p.24070",
+        "player_name": "Jimmy Graham",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 14,
+        "manager_id": "blake",
+        "player_key": "331.p.100003",
+        "player_name": "Bears",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 15,
+        "manager_id": "brian",
+        "player_key": "331.p.25885",
+        "player_name": "Blair Walsh",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 16,
+        "manager_id": "jake",
+        "player_key": "331.p.7760",
+        "player_name": "Jay Cutler",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 16,
+        "manager_id": "jake",
+        "player_key": "331.p.24318",
+        "player_name": "LeGarrette Blount",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 16,
+        "manager_id": "jake",
+        "player_key": "331.p.100022",
+        "player_name": "Cardinals",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 16,
+        "manager_id": "sam",
+        "player_key": "331.p.24791",
+        "player_name": "A.J. Green",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 16,
+        "manager_id": "kyle",
+        "player_key": "331.p.25774",
+        "player_name": "Dwayne Allen",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      }
+    ],
+    "2013": [
+      {
+        "week": 1,
+        "manager_id": "zef",
+        "player_key": "314.p.27234",
+        "player_name": "Zach Sudfeld",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 1,
+        "manager_id": "zef",
+        "player_key": "314.p.25742",
+        "player_name": "David Wilson",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 1,
+        "manager_id": "blake",
+        "player_key": "314.p.8332",
+        "player_name": "James Jones",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 3,
+        "manager_id": "joey",
+        "player_key": "314.p.8868",
+        "player_name": "Jermichael Finley",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 3,
+        "manager_id": "sam",
+        "player_key": "314.p.25962",
+        "player_name": "Daryl Richardson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 3,
+        "manager_id": "blake",
+        "player_key": "314.p.9293",
+        "player_name": "Hakeem Nicks",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 5,
+        "manager_id": "jake",
+        "player_key": "314.p.25883",
+        "player_name": "Alfred Morris",
+        "position": "RB",
+        "selected_position": "W/R/T",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 5,
+        "manager_id": "blake",
+        "player_key": "314.p.8256",
+        "player_name": "Calvin Johnson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 5,
+        "manager_id": "blake",
+        "player_key": "314.p.100006",
+        "player_name": "Cowboys",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 6,
+        "manager_id": "rob",
+        "player_key": "314.p.24901",
+        "player_name": "Cecil Shorts",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 6,
+        "manager_id": "sam",
+        "player_key": "314.p.24070",
+        "player_name": "Jimmy Graham",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 7,
+        "manager_id": "brian",
+        "player_key": "314.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "314.p.5448",
+        "player_name": "Michael Vick",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 9,
+        "manager_id": "sam",
+        "player_key": "314.p.9527",
+        "player_name": "Arian Foster",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 10,
+        "manager_id": "zef",
+        "player_key": "314.p.3727",
+        "player_name": "Adam Vinatieri",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 10,
+        "manager_id": "sam",
+        "player_key": "314.p.24795",
+        "player_name": "Jake Locker",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 12,
+        "manager_id": "zef",
+        "player_key": "314.p.100005",
+        "player_name": "Browns",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 12,
+        "manager_id": "brian",
+        "player_key": "314.p.24860",
+        "player_name": "Stevan Ridley",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 12,
+        "manager_id": "brian",
+        "player_key": "314.p.7374",
+        "player_name": "Joel Dreessen",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 12,
+        "manager_id": "blake",
+        "player_key": "314.p.26682",
+        "player_name": "Aaron Dobson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 12,
+        "manager_id": "nick",
+        "player_key": "314.p.100012",
+        "player_name": "Chiefs",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 13,
+        "manager_id": "jake",
+        "player_key": "314.p.26708",
+        "player_name": "Jordan Reed",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 13,
+        "manager_id": "brian",
+        "player_key": "314.p.6407",
+        "player_name": "Nate Burleson",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 13,
+        "manager_id": "blake",
+        "player_key": "314.p.9286",
+        "player_name": "Percy Harvin",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 14,
+        "manager_id": "rob",
+        "player_key": "314.p.100004",
+        "player_name": "Bengals",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 14,
+        "manager_id": "frank",
+        "player_key": "314.p.7751",
+        "player_name": "Reggie Bush",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 15,
+        "manager_id": "kyle",
+        "player_key": "314.p.7809",
+        "player_name": "Maurice Jones-Drew",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 15,
+        "manager_id": "rob",
+        "player_key": "314.p.24901",
+        "player_name": "Cecil Shorts",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 15,
+        "manager_id": "jake",
+        "player_key": "314.p.25744",
+        "player_name": "Coby Fleener",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 16,
+        "manager_id": "zef",
+        "player_key": "314.p.100005",
+        "player_name": "Browns",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 16,
+        "manager_id": "rob",
+        "player_key": "314.p.7755",
+        "player_name": "Vernon Davis",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 16,
+        "manager_id": "frank",
+        "player_key": "314.p.100003",
+        "player_name": "Bears",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Chi"
+      }
+    ],
+    "2012": [
+      {
+        "week": 1,
+        "manager_id": "nick",
+        "player_key": "273.p.100002",
+        "player_name": "Bills",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 2,
+        "manager_id": "jake",
+        "player_key": "273.p.100013",
+        "player_name": "Raiders",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 2,
+        "manager_id": "blake",
+        "player_key": "273.p.24088",
+        "player_name": "Aaron Hernandez",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 2,
+        "manager_id": "frank",
+        "player_key": "273.p.7801",
+        "player_name": "Greg Jennings",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 3,
+        "manager_id": "frank",
+        "player_key": "273.p.100008",
+        "player_name": "Lions",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 4,
+        "manager_id": "blake",
+        "player_key": "273.p.24089",
+        "player_name": "Dennis Pitta",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 4,
+        "manager_id": "nick",
+        "player_key": "273.p.6824",
+        "player_name": "Nate Kaeding",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 5,
+        "manager_id": "nick",
+        "player_key": "273.p.6824",
+        "player_name": "Nate Kaeding",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 7,
+        "manager_id": "kyle",
+        "player_key": "273.p.24830",
+        "player_name": "Kyle Rudolph",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 7,
+        "manager_id": "brian",
+        "player_key": "273.p.7755",
+        "player_name": "Vernon Davis",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 7,
+        "manager_id": "rob",
+        "player_key": "273.p.24070",
+        "player_name": "Jimmy Graham",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 7,
+        "manager_id": "rob",
+        "player_key": "273.p.100033",
+        "player_name": "Ravens",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 8,
+        "manager_id": "zef",
+        "player_key": "273.p.100016",
+        "player_name": "Vikings",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 10,
+        "manager_id": "nick",
+        "player_key": "273.p.100022",
+        "player_name": "Cardinals",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 11,
+        "manager_id": "blake",
+        "player_key": "273.p.9560",
+        "player_name": "Danny Woodhead",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 11,
+        "manager_id": "nick",
+        "player_key": "273.p.9283",
+        "player_name": "Jeremy Maclin",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 11,
+        "manager_id": "rob",
+        "player_key": "273.p.8277",
+        "player_name": "Dwayne Bowe",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 12,
+        "manager_id": "sam",
+        "player_key": "273.p.8021",
+        "player_name": "Miles Austin",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 12,
+        "manager_id": "blake",
+        "player_key": "273.p.8332",
+        "player_name": "James Jones",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 12,
+        "manager_id": "blake",
+        "player_key": "273.p.100009",
+        "player_name": "Packers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 12,
+        "manager_id": "brian",
+        "player_key": "273.p.7755",
+        "player_name": "Vernon Davis",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 13,
+        "manager_id": "kyle",
+        "player_key": "273.p.5463",
+        "player_name": "Santana Moss",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 14,
+        "manager_id": "joey",
+        "player_key": "273.p.100034",
+        "player_name": "Texans",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 14,
+        "manager_id": "nick",
+        "player_key": "273.p.100022",
+        "player_name": "Cardinals",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 15,
+        "manager_id": "zef",
+        "player_key": "273.p.9219",
+        "player_name": "Connor Barth",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 15,
+        "manager_id": "brian",
+        "player_key": "273.p.7022",
+        "player_name": "Lawrence Tynes",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 15,
+        "manager_id": "nick",
+        "player_key": "273.p.8504",
+        "player_name": "Ahmad Bradshaw",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 15,
+        "manager_id": "rob",
+        "player_key": "273.p.24757",
+        "player_name": "Danario Alexander",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 15,
+        "manager_id": "rob",
+        "player_key": "273.p.6390",
+        "player_name": "Anquan Boldin",
+        "position": "WR",
+        "selected_position": "W/R/T",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 16,
+        "manager_id": "blake",
+        "player_key": "273.p.9293",
+        "player_name": "Hakeem Nicks",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 16,
+        "manager_id": "blake",
+        "player_key": "273.p.9295",
+        "player_name": "Beanie Wells",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 16,
+        "manager_id": "brian",
+        "player_key": "273.p.100019",
+        "player_name": "Giants",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYG"
+      }
+    ],
+    "2011": [
+      {
+        "week": 1,
+        "manager_id": "brian",
+        "player_key": "257.p.6824",
+        "player_name": "Nate Kaeding",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 1,
+        "manager_id": "nick",
+        "player_key": "257.p.100023",
+        "player_name": "Steelers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 1,
+        "manager_id": "raphi",
+        "player_key": "257.p.9391",
+        "player_name": "Austin Collie",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 2,
+        "manager_id": "joey",
+        "player_key": "257.p.6663",
+        "player_name": "Antonio Gates",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 3,
+        "manager_id": "joey",
+        "player_key": "257.p.5951",
+        "player_name": "Deion Branch",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 4,
+        "manager_id": "raphi",
+        "player_key": "257.p.9294",
+        "player_name": "Kenny Britt",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 5,
+        "manager_id": "blake",
+        "player_key": "257.p.8292",
+        "player_name": "Zach Miller",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 5,
+        "manager_id": "blake",
+        "player_key": "257.p.100012",
+        "player_name": "Chiefs",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 5,
+        "manager_id": "raphi",
+        "player_key": "257.p.6339",
+        "player_name": "Andre Johnson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 5,
+        "manager_id": "kyle",
+        "player_key": "257.p.8800",
+        "player_name": "Rashard Mendenhall",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 6,
+        "manager_id": "jake",
+        "player_key": "257.p.100016",
+        "player_name": "Vikings",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 6,
+        "manager_id": "rob",
+        "player_key": "257.p.8277",
+        "player_name": "Dwayne Bowe",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 7,
+        "manager_id": "rob",
+        "player_key": "257.p.4587",
+        "player_name": "David Akers",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 7,
+        "manager_id": "rob",
+        "player_key": "257.p.100025",
+        "player_name": "49ers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 7,
+        "manager_id": "raphi",
+        "player_key": "257.p.5228",
+        "player_name": "Tom Brady",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 7,
+        "manager_id": "raphi",
+        "player_key": "257.p.7241",
+        "player_name": "Frank Gore",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 7,
+        "manager_id": "raphi",
+        "player_key": "257.p.24005",
+        "player_name": "Jahvid Best",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 7,
+        "manager_id": "raphi",
+        "player_key": "257.p.6360",
+        "player_name": "Dallas Clark",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "257.p.7779",
+        "player_name": "Joseph Addai",
+        "position": "RB",
+        "selected_position": "W/R",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 8,
+        "manager_id": "raphi",
+        "player_key": "257.p.5463",
+        "player_name": "Santana Moss",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 9,
+        "manager_id": "blake",
+        "player_key": "257.p.100012",
+        "player_name": "Chiefs",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 9,
+        "manager_id": "raphi",
+        "player_key": "257.p.5463",
+        "player_name": "Santana Moss",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 9,
+        "manager_id": "kyle",
+        "player_key": "257.p.100013",
+        "player_name": "Raiders",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 10,
+        "manager_id": "blake",
+        "player_key": "257.p.8826",
+        "player_name": "DeSean Jackson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 10,
+        "manager_id": "raphi",
+        "player_key": "257.p.6339",
+        "player_name": "Andre Johnson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 11,
+        "manager_id": "joey",
+        "player_key": "257.p.6359",
+        "player_name": "Willis McGahee",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 11,
+        "manager_id": "nick",
+        "player_key": "257.p.100002",
+        "player_name": "Bills",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 14,
+        "manager_id": "zef",
+        "player_key": "257.p.8868",
+        "player_name": "Jermichael Finley",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 14,
+        "manager_id": "nick",
+        "player_key": "257.p.8261",
+        "player_name": "Adrian Peterson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 14,
+        "manager_id": "raphi",
+        "player_key": "257.p.6339",
+        "player_name": "Andre Johnson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 14,
+        "manager_id": "raphi",
+        "player_key": "257.p.5951",
+        "player_name": "Deion Branch",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 14,
+        "manager_id": "kyle",
+        "player_key": "257.p.8841",
+        "player_name": "Kevin Smith",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 15,
+        "manager_id": "brian",
+        "player_key": "257.p.100033",
+        "player_name": "Ravens",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 15,
+        "manager_id": "raphi",
+        "player_key": "257.p.9404",
+        "player_name": "Johnny Knox",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 15,
+        "manager_id": "raphi",
+        "player_key": "257.p.6339",
+        "player_name": "Andre Johnson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 15,
+        "manager_id": "raphi",
+        "player_key": "257.p.5951",
+        "player_name": "Deion Branch",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 16,
+        "manager_id": "raphi",
+        "player_key": "257.p.9404",
+        "player_name": "Johnny Knox",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 16,
+        "manager_id": "raphi",
+        "player_key": "257.p.6339",
+        "player_name": "Andre Johnson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 16,
+        "manager_id": "raphi",
+        "player_key": "257.p.24892",
+        "player_name": "Roy Helu",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 16,
+        "manager_id": "raphi",
+        "player_key": "257.p.24550",
+        "player_name": "Jake Ballard",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 16,
+        "manager_id": "raphi",
+        "player_key": "257.p.6154",
+        "player_name": "Billy Cundiff",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 16,
+        "manager_id": "kyle",
+        "player_key": "257.p.6624",
+        "player_name": "Tony Romo",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Dal"
+      }
+    ],
+    "2010": [
+      {
+        "week": 1,
+        "manager_id": "rob",
+        "player_key": "242.p.9295",
+        "player_name": "Beanie Wells",
+        "position": "RB",
+        "selected_position": "W/R",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 2,
+        "manager_id": "brian",
+        "player_key": "242.p.8281",
+        "player_name": "Robert Meachem",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 4,
+        "manager_id": "kyle",
+        "player_key": "242.p.4262",
+        "player_name": "Randy Moss",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 4,
+        "manager_id": "zef",
+        "player_key": "242.p.100011",
+        "player_name": "Colts",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 4,
+        "manager_id": "brian",
+        "player_key": "242.p.8872",
+        "player_name": "Mario Manningham",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 5,
+        "manager_id": "raphi",
+        "player_key": "242.p.100023",
+        "player_name": "Steelers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 5,
+        "manager_id": "brian",
+        "player_key": "242.p.8872",
+        "player_name": "Mario Manningham",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 5,
+        "manager_id": "rob",
+        "player_key": "242.p.8868",
+        "player_name": "Jermichael Finley",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 6,
+        "manager_id": "brian",
+        "player_key": "242.p.6591",
+        "player_name": "Kevin Walter",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 6,
+        "manager_id": "blake",
+        "player_key": "242.p.8781",
+        "player_name": "Darren McFadden",
+        "position": "RB",
+        "selected_position": "W/R",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 6,
+        "manager_id": "rob",
+        "player_key": "242.p.8285",
+        "player_name": "Greg Olsen",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "sam",
+        "player_key": "242.p.9294",
+        "player_name": "Kenny Britt",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 8,
+        "manager_id": "raphi",
+        "player_key": "242.p.4863",
+        "player_name": "Donald Driver",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "242.p.4587",
+        "player_name": "David Akers",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 8,
+        "manager_id": "rob",
+        "player_key": "242.p.100003",
+        "player_name": "Bears",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 9,
+        "manager_id": "sam",
+        "player_key": "242.p.8416",
+        "player_name": "Brent Celek",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Phi"
+      },
+      {
+        "week": 10,
+        "manager_id": "jake",
+        "player_key": "242.p.4323",
+        "player_name": "Hines Ward",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 10,
+        "manager_id": "raphi",
+        "player_key": "242.p.100023",
+        "player_name": "Steelers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 10,
+        "manager_id": "joey",
+        "player_key": "242.p.7776",
+        "player_name": "DeAngelo Williams",
+        "position": "RB",
+        "selected_position": "W/R",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 10,
+        "manager_id": "brian",
+        "player_key": "242.p.24088",
+        "player_name": "Aaron Hernandez",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 11,
+        "manager_id": "kyle",
+        "player_key": "242.p.9032",
+        "player_name": "Dan Carpenter",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 11,
+        "manager_id": "sam",
+        "player_key": "242.p.6000",
+        "player_name": "Randy McMichael",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 11,
+        "manager_id": "joey",
+        "player_key": "242.p.7751",
+        "player_name": "Reggie Bush",
+        "position": "RB",
+        "selected_position": "W/R",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 12,
+        "manager_id": "zef",
+        "player_key": "242.p.7237",
+        "player_name": "Vincent Jackson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 12,
+        "manager_id": "joey",
+        "player_key": "242.p.7434",
+        "player_name": "Rob Bironas",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 12,
+        "manager_id": "nick",
+        "player_key": "242.p.23999",
+        "player_name": "Dez Bryant",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 13,
+        "manager_id": "kyle",
+        "player_key": "242.p.8277",
+        "player_name": "Dwayne Bowe",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 14,
+        "manager_id": "jake",
+        "player_key": "242.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 14,
+        "manager_id": "sam",
+        "player_key": "242.p.6663",
+        "player_name": "Antonio Gates",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 14,
+        "manager_id": "joey",
+        "player_key": "242.p.6772",
+        "player_name": "Lee Evans",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 15,
+        "manager_id": "kyle",
+        "player_key": "242.p.100027",
+        "player_name": "Buccaneers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 15,
+        "manager_id": "sam",
+        "player_key": "242.p.6663",
+        "player_name": "Antonio Gates",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 15,
+        "manager_id": "sam",
+        "player_key": "242.p.100016",
+        "player_name": "Vikings",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 15,
+        "manager_id": "nick",
+        "player_key": "242.p.8261",
+        "player_name": "Adrian Peterson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 15,
+        "manager_id": "blake",
+        "player_key": "242.p.3664",
+        "player_name": "Terrell Owens",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 15,
+        "manager_id": "rob",
+        "player_key": "242.p.7282",
+        "player_name": "Kyle Orton",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 16,
+        "manager_id": "jake",
+        "player_key": "242.p.9043",
+        "player_name": "Mike Tolbert",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 16,
+        "manager_id": "sam",
+        "player_key": "242.p.6663",
+        "player_name": "Antonio Gates",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 16,
+        "manager_id": "raphi",
+        "player_key": "242.p.7809",
+        "player_name": "Maurice Jones-Drew",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 16,
+        "manager_id": "brian",
+        "player_key": "242.p.24088",
+        "player_name": "Aaron Hernandez",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 16,
+        "manager_id": "rob",
+        "player_key": "242.p.7282",
+        "player_name": "Kyle Orton",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Buf"
+      }
+    ],
+    "2009": [
+      {
+        "week": 1,
+        "manager_id": "raphi",
+        "player_key": "222.p.6837",
+        "player_name": "Bernard Berrian",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 1,
+        "manager_id": "sam",
+        "player_key": "222.p.8286",
+        "player_name": "Anthony Gonzalez",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 2,
+        "manager_id": "blake",
+        "player_key": "222.p.100010",
+        "player_name": "Titans",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 2,
+        "manager_id": "zef",
+        "player_key": "222.p.7801",
+        "player_name": "Greg Jennings",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 3,
+        "manager_id": "sam",
+        "player_key": "222.p.8263",
+        "player_name": "Ted Ginn Jr.",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 3,
+        "manager_id": "blake",
+        "player_key": "222.p.5977",
+        "player_name": "Brian Westbrook",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 3,
+        "manager_id": "rob",
+        "player_key": "222.p.3664",
+        "player_name": "Terrell Owens",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 4,
+        "manager_id": "joey",
+        "player_key": "222.p.7179",
+        "player_name": "Braylon Edwards",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 5,
+        "manager_id": "joey",
+        "player_key": "222.p.6840",
+        "player_name": "Chris Cooley",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 5,
+        "manager_id": "joey",
+        "player_key": "222.p.3988",
+        "player_name": "Derrick Mason",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 5,
+        "manager_id": "blake",
+        "player_key": "222.p.6896",
+        "player_name": "Josh Scobee",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 5,
+        "manager_id": "rob",
+        "player_key": "222.p.100020",
+        "player_name": "Jets",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 6,
+        "manager_id": "joey",
+        "player_key": "222.p.7434",
+        "player_name": "Rob Bironas",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 6,
+        "manager_id": "joey",
+        "player_key": "222.p.100019",
+        "player_name": "Giants",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 6,
+        "manager_id": "rob",
+        "player_key": "222.p.7492",
+        "player_name": "Nate Washington",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 6,
+        "manager_id": "rob",
+        "player_key": "222.p.2034",
+        "player_name": "Jason Hanson",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "222.p.8256",
+        "player_name": "Calvin Johnson",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 8,
+        "manager_id": "nick",
+        "player_key": "222.p.100030",
+        "player_name": "Jaguars",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 14,
+        "manager_id": "rob",
+        "player_key": "222.p.9286",
+        "player_name": "Percy Harvin",
+        "position": "WR",
+        "selected_position": "W/R",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 15,
+        "manager_id": "raphi",
+        "player_key": "222.p.5198",
+        "player_name": "Neil Rackers",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 16,
+        "manager_id": "joey",
+        "player_key": "222.p.100019",
+        "player_name": "Giants",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 16,
+        "manager_id": "raphi",
+        "player_key": "222.p.5198",
+        "player_name": "Neil Rackers",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Hou"
+      }
+    ],
+    "2008": [
+      {
+        "week": 1,
+        "manager_id": "joey",
+        "player_key": "199.p.6359",
+        "player_name": "Willis McGahee",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 1,
+        "manager_id": "brian",
+        "player_key": "199.p.5478",
+        "player_name": "Todd Heap",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 1,
+        "manager_id": "rob",
+        "player_key": "199.p.2914",
+        "player_name": "Isaac Bruce",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 2,
+        "manager_id": "joey",
+        "player_key": "199.p.6359",
+        "player_name": "Willis McGahee",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 2,
+        "manager_id": "blake",
+        "player_key": "199.p.100033",
+        "player_name": "Ravens",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 2,
+        "manager_id": "nick",
+        "player_key": "199.p.7755",
+        "player_name": "Vernon Davis",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 2,
+        "manager_id": "brian",
+        "player_key": "199.p.6339",
+        "player_name": "Andre Johnson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 2,
+        "manager_id": "brian",
+        "player_key": "199.p.7802",
+        "player_name": "Anthony Fasano",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 2,
+        "manager_id": "raphi",
+        "player_key": "199.p.6837",
+        "player_name": "Bernard Berrian",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 4,
+        "manager_id": "reuben",
+        "player_key": "199.p.100030",
+        "player_name": "Jaguars",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Jax"
+      },
+      {
+        "week": 4,
+        "manager_id": "blake",
+        "player_key": "199.p.6337",
+        "player_name": "Carson Palmer",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 4,
+        "manager_id": "brian",
+        "player_key": "199.p.5478",
+        "player_name": "Todd Heap",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 4,
+        "manager_id": "rob",
+        "player_key": "199.p.7635",
+        "player_name": "Ryan Grant",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 5,
+        "manager_id": "nick",
+        "player_key": "199.p.5463",
+        "player_name": "Santana Moss",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 5,
+        "manager_id": "nick",
+        "player_key": "199.p.100002",
+        "player_name": "Bills",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Buf"
+      },
+      {
+        "week": 5,
+        "manager_id": "kyle",
+        "player_key": "199.p.8815",
+        "player_name": "John Carlson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 5,
+        "manager_id": "rob",
+        "player_key": "199.p.6460",
+        "player_name": "Brandon Lloyd",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 6,
+        "manager_id": "joey",
+        "player_key": "199.p.7434",
+        "player_name": "Rob Bironas",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ten"
+      },
+      {
+        "week": 6,
+        "manager_id": "joey",
+        "player_key": "199.p.100019",
+        "player_name": "Giants",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 6,
+        "manager_id": "blake",
+        "player_key": "199.p.3516",
+        "player_name": "Amani Toomer",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 6,
+        "manager_id": "kyle",
+        "player_key": "199.p.8819",
+        "player_name": "Eddie Royal",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 6,
+        "manager_id": "zef",
+        "player_key": "199.p.3512",
+        "player_name": "Bobby Engram",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 6,
+        "manager_id": "raphi",
+        "player_key": "199.p.4259",
+        "player_name": "Fred Taylor",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 7,
+        "manager_id": "joey",
+        "player_key": "199.p.5499",
+        "player_name": "Chris Chambers",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 7,
+        "manager_id": "zef",
+        "player_key": "199.p.3899",
+        "player_name": "Ike Hilliard",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 7,
+        "manager_id": "brian",
+        "player_key": "199.p.6867",
+        "player_name": "Jerricho Cotchery",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Car"
+      },
+      {
+        "week": 7,
+        "manager_id": "raphi",
+        "player_key": "199.p.100024",
+        "player_name": "Chargers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "199.p.4652",
+        "player_name": "Edgerrin James",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "raphi",
+        "player_key": "199.p.100024",
+        "player_name": "Chargers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 9,
+        "manager_id": "joey",
+        "player_key": "199.p.6359",
+        "player_name": "Willis McGahee",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 9,
+        "manager_id": "blake",
+        "player_key": "199.p.7206",
+        "player_name": "Heath Miller",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 9,
+        "manager_id": "brian",
+        "player_key": "199.p.4652",
+        "player_name": "Edgerrin James",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 9,
+        "manager_id": "raphi",
+        "player_key": "199.p.3893",
+        "player_name": "Warrick Dunn",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "TB"
+      },
+      {
+        "week": 9,
+        "manager_id": "raphi",
+        "player_key": "199.p.6405",
+        "player_name": "Jason Witten",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 10,
+        "manager_id": "joey",
+        "player_key": "199.p.5499",
+        "player_name": "Chris Chambers",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 10,
+        "manager_id": "reuben",
+        "player_key": "199.p.6243",
+        "player_name": "Matt Bryant",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 10,
+        "manager_id": "raphi",
+        "player_key": "199.p.6837",
+        "player_name": "Bernard Berrian",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 11,
+        "manager_id": "joey",
+        "player_key": "199.p.6772",
+        "player_name": "Lee Evans",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 11,
+        "manager_id": "blake",
+        "player_key": "199.p.7802",
+        "player_name": "Anthony Fasano",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 12,
+        "manager_id": "blake",
+        "player_key": "199.p.7802",
+        "player_name": "Anthony Fasano",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 12,
+        "manager_id": "nick",
+        "player_key": "199.p.4650",
+        "player_name": "Donovan McNabb",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 12,
+        "manager_id": "nick",
+        "player_key": "199.p.5907",
+        "player_name": "Daniel Graham",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 12,
+        "manager_id": "nick",
+        "player_key": "199.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 13,
+        "manager_id": "joey",
+        "player_key": "199.p.6359",
+        "player_name": "Willis McGahee",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 14,
+        "manager_id": "joey",
+        "player_key": "199.p.5499",
+        "player_name": "Chris Chambers",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "KC"
+      },
+      {
+        "week": 14,
+        "manager_id": "joey",
+        "player_key": "199.p.6663",
+        "player_name": "Antonio Gates",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 14,
+        "manager_id": "nick",
+        "player_key": "199.p.8826",
+        "player_name": "DeSean Jackson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 15,
+        "manager_id": "raphi",
+        "player_key": "199.p.4259",
+        "player_name": "Fred Taylor",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 15,
+        "manager_id": "rob",
+        "player_key": "199.p.7241",
+        "player_name": "Frank Gore",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 16,
+        "manager_id": "joey",
+        "player_key": "199.p.100019",
+        "player_name": "Giants",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 16,
+        "manager_id": "reuben",
+        "player_key": "199.p.6390",
+        "player_name": "Anquan Boldin",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 16,
+        "manager_id": "nick",
+        "player_key": "199.p.5652",
+        "player_name": "T.J. Houshmandzadeh",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 16,
+        "manager_id": "brian",
+        "player_key": "199.p.6492",
+        "player_name": "Donald Lee",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 16,
+        "manager_id": "raphi",
+        "player_key": "199.p.6837",
+        "player_name": "Bernard Berrian",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 16,
+        "manager_id": "raphi",
+        "player_key": "199.p.4259",
+        "player_name": "Fred Taylor",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 16,
+        "manager_id": "rob",
+        "player_key": "199.p.7241",
+        "player_name": "Frank Gore",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYJ"
+      }
+    ],
+    "2007": [
+      {
+        "week": 1,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 1,
+        "manager_id": "blake",
+        "player_key": "175.p.5951",
+        "player_name": "Deion Branch",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 2,
+        "manager_id": "brian",
+        "player_key": "175.p.6809",
+        "player_name": "Devery Henderson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 2,
+        "manager_id": "joey",
+        "player_key": "175.p.100015",
+        "player_name": "Dolphins",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 2,
+        "manager_id": "matt",
+        "player_key": "175.p.100004",
+        "player_name": "Bengals",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 2,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 3,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 4,
+        "manager_id": "brian",
+        "player_key": "175.p.5906",
+        "player_name": "Javon Walker",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 4,
+        "manager_id": "joey",
+        "player_key": "175.p.100015",
+        "player_name": "Dolphins",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 4,
+        "manager_id": "matt",
+        "player_key": "175.p.4650",
+        "player_name": "Donovan McNabb",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 4,
+        "manager_id": "matt",
+        "player_key": "175.p.5463",
+        "player_name": "Santana Moss",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 4,
+        "manager_id": "matt",
+        "player_key": "175.p.5548",
+        "player_name": "Rudi Johnson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 4,
+        "manager_id": "matt",
+        "player_key": "175.p.3082",
+        "player_name": "Jeff Wilkins",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "LAR"
+      },
+      {
+        "week": 4,
+        "manager_id": "jake",
+        "player_key": "175.p.5977",
+        "player_name": "Brian Westbrook",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 4,
+        "manager_id": "kyle",
+        "player_key": "175.p.5479",
+        "player_name": "Drew Brees",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 4,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 4,
+        "manager_id": "kyle",
+        "player_key": "175.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 4,
+        "manager_id": "blake",
+        "player_key": "175.p.7770",
+        "player_name": "Laurence Maroney",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 5,
+        "manager_id": "joey",
+        "player_key": "175.p.5478",
+        "player_name": "Todd Heap",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 5,
+        "manager_id": "joey",
+        "player_key": "175.p.5854",
+        "player_name": "Shayne Graham",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 5,
+        "manager_id": "matt",
+        "player_key": "175.p.4650",
+        "player_name": "Donovan McNabb",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 5,
+        "manager_id": "matt",
+        "player_key": "175.p.5652",
+        "player_name": "T.J. Houshmandzadeh",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 5,
+        "manager_id": "matt",
+        "player_key": "175.p.5463",
+        "player_name": "Santana Moss",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 5,
+        "manager_id": "matt",
+        "player_key": "175.p.5548",
+        "player_name": "Rudi Johnson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 5,
+        "manager_id": "matt",
+        "player_key": "175.p.100004",
+        "player_name": "Bengals",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Cin"
+      },
+      {
+        "week": 5,
+        "manager_id": "jake",
+        "player_key": "175.p.4157",
+        "player_name": "Jon Kitna",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 5,
+        "manager_id": "nick",
+        "player_key": "175.p.7779",
+        "player_name": "Joseph Addai",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 5,
+        "manager_id": "nick",
+        "player_key": "175.p.100016",
+        "player_name": "Vikings",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 5,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 5,
+        "manager_id": "kyle",
+        "player_key": "175.p.6558",
+        "player_name": "Josh Brown",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 5,
+        "manager_id": "blake",
+        "player_key": "175.p.7774",
+        "player_name": "Santonio Holmes",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Chi"
+      },
+      {
+        "week": 5,
+        "manager_id": "blake",
+        "player_key": "175.p.7770",
+        "player_name": "Laurence Maroney",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 6,
+        "manager_id": "joey",
+        "player_key": "175.p.5478",
+        "player_name": "Todd Heap",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 6,
+        "manager_id": "joey",
+        "player_key": "175.p.100015",
+        "player_name": "Dolphins",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 6,
+        "manager_id": "matt",
+        "player_key": "175.p.5463",
+        "player_name": "Santana Moss",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 6,
+        "manager_id": "jake",
+        "player_key": "175.p.4541",
+        "player_name": "Kurt Warner",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 6,
+        "manager_id": "kyle",
+        "player_key": "175.p.5477",
+        "player_name": "Reggie Wayne",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 6,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 6,
+        "manager_id": "kyle",
+        "player_key": "175.p.5109",
+        "player_name": "Darrell Jackson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 6,
+        "manager_id": "kyle",
+        "player_key": "175.p.7073",
+        "player_name": "Willie Parker",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 6,
+        "manager_id": "kyle",
+        "player_key": "175.p.100007",
+        "player_name": "Broncos",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 6,
+        "manager_id": "blake",
+        "player_key": "175.p.7206",
+        "player_name": "Heath Miller",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 7,
+        "manager_id": "brian",
+        "player_key": "175.p.6975",
+        "player_name": "Patrick Crayton",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "LAC"
+      },
+      {
+        "week": 7,
+        "manager_id": "joey",
+        "player_key": "175.p.5478",
+        "player_name": "Todd Heap",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 7,
+        "manager_id": "matt",
+        "player_key": "175.p.5548",
+        "player_name": "Rudi Johnson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 7,
+        "manager_id": "nick",
+        "player_key": "175.p.5198",
+        "player_name": "Neil Rackers",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Hou"
+      },
+      {
+        "week": 7,
+        "manager_id": "zef",
+        "player_key": "175.p.6800",
+        "player_name": "Tatum Bell",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 7,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 7,
+        "manager_id": "kyle",
+        "player_key": "175.p.6791",
+        "player_name": "Benjamin Watson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 8,
+        "manager_id": "brian",
+        "player_key": "175.p.3514",
+        "player_name": "Marvin Harrison",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "175.p.5889",
+        "player_name": "Joey Harrington",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "NO"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "175.p.6762",
+        "player_name": "Larry Fitzgerald",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "175.p.6802",
+        "player_name": "Julius Jones",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 8,
+        "manager_id": "joey",
+        "player_key": "175.p.5478",
+        "player_name": "Todd Heap",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 8,
+        "manager_id": "matt",
+        "player_key": "175.p.5548",
+        "player_name": "Rudi Johnson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 8,
+        "manager_id": "matt",
+        "player_key": "175.p.5048",
+        "player_name": "Shaun Alexander",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "175.p.5109",
+        "player_name": "Darrell Jackson",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "175.p.6359",
+        "player_name": "Willis McGahee",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "175.p.6791",
+        "player_name": "Benjamin Watson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 8,
+        "manager_id": "kyle",
+        "player_key": "175.p.6558",
+        "player_name": "Josh Brown",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "NYG"
+      },
+      {
+        "week": 8,
+        "manager_id": "george",
+        "player_key": "175.p.3950",
+        "player_name": "Tony Gonzalez",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Atl"
+      },
+      {
+        "week": 9,
+        "manager_id": "brian",
+        "player_key": "175.p.7241",
+        "player_name": "Frank Gore",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "NYJ"
+      },
+      {
+        "week": 9,
+        "manager_id": "joey",
+        "player_key": "175.p.5478",
+        "player_name": "Todd Heap",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 9,
+        "manager_id": "joey",
+        "player_key": "175.p.100015",
+        "player_name": "Dolphins",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Mia"
+      },
+      {
+        "week": 9,
+        "manager_id": "danny",
+        "player_key": "175.p.8277",
+        "player_name": "Dwayne Bowe",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Cle"
+      },
+      {
+        "week": 9,
+        "manager_id": "matt",
+        "player_key": "175.p.5900",
+        "player_name": "Jeremy Shockey",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Car"
+      },
+      {
+        "week": 9,
+        "manager_id": "matt",
+        "player_key": "175.p.3082",
+        "player_name": "Jeff Wilkins",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "LAR"
+      },
+      {
+        "week": 9,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 10,
+        "manager_id": "joey",
+        "player_key": "175.p.6763",
+        "player_name": "Philip Rivers",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 10,
+        "manager_id": "joey",
+        "player_key": "175.p.3135",
+        "player_name": "Joey Galloway",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 10,
+        "manager_id": "joey",
+        "player_key": "175.p.6360",
+        "player_name": "Dallas Clark",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Bal"
+      },
+      {
+        "week": 10,
+        "manager_id": "matt",
+        "player_key": "175.p.5463",
+        "player_name": "Santana Moss",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 10,
+        "manager_id": "matt",
+        "player_key": "175.p.5899",
+        "player_name": "Donte' Stallworth",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 10,
+        "manager_id": "matt",
+        "player_key": "175.p.5048",
+        "player_name": "Shaun Alexander",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 10,
+        "manager_id": "nick",
+        "player_key": "175.p.100016",
+        "player_name": "Vikings",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 10,
+        "manager_id": "zef",
+        "player_key": "175.p.3727",
+        "player_name": "Adam Vinatieri",
+        "position": "K",
+        "selected_position": "K",
+        "nfl_team": "Ind"
+      },
+      {
+        "week": 10,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 10,
+        "manager_id": "kyle",
+        "player_key": "175.p.6791",
+        "player_name": "Benjamin Watson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 10,
+        "manager_id": "blake",
+        "player_key": "175.p.5496",
+        "player_name": "LaMont Jordan",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Den"
+      },
+      {
+        "week": 11,
+        "manager_id": "matt",
+        "player_key": "175.p.5048",
+        "player_name": "Shaun Alexander",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 11,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 12,
+        "manager_id": "matt",
+        "player_key": "175.p.4650",
+        "player_name": "Donovan McNabb",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 12,
+        "manager_id": "matt",
+        "player_key": "175.p.5048",
+        "player_name": "Shaun Alexander",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Was"
+      },
+      {
+        "week": 12,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 12,
+        "manager_id": "blake",
+        "player_key": "175.p.7206",
+        "player_name": "Heath Miller",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 12,
+        "manager_id": "george",
+        "player_key": "175.p.5920",
+        "player_name": "DeShaun Foster",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "SF"
+      },
+      {
+        "week": 13,
+        "manager_id": "danny",
+        "player_key": "175.p.6762",
+        "player_name": "Larry Fitzgerald",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Ari"
+      },
+      {
+        "week": 13,
+        "manager_id": "matt",
+        "player_key": "175.p.4650",
+        "player_name": "Donovan McNabb",
+        "position": "QB",
+        "selected_position": "QB",
+        "nfl_team": "Min"
+      },
+      {
+        "week": 13,
+        "manager_id": "zef",
+        "player_key": "175.p.100008",
+        "player_name": "Lions",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 13,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 14,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 15,
+        "manager_id": "matt",
+        "player_key": "175.p.5899",
+        "player_name": "Donte' Stallworth",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 15,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 15,
+        "manager_id": "kyle",
+        "player_key": "175.p.6791",
+        "player_name": "Benjamin Watson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      },
+      {
+        "week": 16,
+        "manager_id": "danny",
+        "player_key": "175.p.8298",
+        "player_name": "Sidney Rice",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Sea"
+      },
+      {
+        "week": 16,
+        "manager_id": "danny",
+        "player_key": "175.p.6432",
+        "player_name": "Justin Fargas",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "LV"
+      },
+      {
+        "week": 16,
+        "manager_id": "matt",
+        "player_key": "175.p.5548",
+        "player_name": "Rudi Johnson",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Det"
+      },
+      {
+        "week": 16,
+        "manager_id": "matt",
+        "player_key": "175.p.5900",
+        "player_name": "Jeremy Shockey",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "Car"
+      },
+      {
+        "week": 16,
+        "manager_id": "jake",
+        "player_key": "175.p.100009",
+        "player_name": "Packers",
+        "position": "DEF",
+        "selected_position": "DEF",
+        "nfl_team": "GB"
+      },
+      {
+        "week": 16,
+        "manager_id": "kyle",
+        "player_key": "175.p.3515",
+        "player_name": "Terry Glenn",
+        "position": "WR",
+        "selected_position": "WR",
+        "nfl_team": "Dal"
+      },
+      {
+        "week": 16,
+        "manager_id": "kyle",
+        "player_key": "175.p.7073",
+        "player_name": "Willie Parker",
+        "position": "RB",
+        "selected_position": "RB",
+        "nfl_team": "Pit"
+      },
+      {
+        "week": 16,
+        "manager_id": "kyle",
+        "player_key": "175.p.6791",
+        "player_name": "Benjamin Watson",
+        "position": "TE",
+        "selected_position": "TE",
+        "nfl_team": "NE"
+      }
+    ]
+  }
+}

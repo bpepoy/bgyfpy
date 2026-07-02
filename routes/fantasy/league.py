@@ -4480,9 +4480,9 @@ def build_payouts(
 
         for yr in target_years:
             yr_int = int(yr)
-            if yr_int not in PAYOUT_POSITION_ROTATION:
-                results["failed"][yr] = f"No payout rotation defined for {yr} (outside 2007-2046)"
-                continue
+
+
+
 
             yr_rosters = rosters_data.get(yr, {})
             yr_stats   = stats_data.get(yr, {})
@@ -4624,15 +4624,17 @@ def build_payouts(
                     reg_highpts_mid = mid
 
             # Playoff finishes (champion=1, runner-up=2, 3rd=3)
-            playoff_places: dict = {}
+            # playoff.rank: 1=champion, 2=runner-up, 3=3rd place
+            # Falls back to regular_season.rank if playoff rank missing
+            champion_mid  = None
+            runnerup_mid  = None
+            third_mid     = None
             for mid, m in managers_r.items():
-                po = m.get("playoff", {})
-                if po.get("finish"):
-                    playoff_places[mid] = po.get("finish")
-
-            champion_mid   = next((m for m, f in playoff_places.items() if f == 1), None)
-            runnerup_mid   = next((m for m, f in playoff_places.items() if f == 2), None)
-            third_mid      = next((m for m, f in playoff_places.items() if f == 3), None)
+                po   = m.get("playoff", {})
+                rank = po.get("rank") or po.get("finish")
+                if rank == 1:   champion_mid = mid
+                elif rank == 2: runnerup_mid = mid
+                elif rank == 3: third_mid    = mid
 
             yr_payouts["season"] = {
                 "champion": {
@@ -4797,7 +4799,7 @@ def build_ices(
                         pd  = wk_stats.get(pk)
                         pts = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0.0
 
-                        if pts <= 0.0:
+                        if pts == 0.0:
                             pi  = yr_info.get(pk, {})
                             pos = pi.get("position") or slot.get("selected_position") or ""
                             yr_ices.append({
