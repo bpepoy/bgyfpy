@@ -1420,9 +1420,9 @@ def league_history():
                 "picks":           graded,
             }
 
-        # ── most rostered NFL team ────────────────────────────────────────────
-        # Count NFL team appearances across ALL roster slots ALL weeks
-        nfl_team_counts: dict = {}
+        # ── most rostered NFL team — unique players ───────────────────────────
+        # Count unique player_keys per NFL team across all weeks/managers
+        nfl_team_players: dict = {}   # nfl_team → set of unique player_keys
         most_rostered_nfl_team = None
         if yr_rosters and yr_info:
             for wk_key, wk_data in yr_rosters.items():
@@ -1431,18 +1431,20 @@ def league_history():
                     if not isinstance(team, dict): continue
                     for slot in team.get("players", []):
                         if not isinstance(slot, dict): continue
-                        pk      = slot.get("player_key") or ""
-                        pi      = yr_info.get(pk, {})
-                        nfl_tm  = pi.get("nfl_team") or ""
-                        if nfl_tm and nfl_tm not in ("", "None"):
-                            nfl_team_counts[nfl_tm] = nfl_team_counts.get(nfl_tm, 0) + 1
+                        pk     = slot.get("player_key") or ""
+                        pi     = yr_info.get(pk, {})
+                        nfl_tm = pi.get("nfl_team") or ""
+                        if pk and nfl_tm and nfl_tm not in ("", "None"):
+                            if nfl_tm not in nfl_team_players:
+                                nfl_team_players[nfl_tm] = set()
+                            nfl_team_players[nfl_tm].add(pk)
 
-            if nfl_team_counts:
-                top_tm = max(nfl_team_counts, key=lambda x: nfl_team_counts[x])
+            if nfl_team_players:
+                top_tm = max(nfl_team_players, key=lambda x: len(nfl_team_players[x]))
                 most_rostered_nfl_team = {
-                    "nfl_team":     top_tm,
-                    "roster_slots": nfl_team_counts[top_tm],
-                    "note": "Total roster slot appearances across all weeks and all managers",
+                    "nfl_team":      top_tm,
+                    "unique_players":len(nfl_team_players[top_tm]),
+                    "note": "Count of unique players from this NFL team who appeared on any roster",
                 }
 
         # ── assemble ──────────────────────────────────────────────────────────
@@ -1925,18 +1927,29 @@ def league_records():
 
     for yr, yr_mu in matchups_raw.items():
         if yr not in finished: continue
-        yr_int = int(yr)
-        ps     = yr_mu.get("playoff_start") or 99
+        yr_int    = int(yr)
+        ps        = yr_mu.get("playoff_start") or 99
+        yr_season = finished[yr]
+        yr_mgrs   = yr_season.get("managers", {})
+        # Seeds 1-4 only for playoff records
+        seed_1to4 = {
+            mid for mid, m in yr_mgrs.items()
+            if (m.get("regular_season") or {}).get("rank", 99) <= 4
+        }
         for wk_entry in yr_mu.get("weeks", []):
             wk_num = wk_entry.get("week", 0)
             is_po  = wk_num >= ps
             for m in wk_entry.get("matchups", []):
+                if is_po and m.get("is_consolation"): continue
                 for t in m.get("teams", []):
+                    mid = t.get("manager_id") or ""
+                    # For playoff weeks, only include seeds 1-4
+                    if is_po and mid not in seed_1to4: continue
                     try: pts = float(t.get("points") or 0)
                     except: continue
                     if pts <= 0: continue
                     single_scores.append({
-                        "manager_id":   t.get("manager_id"),
+                        "manager_id":   mid,
                         "display_name": t.get("display_name"),
                         "team_name":    t.get("team_name"),
                         "year":         yr_int,
@@ -2030,24 +2043,27 @@ def league_records():
     position_week_records = {pos: pos_week_records.get(pos)
                               for pos in ["QB","WR","RB","TE","K","DEF"]}
 
-    # ── most drafted player (match by name) ───────────────────────────────────
-    draft_name_counts: dict = {}   # player_name → {count, positions, years}
+    # ── most drafted player per position (name-matched, top 3 each) ──────────
+    draft_by_pos: dict = {}   # position → {player_name: {count, years}}
     for yr, yr_draft in drafts.items():
         for p in yr_draft.get("picks", []):
-            nm = (p.get("player_name") or "").strip()
-            if not nm: continue
-            if nm not in draft_name_counts:
-                draft_name_counts[nm] = {"count": 0, "position": p.get("position"), "years": []}
-            draft_name_counts[nm]["count"] += 1
-            draft_name_counts[nm]["years"].append(int(yr))
+            nm  = (p.get("player_name") or "").strip()
+            pos = (p.get("position") or "").strip()
+            if not nm or pos in ("DEF", "D/ST"): continue
+            if pos not in draft_by_pos: draft_by_pos[pos] = {}
+            if nm not in draft_by_pos[pos]:
+                draft_by_pos[pos][nm] = {"count": 0, "years": []}
+            draft_by_pos[pos][nm]["count"] += 1
+            draft_by_pos[pos][nm]["years"].append(int(yr))
 
-    top_drafted = sorted(draft_name_counts.items(),
-                         key=lambda x: -x[1]["count"])[:5]
-    most_drafted_players = [
-        {"player_name": nm, "times_drafted": v["count"],
-         "position": v["position"], "years": sorted(v["years"])}
-        for nm, v in top_drafted if v["count"] >= 2
-    ]
+    most_drafted_players = {}
+    for pos in ["QB", "WR", "RB", "TE", "K"]:
+        pos_data = draft_by_pos.get(pos, {})
+        top3 = sorted(pos_data.items(), key=lambda x: -x[1]["count"])[:3]
+        most_drafted_players[pos] = [
+            {"player_name": nm, "times_drafted": v["count"], "years": sorted(v["years"])}
+            for nm, v in top3 if v["count"] >= 2
+        ]
 
     # ── top 5 players on championship teams (name-matched, weighted) ──────────
     # starter=5pts, bench=3pts, IR=1pt; then avg weekly pts from player_stats
@@ -2055,10 +2071,11 @@ def league_records():
 
     for yr, season in finished.items():
         managers = season.get("managers", {})
+        # Championship roster = ONLY the champion (playoff finish == 1)
         champion_mid = None
         for mid, m in managers.items():
             po = m.get("playoffs", {}) or m.get("playoff", {})
-            if po.get("finish") == 1:
+            if po.get("made_playoffs") and po.get("finish") == 1:
                 champion_mid = mid
                 break
         if not champion_mid: continue
@@ -2144,6 +2161,9 @@ def league_records():
     for yr, yr_tx in transactions.items():
         if int(yr) < FAAB_START: continue
         for move in yr_tx.get("moves", []):
+            # transactions.json uses "manager" or "manager_id" depending on year
+            mid  = move.get("manager_id") or move.get("manager") or ""
+            disp = move.get("display_name") or move.get("manager_a_name") or _display_name(mid, results)
             for added in move.get("added", []):
                 bid = added.get("waiver_bid")
                 if bid is None: continue
@@ -2151,10 +2171,11 @@ def league_records():
                 except: continue
                 if bid_int <= 0: continue
                 faab_bids.append({
-                    "manager_id":   move.get("manager_id"),
-                    "display_name": _display_name(move.get("manager_id") or "", results),
+                    "manager_id":   mid,
+                    "display_name": disp,
                     "player_name":  added.get("name"),
                     "position":     added.get("position"),
+                    "nfl_team":     added.get("nfl_team"),
                     "bid":          bid_int,
                     "year":         int(yr),
                 })
@@ -2166,21 +2187,24 @@ def league_records():
     for yr, yr_tx in transactions.items():
         yr_int = int(yr)
         if yr_int < FAAB_START: continue
-        # Get FAAB budget from rules.json proxy via results
         yr_results = finished.get(yr, {})
-        budget     = 200   # default; could pull from rules.json
         managers_r = yr_results.get("managers", {})
-        # Sum all FAAB spent per manager
-        spent: dict = {mid: 0 for mid in managers_r}
+        budget     = 200
+        # Sum all FAAB spent per manager — handle "manager" or "manager_id" key
+        spent: dict = {}
         for move in yr_tx.get("moves", []):
-            mid = move.get("manager_id") or ""
+            mid = move.get("manager_id") or move.get("manager") or ""
+            if not mid: continue
             for added in move.get("added", []):
                 bid = added.get("waiver_bid")
-                if bid:
+                if bid is not None:
                     try: spent[mid] = spent.get(mid, 0) + int(bid)
                     except: pass
-        for mid, total_spent in spent.items():
-            remaining = budget - total_spent
+        # Only include managers who appeared in that season
+        season_mids = set(managers_r.keys()) | set(spent.keys())
+        for mid in season_mids:
+            total_spent = spent.get(mid, 0)
+            remaining   = budget - total_spent
             if remaining >= 0:
                 faab_records.append({
                     "manager_id":   mid,
@@ -2195,45 +2219,54 @@ def league_records():
     least_used_faab = faab_records[:5]
 
     # ── ices records ──────────────────────────────────────────────────────────
-    real_ice_counts:  dict = {}   # manager_id → count (2023+, not playoffs)
-    theor_ice_counts: dict = {}   # manager_id → count (all years, not playoffs)
-    player_ice_counts:dict = {}   # player_name → count (theoretical, not playoffs)
+    real_ice_counts:   dict = {}   # manager_id → count (2023+, not playoffs)
+    theor_ice_counts:  dict = {}   # manager_id → count (all years, not playoffs)
+    real_player_ices:  dict = {}   # player_name → count (real, 2023+)
+    theor_player_ices: dict = {}   # player_name → count (theoretical, all years)
 
     for yr, yr_ices in ices_data.items():
         yr_int = int(yr)
         if not isinstance(yr_ices, list): continue
         for ice in yr_ices:
-            if ice.get("is_playoffs"): continue   # regular season only
-            mid  = ice.get("manager_id") or ""
-            nm   = (ice.get("player_name") or "").strip()
-            # Theoretical (all years)
+            if ice.get("is_playoffs"): continue
+            mid = ice.get("manager_id") or ""
+            nm  = (ice.get("player_name") or "").strip()
+            # Theoretical — all years
             theor_ice_counts[mid] = theor_ice_counts.get(mid, 0) + 1
-            if nm:
-                player_ice_counts[nm] = player_ice_counts.get(nm, 0) + 1
-            # Real (2023+)
+            if nm: theor_player_ices[nm] = theor_player_ices.get(nm, 0) + 1
+            # Real — 2023+
             if yr_int >= REAL_ICES_START:
-                real_ice_counts[mid]  = real_ice_counts.get(mid, 0) + 1
+                real_ice_counts[mid] = real_ice_counts.get(mid, 0) + 1
+                if nm: real_player_ices[nm] = real_player_ices.get(nm, 0) + 1
 
-    def _top_ice_holders(count_dict: dict) -> list:
+    def _top_ice_holders(count_dict: dict, n: int = 3) -> list:
         if not count_dict: return []
-        top3 = sorted(count_dict.items(), key=lambda x: -x[1])[:3]
         return [{"manager_id": mid, "display_name": _display_name(mid, results), "count": cnt}
-                for mid, cnt in top3]
+                for mid, cnt in sorted(count_dict.items(), key=lambda x: -x[1])[:n]]
 
-    top_player_ices = sorted(player_ice_counts.items(), key=lambda x: -x[1])[:5]
+    def _top_player_ices(count_dict: dict, n: int = 5) -> list:
+        return [{"player_name": nm, "ice_count": cnt}
+                for nm, cnt in sorted(count_dict.items(), key=lambda x: -x[1])[:n]]
+
     ice_records = {
-        "most_real_ices":        {
+        "most_real_ices": {
             "note":    f"Regular season only, {REAL_ICES_START}+",
             "holders": _top_ice_holders(real_ice_counts),
         },
         "most_theoretical_ices": {
-            "note":    "Regular season only, all years retroactively",
+            "note":    "Regular season only, all years retroactively applied",
             "holders": _top_ice_holders(theor_ice_counts),
         },
-        "player_most_iced": [
-            {"player_name": nm, "ice_count": cnt}
-            for nm, cnt in top_player_ices
-        ],
+        "player_most_iced": {
+            "real": {
+                "note":    f"Regular season only, {REAL_ICES_START}+",
+                "players": _top_player_ices(real_player_ices),
+            },
+            "theoretical": {
+                "note":    "Regular season only, all years retroactively applied",
+                "players": _top_player_ices(theor_player_ices),
+            },
+        },
     }
 
     # ── most frequent trade partners ─────────────────────────────────────────
@@ -2256,74 +2289,33 @@ def league_records():
         for p, cnt in top_pairs
     ]
 
-    # ── biggest one-sided trade (2015+ with player_stats) ────────────────────
-    lopsided_trades: list = []
-
+    # ── most traded players (name-matched across seasons) ────────────────
+    traded_name_counts: dict = {}   # player_name → {count, positions, years}
     for yr, yr_tx in transactions.items():
-        yr_int = int(yr)
-        if yr_int < FAAB_START: continue
-        yr_stats  = player_stats.get(yr, {})
-        yr_roster = rosters.get(yr, {})
-        if not yr_stats or not yr_roster: continue
-
         for trade in yr_tx.get("trades", []):
-            ts = trade.get("timestamp") or ""
-            try:
-                trade_week = next(
-                    (int(wk_key.split("_")[1]) for wk_key in sorted(
-                        yr_stats.keys(), key=lambda x: int(x.split("_")[1]))
-                     if wk_key.startswith("week_")), None)
-                # Approximate trade week from timestamp
-                # Use all weeks as proxy if we can't parse timestamp
-            except: pass
+            # Handle both manager_a/b and trader/tradee key formats
+            all_players = (
+                trade.get("a_received", []) +
+                trade.get("b_received", []) +
+                trade.get("trader_receives", []) +
+                trade.get("tradee_receives", [])
+            )
+            for p in all_players:
+                nm  = (p.get("name") or p.get("player_name") or "").strip()
+                pos = p.get("position") or ""
+                if not nm or pos in ("DEF", "D/ST", "K"): continue
+                if nm not in traded_name_counts:
+                    traded_name_counts[nm] = {"count": 0, "position": pos, "years": []}
+                traded_name_counts[nm]["count"] += 1
+                if int(yr) not in traded_name_counts[nm]["years"]:
+                    traded_name_counts[nm]["years"].append(int(yr))
 
-            m1 = trade.get("trader_manager") or ""
-            m2 = trade.get("tradee_manager") or ""
-            side1_players = trade.get("trader_receives", [])  # what m1 gets
-            side2_players = trade.get("tradee_receives", [])  # what m2 gets
-
-            def _sum_starter_pts(player_list: list) -> float:
-                total = 0.0
-                for p in player_list:
-                    pk = p.get("player_key") or ""
-                    if not pk: continue
-                    for wk_key, wk_data in yr_stats.items():
-                        if not isinstance(wk_data, dict): continue
-                        wk_num = int(wk_key.split("_")[1])
-                        # Check if player was started this week
-                        roster_wk = yr_roster.get(wk_key, {})
-                        for mid_r, team_r in roster_wk.items():
-                            if not isinstance(team_r, dict): continue
-                            for slot in team_r.get("players", []):
-                                if not isinstance(slot, dict): continue
-                                if slot.get("player_key") == pk and slot.get("is_starting"):
-                                    pd = wk_data.get(pk)
-                                    if isinstance(pd, dict):
-                                        total += float(pd.get("fantasy_points") or 0)
-                return round(total, 2)
-
-            pts1 = _sum_starter_pts(side1_players)
-            pts2 = _sum_starter_pts(side2_players)
-            diff  = round(abs(pts1 - pts2), 2)
-            if diff > 0:
-                winner = m1 if pts1 > pts2 else m2
-                loser  = m2 if pts1 > pts2 else m1
-                lopsided_trades.append({
-                    "year":              yr_int,
-                    "winner_manager_id": winner,
-                    "winner_display":    _display_name(winner, results),
-                    "loser_manager_id":  loser,
-                    "loser_display":     _display_name(loser, results),
-                    "winner_received":   side1_players if pts1 > pts2 else side2_players,
-                    "loser_received":    side2_players if pts1 > pts2 else side1_players,
-                    "winner_pts_as_starter": pts1 if pts1 > pts2 else pts2,
-                    "loser_pts_as_starter":  pts2 if pts1 > pts2 else pts1,
-                    "point_diff":        diff,
-                    "note": "pts = starter fantasy points scored by received players for rest of season",
-                })
-
-    lopsided_trades.sort(key=lambda x: -x["point_diff"])
-    biggest_one_sided_trades = lopsided_trades[:3]
+    top_traded = sorted(traded_name_counts.items(), key=lambda x: -x[1]["count"])[:10]
+    most_traded_players = [
+        {"player_name": nm, "times_in_trades": v["count"],
+         "position": v["position"], "years": sorted(v["years"])}
+        for nm, v in top_traded if v["count"] >= 2
+    ]
 
     return {
         "franchise_records":         franchise_records,
@@ -2337,7 +2329,7 @@ def league_records():
             "biggest_faab_bids":       biggest_faab_bids,
             "least_used_faab":         least_used_faab,
             "most_frequent_trade_partners": trade_partner_records,
-            "biggest_one_sided_trades":biggest_one_sided_trades,
+            "most_traded_players":      most_traded_players,
         },
         "ice_records":               ice_records,
         "championship_roster_records": {
