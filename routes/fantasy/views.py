@@ -1985,20 +1985,40 @@ def league_records():
         for era, (start, end) in ERAS.items()
     }
 
-    # ── position week records ─────────────────────────────────────────────────
-    pos_week_records: dict = {}   # pos → best week entry
-    years_with_stats: list = []
+    # ── position week records + season totals — split by scoring era ─────────
+    # ERA_RANGES matches scoring_records split
+    POS_ERA_RANGES = {
+        "old_scoring_era":   (2007, 2011),
+        "era_with_kickers":  (2012, 2018),
+        "era_no_kickers":    (2019, 9999),
+    }
+    POSITIONS_WEEK   = ["QB","WR","RB","TE","K","DEF"]
+    POSITIONS_SEASON = ["QB","WR","RB","TE"]   # season totals for skill positions only
+
+    # Accumulators per era
+    era_week_records:   dict = {e: {} for e in POS_ERA_RANGES}
+    era_season_records: dict = {e: {} for e in POS_ERA_RANGES}
+    years_with_stats:   list = []
 
     for yr, yr_stats in player_stats.items():
         if yr not in finished or not yr_stats: continue
         yr_int   = int(yr)
         years_with_stats.append(yr_int)
-        yr_info  = (player_info.get(yr, {}) or {}).get("players", {})
-        yr_mu    = matchups_raw.get(yr, {})
-        ps       = yr_mu.get("playoff_start") or 99
 
-        # Build owner map for this year
+        # Determine which era this year belongs to
+        yr_era = None
+        for era_name, (start, end) in POS_ERA_RANGES.items():
+            if start <= yr_int <= end:
+                yr_era = era_name
+                break
+        if not yr_era: continue
+
+        yr_info   = (player_info.get(yr, {}) or {}).get("players", {})
+        yr_mu     = matchups_raw.get(yr, {})
+        ps        = yr_mu.get("playoff_start") or 99
         yr_roster = rosters.get(yr, {})
+
+        # Build owner map (last available week)
         owner_map: dict = {}
         all_wk_keys = sorted([k for k in yr_stats if k.startswith("week_")],
                               key=lambda x: int(x.split("_")[1]))
@@ -2008,27 +2028,36 @@ def league_records():
                 if not isinstance(team, dict): continue
                 for slot in team.get("players", []):
                     pk = slot.get("player_key") if isinstance(slot, dict) else None
-                    if pk: owner_map[pk] = {"manager_id": mid,
-                                            "display_name": team.get("display_name") or mid.title()}
+                    if pk:
+                        owner_map[pk] = {
+                            "manager_id":   mid,
+                            "display_name": team.get("display_name") or mid.title(),
+                        }
+
+        # Season totals per player (regular season only)
+        season_totals: dict = {}   # pk → total pts
 
         for wk_key in all_wk_keys:
             wk_num = int(wk_key.split("_")[1])
             if wk_num >= ps: continue   # regular season only
             wk_data = yr_stats.get(wk_key, {})
+
             for pk, pd in wk_data.items():
                 if not isinstance(pd, dict): continue
                 try: fp = float(pd.get("fantasy_points") or 0)
                 except: continue
                 if fp <= 0: continue
+
                 pi      = yr_info.get(pk, {})
                 pos_raw = pi.get("position") or ""
                 pos     = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
-                if pos not in ("QB","WR","RB","TE","K","DEF"): continue
+                if pos not in POSITIONS_WEEK: continue
+                owner   = owner_map.get(pk, {})
 
-                cur = pos_week_records.get(pos)
+                # ── single week record ────────────────────────────────────
+                cur = era_week_records[yr_era].get(pos)
                 if cur is None or fp > cur["points"]:
-                    owner = owner_map.get(pk, {})
-                    pos_week_records[pos] = {
+                    era_week_records[yr_era][pos] = {
                         "player_key":  pk,
                         "player_name": pi.get("name") or pk,
                         "position":    pos,
@@ -2040,8 +2069,42 @@ def league_records():
                         "points":      round(fp, 2),
                     }
 
-    position_week_records = {pos: pos_week_records.get(pos)
-                              for pos in ["QB","WR","RB","TE","K","DEF"]}
+                # ── accumulate season total ───────────────────────────────
+                if pos in POSITIONS_SEASON:
+                    if pk not in season_totals:
+                        season_totals[pk] = {"pts": 0.0, "pos": pos,
+                                             "name": pi.get("name") or pk,
+                                             "nfl_team": pi.get("nfl_team")}
+                    season_totals[pk]["pts"] += fp
+
+        # Check season totals against era records
+        for pk, info in season_totals.items():
+            pos  = info["pos"]
+            pts  = round(info["pts"], 2)
+            if pts <= 0: continue
+            owner = owner_map.get(pk, {})
+            cur   = era_season_records[yr_era].get(pos)
+            if cur is None or pts > cur["season_pts"]:
+                era_season_records[yr_era][pos] = {
+                    "player_key":   pk,
+                    "player_name":  info["name"],
+                    "position":     pos,
+                    "nfl_team":     info["nfl_team"],
+                    "manager_id":   owner.get("manager_id"),
+                    "display_name": owner.get("display_name"),
+                    "year":         yr_int,
+                    "season_pts":   pts,
+                }
+
+    position_records = {
+        era: {
+            "best_week":   {pos: era_week_records[era].get(pos)
+                            for pos in POSITIONS_WEEK},
+            "best_season": {pos: era_season_records[era].get(pos)
+                            for pos in POSITIONS_SEASON},
+        }
+        for era in POS_ERA_RANGES
+    }
 
     # ── most drafted player per position (name-matched, top 3 each) ──────────
     draft_by_pos: dict = {}   # position → {player_name: {count, years}}
@@ -2320,7 +2383,7 @@ def league_records():
     return {
         "franchise_records":         franchise_records,
         "scoring_records":           scoring_records,
-        "position_week_records":     position_week_records,
+        "position_records":          position_records,
         "draft_records": {
             "most_drafted_players":  most_drafted_players,
             "biggest_auction_costs": biggest_auction_costs,

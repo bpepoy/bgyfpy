@@ -4882,3 +4882,24 @@ def download_ices():
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/debug/trade-structure")
+def debug_trade_structure(year: str = Query(default="2025")):
+    """Shows the exact keys in a trade entry to diagnose field name issues."""
+    try:
+        data     = _load_json(_get_data_path("transactions.json"))
+        yr_data  = data.get(str(year), {})
+        trades   = yr_data.get("trades", [])
+        if not trades:
+            return {"year": year, "total_trades": 0, "sample": None,
+                    "top_level_keys": list(yr_data.keys())}
+        sample = trades[0]
+        return {
+            "year":          year,
+            "total_trades":  len(trades),
+            "sample_keys":   list(sample.keys()),
+            "sample_trade":  sample,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
