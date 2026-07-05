@@ -1832,8 +1832,8 @@ def league_records():
 
     ERAS = {
         "old_scoring_era":   (2007, 2011),
-        "era_with_kickers":  (2012, 2018),
-        "era_no_kickers":    (2019, 9999),
+        "era_with_kickers":  (2012, 2019),
+        "era_no_kickers":    (2020, 9999),
     }
     FAAB_START       = 2015
     AUCTION_START    = 2023
@@ -1989,8 +1989,8 @@ def league_records():
     # ERA_RANGES matches scoring_records split
     POS_ERA_RANGES = {
         "old_scoring_era":   (2007, 2011),
-        "era_with_kickers":  (2012, 2018),
-        "era_no_kickers":    (2019, 9999),
+        "era_with_kickers":  (2012, 2019),
+        "era_no_kickers":    (2020, 9999),
     }
     POSITIONS_WEEK   = ["QB","WR","RB","TE","K","DEF"]
     POSITIONS_SEASON = ["QB","WR","RB","TE"]   # season totals for skill positions only
