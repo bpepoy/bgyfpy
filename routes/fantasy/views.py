@@ -113,6 +113,395 @@ def _display_name(manager_id: str, results: dict) -> str:
 # GET /fantasy/{name}/overview
 # ===========================================================================
 
+
+
+@router.get("/teams/overview")
+def teams_overview():
+    """
+    All-managers career overview table.
+
+    Returns every manager who has ever played, with career stats:
+      - Total seasons played
+      - Regular season W-L-T record
+      - Championships, last place finishes
+      - Playoff appearances and playoff W-L-T record
+      - Profile photo URL placeholder (populated from settings/profile)
+    """
+    results  = _year_keyed(_load("results.json"))
+    managers_json = _load("managers.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    finished     = _finished_seasons(results)
+    all_managers = _all_manager_ids(results)
+
+    # Accumulators
+    stats: dict = {}
+    for mid in all_managers:
+        stats[mid] = {
+            "manager_id":    mid,
+            "display_name":  _display_name(mid, results),
+            "photo_url":     None,   # populated from settings/profile when built
+            "seasons":       0,
+            "rs_wins":       0,
+            "rs_losses":     0,
+            "rs_ties":       0,
+            "championships": 0,
+            "last_place":    0,
+            "playoff_apps":  0,
+            "po_wins":       0,
+            "po_losses":     0,
+            "po_ties":       0,
+        }
+
+    for yr, season in finished.items():
+        managers  = season.get("managers", {})
+        num_teams = len(managers)
+
+        # Find last place this season
+        non_po = [(mid, m) for mid, m in managers.items()
+                  if not (m.get("playoffs") or m.get("playoff", {})).get("made_playoffs")]
+        last_mid = max(non_po,
+            key=lambda x: x[1].get("regular_season", {}).get("rank") or 0)[0] if non_po else None
+
+        for mid, m in managers.items():
+            if mid not in stats: continue
+            rs = m.get("regular_season", {})
+            po = m.get("playoffs", {}) or m.get("playoff", {})
+
+            stats[mid]["seasons"]    += 1
+            stats[mid]["rs_wins"]    += rs.get("wins") or 0
+            stats[mid]["rs_losses"]  += rs.get("losses") or 0
+            stats[mid]["rs_ties"]    += rs.get("ties") or 0
+
+            if po.get("made_playoffs"):
+                stats[mid]["playoff_apps"] += 1
+                stats[mid]["po_wins"]      += po.get("wins") or 0
+                stats[mid]["po_losses"]    += po.get("losses") or 0
+                stats[mid]["po_ties"]      += po.get("ties") or 0
+                if po.get("finish") == 1:
+                    stats[mid]["championships"] += 1
+
+            if mid == last_mid:
+                stats[mid]["last_place"] += 1
+
+    # Sort by total wins desc
+    overview = sorted(stats.values(), key=lambda x: -x["rs_wins"])
+    return {
+        "total_managers": len(overview),
+        "managers":       overview,
+        "_note": "photo_url will be populated once settings/profile is built",
+    }
+
+
+# ===========================================================================
+# GET /fantasy/teams/results
+# ===========================================================================
+
+
+
+@router.get("/teams/results")
+def teams_results(
+    era: str = Query(default="all_time"),
+):
+    """
+    All-managers results table — scoring stats, standings, ices, winnings.
+    Filterable by era.
+    """
+    results      = _year_keyed(_load("results.json"))
+    matchups_raw = _load("matchups.json")
+    payouts_data = _load("payouts.json")
+    ices_data    = _load("ices.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    era_def = ERAS.get(era)
+    if not era_def:
+        raise HTTPException(status_code=400, detail=f"Unknown era: {era}")
+
+    finished     = _finished_seasons(results)
+    all_managers = _all_manager_ids(results)
+
+    # Accumulators per manager
+    def _blank():
+        return {
+            "rs_wins": 0, "rs_losses": 0, "rs_ties": 0, "rs_games": 0,
+            "rs_pf": 0.0, "rs_pa": 0.0, "rs_proj_pf": 0.0,
+            "rs_rank_sum": 0, "rs_seasons": 0,
+            "po_wins": 0, "po_losses": 0, "po_ties": 0, "po_games": 0,
+            "po_pf": 0.0, "po_pa": 0.0, "po_proj_pf": 0.0,
+            "weekly_high_total": 0, "weekly_high_pos": 0,
+            "ices_rs": 0, "winnings": 0.0,
+        }
+
+    acc: dict = {mid: _blank() for mid in all_managers}
+
+    for yr, season in finished.items():
+        yr_int = int(yr)
+        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
+        managers = season.get("managers", {})
+
+        for mid, m in managers.items():
+            if mid not in acc: acc[mid] = _blank()
+            rs = m.get("regular_season", {})
+            po = m.get("playoffs",      {}) or m.get("playoff", {})
+
+            acc[mid]["rs_wins"]    += rs.get("wins")    or 0
+            acc[mid]["rs_losses"]  += rs.get("losses")  or 0
+            acc[mid]["rs_ties"]    += rs.get("ties")    or 0
+            acc[mid]["rs_games"]   += rs.get("games")   or 0
+            acc[mid]["rs_pf"]      += rs.get("points_for")        or 0
+            acc[mid]["rs_pa"]      += rs.get("points_against")    or 0
+            acc[mid]["rs_proj_pf"] += rs.get("projected_points_for") or 0
+            acc[mid]["rs_rank_sum"]+= rs.get("rank") or 0
+            acc[mid]["rs_seasons"] += 1
+
+            if po.get("made_playoffs"):
+                acc[mid]["po_wins"]    += po.get("wins")    or 0
+                acc[mid]["po_losses"]  += po.get("losses")  or 0
+                acc[mid]["po_ties"]    += po.get("ties")    or 0
+                acc[mid]["po_games"]   += po.get("games")   or 0
+                acc[mid]["po_pf"]      += po.get("points_for")     or 0
+                acc[mid]["po_pa"]      += po.get("points_against") or 0
+
+    # Weekly high scores from payouts.json
+    for yr, yr_payouts in payouts_data.items():
+        yr_int = int(yr)
+        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
+        if not isinstance(yr_payouts, dict): continue
+        for wk_key, wk_data in yr_payouts.items():
+            if not wk_key.startswith("week_") or not isinstance(wk_data, dict): continue
+            # Total points payout winners
+            tot = wk_data.get("total_points_payout", {})
+            for mid in (tot.get("winners") or []):
+                if mid in acc: acc[mid]["weekly_high_total"] += 1
+            # Position payout winners
+            pos_p = wk_data.get("position_payout", {})
+            for w in (pos_p.get("winners") or []):
+                mid = w.get("manager_id") if isinstance(w, dict) else w
+                if mid and mid in acc: acc[mid]["weekly_high_pos"] += 1
+
+    # Ices (regular season only)
+    for yr, yr_ices in ices_data.items():
+        yr_int = int(yr)
+        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
+        if not isinstance(yr_ices, list): continue
+        for ice in yr_ices:
+            if ice.get("is_playoffs"): continue
+            mid = ice.get("manager_id") or ""
+            if mid in acc: acc[mid]["ices_rs"] += 1
+
+    # Winnings from payouts.json
+    for yr, yr_payouts in payouts_data.items():
+        yr_int = int(yr)
+        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
+        if not isinstance(yr_payouts, dict): continue
+        # Season payouts
+        season_po = yr_payouts.get("season", {})
+        for key in ["champion", "runner_up", "third_place",
+                    "regular_season_1_seed", "regular_season_high_points"]:
+            entry = season_po.get(key, {})
+            mid   = entry.get("manager_id") if isinstance(entry, dict) else None
+            amt   = entry.get("payout", 0)   if isinstance(entry, dict) else 0
+            if mid and mid in acc: acc[mid]["winnings"] += amt or 0
+        # Weekly payouts
+        for wk_key, wk_data in yr_payouts.items():
+            if not wk_key.startswith("week_") or not isinstance(wk_data, dict): continue
+            for payout_key in ["total_points_payout", "position_payout"]:
+                pd = wk_data.get(payout_key, {})
+                if not isinstance(pd, dict): continue
+                payout_each = pd.get("payout_each") or 0
+                winners = pd.get("winners") or []
+                for w in winners:
+                    mid = w.get("manager_id") if isinstance(w, dict) else w
+                    if mid and mid in acc:
+                        acc[mid]["winnings"] += payout_each
+
+    # Format output
+    table = []
+    for mid in sorted(acc.keys(), key=lambda x: -acc[x]["rs_wins"]):
+        a = acc[mid]
+        rs_g   = a["rs_games"]   or 1
+        rs_s   = a["rs_seasons"] or 1
+        po_g   = a["po_games"]   or 1
+        table.append({
+            "manager_id":          mid,
+            "display_name":        _display_name(mid, results),
+            "regular_season": {
+                "wins": a["rs_wins"], "losses": a["rs_losses"], "ties": a["rs_ties"],
+                "games": a["rs_games"],
+                "avg_finish":       round(a["rs_rank_sum"] / rs_s, 1) if rs_s else None,
+                "avg_pf":           round(a["rs_pf"] / rs_g, 2) if rs_g else None,
+                "avg_pa":           round(a["rs_pa"] / rs_g, 2) if rs_g else None,
+                "avg_proj_pf":      round(a["rs_proj_pf"] / rs_g, 2) if rs_g else None,
+                "proj_vs_actual_diff": round((a["rs_proj_pf"] - a["rs_pf"]) / rs_g, 2) if rs_g else None,
+            },
+            "playoffs": {
+                "wins": a["po_wins"], "losses": a["po_losses"], "ties": a["po_ties"],
+                "games": a["po_games"],
+                "avg_pf": round(a["po_pf"] / po_g, 2) if a["po_games"] else None,
+                "avg_pa": round(a["po_pa"] / po_g, 2) if a["po_games"] else None,
+            },
+            "weekly_high_total_wins": a["weekly_high_total"],
+            "weekly_high_pos_wins":   a["weekly_high_pos"],
+            "ices_regular_season":    a["ices_rs"],
+            "total_winnings":         round(a["winnings"], 2),
+        })
+
+    return {
+        "era":            era,
+        "era_label":      era_def["label"],
+        "available_eras": {k: v["label"] for k, v in ERAS.items()},
+        "managers":       table,
+    }
+
+
+# ===========================================================================
+# GET /fantasy/teams/transactions
+# ===========================================================================
+
+
+
+@router.get("/teams/transactions")
+def teams_transactions(
+    era: str = Query(default="all_time"),
+):
+    """
+    All-managers transaction summary table.
+    Filterable by era.
+    """
+    results      = _year_keyed(_load("results.json"))
+    transactions = _load("transactions.json")
+    drafts       = _load("drafts.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    era_def = ERAS.get(era)
+    if not era_def:
+        raise HTTPException(status_code=400, detail=f"Unknown era: {era}")
+
+    finished     = _finished_seasons(results)
+    all_managers = _all_manager_ids(results)
+
+    def _blank():
+        return {
+            "total_adds": 0, "total_drops": 0, "total_trades": 0,
+            "seasons": 0, "best_faab": None,
+            "trade_partners": {}, "drafted_players": {},
+            "best_auction_bid": None,
+        }
+
+    acc: dict = {mid: _blank() for mid in all_managers}
+
+    for yr, yr_tx in transactions.items():
+        yr_int = int(yr)
+        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
+        if yr not in finished: continue
+
+        season_managers = set(finished[yr].get("managers", {}).keys())
+        for mid in season_managers:
+            if mid not in acc: acc[mid] = _blank()
+            acc[mid]["seasons"] += 1
+
+        # Moves
+        for move in yr_tx.get("moves", []):
+            mid = move.get("manager_id") or move.get("manager") or ""
+            if not mid or mid not in acc: continue
+            adds   = move.get("added", [])
+            drops  = move.get("dropped", [])
+            acc[mid]["total_adds"]  += len(adds)
+            acc[mid]["total_drops"] += len(drops)
+            for added in adds:
+                bid = added.get("waiver_bid")
+                if bid:
+                    try:
+                        bid_int = int(bid)
+                        if acc[mid]["best_faab"] is None or bid_int > acc[mid]["best_faab"]["bid"]:
+                            acc[mid]["best_faab"] = {
+                                "player_name": added.get("name"),
+                                "bid":         bid_int,
+                                "year":        yr_int,
+                            }
+                    except: pass
+
+        # Trades
+        for trade in yr_tx.get("trades", []):
+            m1 = trade.get("manager_a") or trade.get("trader_manager") or ""
+            m2 = trade.get("manager_b") or trade.get("tradee_manager") or ""
+            for mid in [m1, m2]:
+                if not mid or mid not in acc: continue
+                acc[mid]["total_trades"] += 1
+                partner = m2 if mid == m1 else m1
+                if partner:
+                    acc[mid]["trade_partners"][partner] = \
+                        acc[mid]["trade_partners"].get(partner, 0) + 1
+
+        # Drafts
+        for pick in drafts.get(yr, {}).get("picks", []):
+            mid = pick.get("manager_id") or ""
+            if not mid or mid not in acc: continue
+            nm   = (pick.get("player_name") or "").strip()
+            cost = pick.get("cost")
+            if nm:
+                acc[mid]["drafted_players"][nm] = \
+                    acc[mid]["drafted_players"].get(nm, 0) + 1
+            if cost:
+                try:
+                    cost_int = int(cost)
+                    if acc[mid]["best_auction_bid"] is None or \
+                       cost_int > acc[mid]["best_auction_bid"]["cost"]:
+                        acc[mid]["best_auction_bid"] = {
+                            "player_name": nm,
+                            "cost":        cost_int,
+                            "year":        yr_int,
+                        }
+                except: pass
+
+    table = []
+    for mid in sorted(all_managers):
+        a = acc.get(mid, _blank())
+        seasons = a["seasons"] or 1
+        # Top trade partner
+        top_partner = None
+        if a["trade_partners"]:
+            tp_mid = max(a["trade_partners"], key=lambda x: a["trade_partners"][x])
+            top_partner = {
+                "manager_id":   tp_mid,
+                "display_name": _display_name(tp_mid, results),
+                "trades":       a["trade_partners"][tp_mid],
+            }
+        # Most drafted player
+        top_drafted = None
+        if a["drafted_players"]:
+            td_nm = max(a["drafted_players"], key=lambda x: a["drafted_players"][x])
+            top_drafted = {"player_name": td_nm, "count": a["drafted_players"][td_nm]}
+
+        table.append({
+            "manager_id":       mid,
+            "display_name":     _display_name(mid, results),
+            "seasons_tracked":  a["seasons"],
+            "total_adds":       a["total_adds"],
+            "total_drops":      a["total_drops"],
+            "total_moves":      a["total_adds"] + a["total_drops"],
+            "avg_moves_per_season": round((a["total_adds"] + a["total_drops"]) / seasons, 1),
+            "best_faab_bid":    a["best_faab"],
+            "total_trades":     a["total_trades"],
+            "avg_trades_per_season": round(a["total_trades"] / seasons, 1),
+            "top_trade_partner":top_partner,
+            "most_drafted_player": top_drafted,
+            "best_auction_bid": a["best_auction_bid"],
+        })
+
+    table.sort(key=lambda x: -x["total_moves"])
+    return {
+        "era":            era,
+        "era_label":      era_def["label"],
+        "available_eras": {k: v["label"] for k, v in ERAS.items()},
+        "managers":       table,
+    }
 @router.get("/{name}/overview")
 def manager_overview(name: str):
     """
@@ -396,7 +785,7 @@ def manager_results(name: str):
 # GET /fantasy/{name}/matchups
 # ===========================================================================
 
-@router.get("/teams/matchups/{name}")
+@router.get("/{name}/matchups")
 def teams_matchups(
     name: str,
     era:  str = Query(default="all_time", description=(
@@ -3177,387 +3566,3 @@ def manager_transactions_year(name: str, year: int):
 # ===========================================================================
 # GET /fantasy/teams/overview
 # ===========================================================================
-
-@router.get("/teams/overview")
-def teams_overview():
-    """
-    All-managers career overview table.
-
-    Returns every manager who has ever played, with career stats:
-      - Total seasons played
-      - Regular season W-L-T record
-      - Championships, last place finishes
-      - Playoff appearances and playoff W-L-T record
-      - Profile photo URL placeholder (populated from settings/profile)
-    """
-    results  = _year_keyed(_load("results.json"))
-    managers_json = _load("managers.json")
-
-    if not results:
-        raise HTTPException(status_code=404, detail="results.json not found.")
-
-    finished     = _finished_seasons(results)
-    all_managers = _all_manager_ids(results)
-
-    # Accumulators
-    stats: dict = {}
-    for mid in all_managers:
-        stats[mid] = {
-            "manager_id":    mid,
-            "display_name":  _display_name(mid, results),
-            "photo_url":     None,   # populated from settings/profile when built
-            "seasons":       0,
-            "rs_wins":       0,
-            "rs_losses":     0,
-            "rs_ties":       0,
-            "championships": 0,
-            "last_place":    0,
-            "playoff_apps":  0,
-            "po_wins":       0,
-            "po_losses":     0,
-            "po_ties":       0,
-        }
-
-    for yr, season in finished.items():
-        managers  = season.get("managers", {})
-        num_teams = len(managers)
-
-        # Find last place this season
-        non_po = [(mid, m) for mid, m in managers.items()
-                  if not (m.get("playoffs") or m.get("playoff", {})).get("made_playoffs")]
-        last_mid = max(non_po,
-            key=lambda x: x[1].get("regular_season", {}).get("rank") or 0)[0] if non_po else None
-
-        for mid, m in managers.items():
-            if mid not in stats: continue
-            rs = m.get("regular_season", {})
-            po = m.get("playoffs", {}) or m.get("playoff", {})
-
-            stats[mid]["seasons"]    += 1
-            stats[mid]["rs_wins"]    += rs.get("wins") or 0
-            stats[mid]["rs_losses"]  += rs.get("losses") or 0
-            stats[mid]["rs_ties"]    += rs.get("ties") or 0
-
-            if po.get("made_playoffs"):
-                stats[mid]["playoff_apps"] += 1
-                stats[mid]["po_wins"]      += po.get("wins") or 0
-                stats[mid]["po_losses"]    += po.get("losses") or 0
-                stats[mid]["po_ties"]      += po.get("ties") or 0
-                if po.get("finish") == 1:
-                    stats[mid]["championships"] += 1
-
-            if mid == last_mid:
-                stats[mid]["last_place"] += 1
-
-    # Sort by total wins desc
-    overview = sorted(stats.values(), key=lambda x: -x["rs_wins"])
-    return {
-        "total_managers": len(overview),
-        "managers":       overview,
-        "_note": "photo_url will be populated once settings/profile is built",
-    }
-
-
-# ===========================================================================
-# GET /fantasy/teams/results
-# ===========================================================================
-
-@router.get("/teams/results")
-def teams_results(
-    era: str = Query(default="all_time"),
-):
-    """
-    All-managers results table — scoring stats, standings, ices, winnings.
-    Filterable by era.
-    """
-    results      = _year_keyed(_load("results.json"))
-    matchups_raw = _load("matchups.json")
-    payouts_data = _load("payouts.json")
-    ices_data    = _load("ices.json")
-
-    if not results:
-        raise HTTPException(status_code=404, detail="results.json not found.")
-
-    era_def = ERAS.get(era)
-    if not era_def:
-        raise HTTPException(status_code=400, detail=f"Unknown era: {era}")
-
-    finished     = _finished_seasons(results)
-    all_managers = _all_manager_ids(results)
-
-    # Accumulators per manager
-    def _blank():
-        return {
-            "rs_wins": 0, "rs_losses": 0, "rs_ties": 0, "rs_games": 0,
-            "rs_pf": 0.0, "rs_pa": 0.0, "rs_proj_pf": 0.0,
-            "rs_rank_sum": 0, "rs_seasons": 0,
-            "po_wins": 0, "po_losses": 0, "po_ties": 0, "po_games": 0,
-            "po_pf": 0.0, "po_pa": 0.0, "po_proj_pf": 0.0,
-            "weekly_high_total": 0, "weekly_high_pos": 0,
-            "ices_rs": 0, "winnings": 0.0,
-        }
-
-    acc: dict = {mid: _blank() for mid in all_managers}
-
-    for yr, season in finished.items():
-        yr_int = int(yr)
-        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
-        managers = season.get("managers", {})
-
-        for mid, m in managers.items():
-            if mid not in acc: acc[mid] = _blank()
-            rs = m.get("regular_season", {})
-            po = m.get("playoffs",      {}) or m.get("playoff", {})
-
-            acc[mid]["rs_wins"]    += rs.get("wins")    or 0
-            acc[mid]["rs_losses"]  += rs.get("losses")  or 0
-            acc[mid]["rs_ties"]    += rs.get("ties")    or 0
-            acc[mid]["rs_games"]   += rs.get("games")   or 0
-            acc[mid]["rs_pf"]      += rs.get("points_for")        or 0
-            acc[mid]["rs_pa"]      += rs.get("points_against")    or 0
-            acc[mid]["rs_proj_pf"] += rs.get("projected_points_for") or 0
-            acc[mid]["rs_rank_sum"]+= rs.get("rank") or 0
-            acc[mid]["rs_seasons"] += 1
-
-            if po.get("made_playoffs"):
-                acc[mid]["po_wins"]    += po.get("wins")    or 0
-                acc[mid]["po_losses"]  += po.get("losses")  or 0
-                acc[mid]["po_ties"]    += po.get("ties")    or 0
-                acc[mid]["po_games"]   += po.get("games")   or 0
-                acc[mid]["po_pf"]      += po.get("points_for")     or 0
-                acc[mid]["po_pa"]      += po.get("points_against") or 0
-
-    # Weekly high scores from payouts.json
-    for yr, yr_payouts in payouts_data.items():
-        yr_int = int(yr)
-        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
-        if not isinstance(yr_payouts, dict): continue
-        for wk_key, wk_data in yr_payouts.items():
-            if not wk_key.startswith("week_") or not isinstance(wk_data, dict): continue
-            # Total points payout winners
-            tot = wk_data.get("total_points_payout", {})
-            for mid in (tot.get("winners") or []):
-                if mid in acc: acc[mid]["weekly_high_total"] += 1
-            # Position payout winners
-            pos_p = wk_data.get("position_payout", {})
-            for w in (pos_p.get("winners") or []):
-                mid = w.get("manager_id") if isinstance(w, dict) else w
-                if mid and mid in acc: acc[mid]["weekly_high_pos"] += 1
-
-    # Ices (regular season only)
-    for yr, yr_ices in ices_data.items():
-        yr_int = int(yr)
-        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
-        if not isinstance(yr_ices, list): continue
-        for ice in yr_ices:
-            if ice.get("is_playoffs"): continue
-            mid = ice.get("manager_id") or ""
-            if mid in acc: acc[mid]["ices_rs"] += 1
-
-    # Winnings from payouts.json
-    for yr, yr_payouts in payouts_data.items():
-        yr_int = int(yr)
-        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
-        if not isinstance(yr_payouts, dict): continue
-        # Season payouts
-        season_po = yr_payouts.get("season", {})
-        for key in ["champion", "runner_up", "third_place",
-                    "regular_season_1_seed", "regular_season_high_points"]:
-            entry = season_po.get(key, {})
-            mid   = entry.get("manager_id") if isinstance(entry, dict) else None
-            amt   = entry.get("payout", 0)   if isinstance(entry, dict) else 0
-            if mid and mid in acc: acc[mid]["winnings"] += amt or 0
-        # Weekly payouts
-        for wk_key, wk_data in yr_payouts.items():
-            if not wk_key.startswith("week_") or not isinstance(wk_data, dict): continue
-            for payout_key in ["total_points_payout", "position_payout"]:
-                pd = wk_data.get(payout_key, {})
-                if not isinstance(pd, dict): continue
-                payout_each = pd.get("payout_each") or 0
-                winners = pd.get("winners") or []
-                for w in winners:
-                    mid = w.get("manager_id") if isinstance(w, dict) else w
-                    if mid and mid in acc:
-                        acc[mid]["winnings"] += payout_each
-
-    # Format output
-    table = []
-    for mid in sorted(acc.keys(), key=lambda x: -acc[x]["rs_wins"]):
-        a = acc[mid]
-        rs_g   = a["rs_games"]   or 1
-        rs_s   = a["rs_seasons"] or 1
-        po_g   = a["po_games"]   or 1
-        table.append({
-            "manager_id":          mid,
-            "display_name":        _display_name(mid, results),
-            "regular_season": {
-                "wins": a["rs_wins"], "losses": a["rs_losses"], "ties": a["rs_ties"],
-                "games": a["rs_games"],
-                "avg_finish":       round(a["rs_rank_sum"] / rs_s, 1) if rs_s else None,
-                "avg_pf":           round(a["rs_pf"] / rs_g, 2) if rs_g else None,
-                "avg_pa":           round(a["rs_pa"] / rs_g, 2) if rs_g else None,
-                "avg_proj_pf":      round(a["rs_proj_pf"] / rs_g, 2) if rs_g else None,
-                "proj_vs_actual_diff": round((a["rs_proj_pf"] - a["rs_pf"]) / rs_g, 2) if rs_g else None,
-            },
-            "playoffs": {
-                "wins": a["po_wins"], "losses": a["po_losses"], "ties": a["po_ties"],
-                "games": a["po_games"],
-                "avg_pf": round(a["po_pf"] / po_g, 2) if a["po_games"] else None,
-                "avg_pa": round(a["po_pa"] / po_g, 2) if a["po_games"] else None,
-            },
-            "weekly_high_total_wins": a["weekly_high_total"],
-            "weekly_high_pos_wins":   a["weekly_high_pos"],
-            "ices_regular_season":    a["ices_rs"],
-            "total_winnings":         round(a["winnings"], 2),
-        })
-
-    return {
-        "era":            era,
-        "era_label":      era_def["label"],
-        "available_eras": {k: v["label"] for k, v in ERAS.items()},
-        "managers":       table,
-    }
-
-
-# ===========================================================================
-# GET /fantasy/teams/transactions
-# ===========================================================================
-
-@router.get("/teams/transactions")
-def teams_transactions(
-    era: str = Query(default="all_time"),
-):
-    """
-    All-managers transaction summary table.
-    Filterable by era.
-    """
-    results      = _year_keyed(_load("results.json"))
-    transactions = _load("transactions.json")
-    drafts       = _load("drafts.json")
-
-    if not results:
-        raise HTTPException(status_code=404, detail="results.json not found.")
-
-    era_def = ERAS.get(era)
-    if not era_def:
-        raise HTTPException(status_code=400, detail=f"Unknown era: {era}")
-
-    finished     = _finished_seasons(results)
-    all_managers = _all_manager_ids(results)
-
-    def _blank():
-        return {
-            "total_adds": 0, "total_drops": 0, "total_trades": 0,
-            "seasons": 0, "best_faab": None,
-            "trade_partners": {}, "drafted_players": {},
-            "best_auction_bid": None,
-        }
-
-    acc: dict = {mid: _blank() for mid in all_managers}
-
-    for yr, yr_tx in transactions.items():
-        yr_int = int(yr)
-        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
-        if yr not in finished: continue
-
-        season_managers = set(finished[yr].get("managers", {}).keys())
-        for mid in season_managers:
-            if mid not in acc: acc[mid] = _blank()
-            acc[mid]["seasons"] += 1
-
-        # Moves
-        for move in yr_tx.get("moves", []):
-            mid = move.get("manager_id") or move.get("manager") or ""
-            if not mid or mid not in acc: continue
-            adds   = move.get("added", [])
-            drops  = move.get("dropped", [])
-            acc[mid]["total_adds"]  += len(adds)
-            acc[mid]["total_drops"] += len(drops)
-            for added in adds:
-                bid = added.get("waiver_bid")
-                if bid:
-                    try:
-                        bid_int = int(bid)
-                        if acc[mid]["best_faab"] is None or bid_int > acc[mid]["best_faab"]["bid"]:
-                            acc[mid]["best_faab"] = {
-                                "player_name": added.get("name"),
-                                "bid":         bid_int,
-                                "year":        yr_int,
-                            }
-                    except: pass
-
-        # Trades
-        for trade in yr_tx.get("trades", []):
-            m1 = trade.get("manager_a") or trade.get("trader_manager") or ""
-            m2 = trade.get("manager_b") or trade.get("tradee_manager") or ""
-            for mid in [m1, m2]:
-                if not mid or mid not in acc: continue
-                acc[mid]["total_trades"] += 1
-                partner = m2 if mid == m1 else m1
-                if partner:
-                    acc[mid]["trade_partners"][partner] = \
-                        acc[mid]["trade_partners"].get(partner, 0) + 1
-
-        # Drafts
-        for pick in drafts.get(yr, {}).get("picks", []):
-            mid = pick.get("manager_id") or ""
-            if not mid or mid not in acc: continue
-            nm   = (pick.get("player_name") or "").strip()
-            cost = pick.get("cost")
-            if nm:
-                acc[mid]["drafted_players"][nm] = \
-                    acc[mid]["drafted_players"].get(nm, 0) + 1
-            if cost:
-                try:
-                    cost_int = int(cost)
-                    if acc[mid]["best_auction_bid"] is None or \
-                       cost_int > acc[mid]["best_auction_bid"]["cost"]:
-                        acc[mid]["best_auction_bid"] = {
-                            "player_name": nm,
-                            "cost":        cost_int,
-                            "year":        yr_int,
-                        }
-                except: pass
-
-    table = []
-    for mid in sorted(all_managers):
-        a = acc.get(mid, _blank())
-        seasons = a["seasons"] or 1
-        # Top trade partner
-        top_partner = None
-        if a["trade_partners"]:
-            tp_mid = max(a["trade_partners"], key=lambda x: a["trade_partners"][x])
-            top_partner = {
-                "manager_id":   tp_mid,
-                "display_name": _display_name(tp_mid, results),
-                "trades":       a["trade_partners"][tp_mid],
-            }
-        # Most drafted player
-        top_drafted = None
-        if a["drafted_players"]:
-            td_nm = max(a["drafted_players"], key=lambda x: a["drafted_players"][x])
-            top_drafted = {"player_name": td_nm, "count": a["drafted_players"][td_nm]}
-
-        table.append({
-            "manager_id":       mid,
-            "display_name":     _display_name(mid, results),
-            "seasons_tracked":  a["seasons"],
-            "total_adds":       a["total_adds"],
-            "total_drops":      a["total_drops"],
-            "total_moves":      a["total_adds"] + a["total_drops"],
-            "avg_moves_per_season": round((a["total_adds"] + a["total_drops"]) / seasons, 1),
-            "best_faab_bid":    a["best_faab"],
-            "total_trades":     a["total_trades"],
-            "avg_trades_per_season": round(a["total_trades"] / seasons, 1),
-            "top_trade_partner":top_partner,
-            "most_drafted_player": top_drafted,
-            "best_auction_bid": a["best_auction_bid"],
-        })
-
-    table.sort(key=lambda x: -x["total_moves"])
-    return {
-        "era":            era,
-        "era_label":      era_def["label"],
-        "available_eras": {k: v["label"] for k, v in ERAS.items()},
-        "managers":       table,
-    }
