@@ -2336,8 +2336,8 @@ def league_records():
     pair_counts: dict = {}   # frozenset(mid1,mid2) → count
     for yr, yr_tx in transactions.items():
         for trade in yr_tx.get("trades", []):
-            m1 = trade.get("trader_manager") or ""
-            m2 = trade.get("tradee_manager") or ""
+            m1 = trade.get("manager_a") or trade.get("trader_manager") or ""
+            m2 = trade.get("manager_b") or trade.get("tradee_manager") or ""
             if not m1 or not m2: continue
             key = tuple(sorted([m1, m2]))
             pair_counts[key] = pair_counts.get(key, 0) + 1
