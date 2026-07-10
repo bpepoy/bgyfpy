@@ -1000,7 +1000,7 @@ def manager_results(
     ]
 
     players_section = {
-        "most_weeks_on_team": most_weeks_players,
+        "most_weeks_as_starter": most_weeks_players,
         "best_position_week": {
             pos: pos_best.get(pos) for pos in ["QB","WR","RB","TE"]
         },
@@ -3307,409 +3307,6 @@ def season_playoffs_by_year(year: int):
 # GET /fantasy/{name}/transactions  — career transaction summary
 # ===========================================================================
 
-@router.get("/{name}/transactions")
-def manager_transactions(name: str):
-    """
-    Career transaction summary for a manager across all seasons.
-
-    Returns:
-      adds:   total, avg/season, most expensive FAAB add (player + bid)
-      drops:  total, avg/season, most costly drop (cross-ref FAAB paid when added)
-      trades: total, avg/season, most frequent partner, most frequently traded player
-      draft:  avg pick position (snake), avg top-player cost (auction),
-              most frequently drafted player
-    """
-    transactions = _year_keyed(_load("transactions.json"))
-    drafts       = _year_keyed(_load("drafts.json"))
-    results      = _year_keyed(_load("results.json"))
-
-    if not transactions:
-        raise HTTPException(status_code=404, detail="transactions.json not found.")
-
-    all_ids = _all_manager_ids(results)
-    if name not in all_ids:
-        raise HTTPException(status_code=404, detail=f"Manager '{name}' not found.")
-
-    # ── accumulate across all seasons ─────────────────────────────────────
-    total_adds   = 0
-    total_drops  = 0
-    total_trades = 0
-    seasons_with_data = 0
-
-    best_faab_add  = None   # {player_name, bid, year}
-    costly_drop    = None   # {player_name, bid_when_added, year}
-    trade_partners: dict = {}   # manager_id → count
-    traded_players: dict = {}   # player_key → {name, count}
-
-    # For drop cost: build a lookup of what was paid per player per season
-    # {year: {player_key: max_bid_paid}}
-    faab_paid_lookup: dict = {}
-
-    snake_picks:   list = []   # overall_pick numbers for avg draft pos (snake)
-    auction_costs: list = []   # top cost per team per auction season
-    drafted_players: dict = {}  # player_key → {name, count}
-
-    for yr, yr_tx in transactions.items():
-        moves  = yr_tx.get("moves",  [])
-        trades = yr_tx.get("trades", [])
-        if not moves and not trades:
-            continue
-        seasons_with_data += 1
-
-        # Build FAAB lookup for this year
-        yr_faab: dict = {}
-        for move in moves:
-            if move.get("manager_id") != name: continue
-            for added in move.get("added", []):
-                pk  = added.get("player_key") or ""
-                bid = added.get("waiver_bid")
-                if pk and bid is not None:
-                    try:
-                        bid_int = int(bid)
-                        if bid_int > yr_faab.get(pk, -1):
-                            yr_faab[pk] = bid_int
-                    except (TypeError, ValueError):
-                        pass
-        faab_paid_lookup[yr] = yr_faab
-
-        # Moves
-        for move in moves:
-            if move.get("manager_id") != name: continue
-
-            # Adds
-            for added in move.get("added", []):
-                total_adds += 1
-                bid = added.get("waiver_bid")
-                if bid is not None:
-                    try:
-                        bid_int = int(bid)
-                        if best_faab_add is None or bid_int > best_faab_add["bid"]:
-                            best_faab_add = {
-                                "player_key":  added.get("player_key"),
-                                "player_name": added.get("name"),
-                                "position":    added.get("position"),
-                                "bid":         bid_int,
-                                "year":        int(yr),
-                            }
-                    except (TypeError, ValueError):
-                        pass
-
-            # Drops
-            for dropped in move.get("dropped", []):
-                total_drops += 1
-                pk   = dropped.get("player_key") or ""
-                paid = yr_faab.get(pk)
-                if paid is not None:
-                    if costly_drop is None or paid > costly_drop["bid_when_added"]:
-                        costly_drop = {
-                            "player_key":      pk,
-                            "player_name":     dropped.get("name"),
-                            "position":        dropped.get("position"),
-                            "bid_when_added":  paid,
-                            "year":            int(yr),
-                        }
-
-        # Trades
-        for trade in trades:
-            is_trader = trade.get("trader_manager") == name
-            is_tradee = trade.get("tradee_manager") == name
-            if not is_trader and not is_tradee: continue
-
-            total_trades += 1
-            partner = trade.get("tradee_manager") if is_trader else trade.get("trader_manager")
-            if partner:
-                trade_partners[partner] = trade_partners.get(partner, 0) + 1
-
-            # Players I received
-            received = trade.get("trader_receives" if is_trader else "tradee_receives", [])
-            for p in received:
-                pk = p.get("player_key") or ""
-                nm = p.get("name") or pk
-                if pk:
-                    if pk not in traded_players:
-                        traded_players[pk] = {"name": nm, "count": 0}
-                    traded_players[pk]["count"] += 1
-
-            # Players I sent (also counts as "traded")
-            sent = trade.get("tradee_receives" if is_trader else "trader_receives", [])
-            for p in sent:
-                pk = p.get("player_key") or ""
-                nm = p.get("name") or pk
-                if pk:
-                    if pk not in traded_players:
-                        traded_players[pk] = {"name": nm, "count": 0}
-                    traded_players[pk]["count"] += 1
-
-    # Draft stats
-    for yr, yr_draft in drafts.items():
-        picks      = yr_draft.get("picks", [])
-        draft_type = yr_draft.get("draft_type", "snake")
-
-        my_picks = [p for p in picks if p.get("manager_id") == name]
-
-        for p in my_picks:
-            pk = p.get("player_key") or ""
-            nm = p.get("player_name") or pk
-            if pk:
-                if pk not in drafted_players:
-                    drafted_players[pk] = {"name": nm, "count": 0}
-                drafted_players[pk]["count"] += 1
-
-            if draft_type == "snake":
-                pick_num = p.get("overall_pick") or p.get("pick")
-                if pick_num:
-                    try: snake_picks.append(int(pick_num))
-                    except: pass
-            else:
-                cost = p.get("cost")
-                if cost:
-                    try: auction_costs.append(int(cost))
-                    except: pass
-
-    # Most frequent trade partner
-    top_partner = None
-    if trade_partners:
-        best_mid = max(trade_partners, key=lambda x: trade_partners[x])
-        top_partner = {
-            "manager_id":   best_mid,
-            "display_name": _display_name(best_mid, results),
-            "trade_count":  trade_partners[best_mid],
-        }
-
-    # Most frequently traded player
-    top_traded = None
-    if traded_players:
-        best_pk = max(traded_players, key=lambda x: traded_players[x]["count"])
-        top_traded = {
-            "player_key":  best_pk,
-            "player_name": traded_players[best_pk]["name"],
-            "times_traded":traded_players[best_pk]["count"],
-        }
-
-    # Most frequently drafted player
-    top_drafted = None
-    if drafted_players:
-        best_pk = max(drafted_players, key=lambda x: drafted_players[x]["count"])
-        top_drafted = {
-            "player_key":   best_pk,
-            "player_name":  drafted_players[best_pk]["name"],
-            "times_drafted":drafted_players[best_pk]["count"],
-        }
-
-    n = seasons_with_data or 1
-    nd = len(drafts) or 1
-
-    return {
-        "manager_id":   name,
-        "display_name": _display_name(name, results),
-        "seasons_tracked": seasons_with_data,
-        "adds": {
-            "total":          total_adds,
-            "avg_per_season": round(total_adds / n, 1),
-            "best_faab_add":  best_faab_add,
-        },
-        "drops": {
-            "total":           total_drops,
-            "avg_per_season":  round(total_drops / n, 1),
-            "most_costly_drop":costly_drop,
-            "note": "most_costly_drop = player dropped who had highest FAAB bid when originally added",
-        },
-        "trades": {
-            "total":               total_trades,
-            "avg_per_season":      round(total_trades / n, 1),
-            "top_trade_partner":   top_partner,
-            "most_traded_player":  top_traded,
-        },
-        "draft": {
-            "avg_pick_snake":      round(sum(snake_picks) / len(snake_picks), 1) if snake_picks else None,
-            "avg_top_cost_auction":round(sum(auction_costs) / len(auction_costs), 1) if auction_costs else None,
-            "most_drafted_player": top_drafted,
-            "snake_seasons":       len(snake_picks),
-            "auction_seasons":     len(set(
-                yr for yr, yd in drafts.items()
-                if yd.get("draft_type") == "auction"
-                and any(p.get("manager_id") == name for p in yd.get("picks", []))
-            )),
-        },
-    }
-
-
-# ===========================================================================
-# GET /fantasy/{name}/transactions/{year}  — single season breakdown
-# ===========================================================================
-
-@router.get("/{name}/transactions/{year}")
-def manager_transactions_year(name: str, year: int):
-    """
-    Full transaction breakdown for a manager in a specific season.
-
-    Sections:
-      adds:   each player added, FAAB bid, source (waivers/free agent), timestamp
-              + total adds and most expensive FAAB add
-      drops:  each player dropped, what FAAB was paid when added (if known)
-              + total drops and most costly drop
-      trades: each trade with partner, players sent vs received
-              + total trades
-      draft:  every pick with cost (auction) or position (snake),
-              season_pts and pos_label if player_stats available
-              e.g. "WR5" = 5th most points among WRs rostered in league
-    """
-    transactions = _year_keyed(_load("transactions.json"))
-    drafts       = _year_keyed(_load("drafts.json"))
-    results      = _year_keyed(_load("results.json"))
-
-    all_ids = _all_manager_ids(results)
-    if name not in all_ids:
-        raise HTTPException(status_code=404, detail=f"Manager '{name}' not found.")
-
-    yr = str(year)
-    yr_tx    = transactions.get(yr, {})
-    yr_draft = drafts.get(yr, {})
-
-    moves  = yr_tx.get("moves",  [])
-    trades = yr_tx.get("trades", [])
-
-    # ── FAAB lookup for costly-drop cross-reference ───────────────────────
-    faab_paid: dict = {}   # player_key → max bid paid this season
-    for move in moves:
-        if move.get("manager_id") != name: continue
-        for added in move.get("added", []):
-            pk  = added.get("player_key") or ""
-            bid = added.get("waiver_bid")
-            if pk and bid is not None:
-                try:
-                    bid_int = int(bid)
-                    if bid_int > faab_paid.get(pk, -1):
-                        faab_paid[pk] = bid_int
-                except (TypeError, ValueError):
-                    pass
-
-    # ── ADDS ─────────────────────────────────────────────────────────────
-    adds_list = []
-    for move in moves:
-        if move.get("manager_id") != name: continue
-        ts = move.get("timestamp")
-        for added in move.get("added", []):
-            bid = added.get("waiver_bid")
-            try:   bid_int = int(bid) if bid is not None else None
-            except: bid_int = None
-            adds_list.append({
-                "player_key":  added.get("player_key"),
-                "player_name": added.get("name"),
-                "position":    added.get("position"),
-                "nfl_team":    added.get("nfl_team"),
-                "waiver_bid":  bid_int,
-                "source_type": added.get("source_type"),
-                "timestamp":   ts,
-            })
-
-    adds_list.sort(key=lambda x: -(x["waiver_bid"] or 0))
-    best_faab = adds_list[0] if adds_list else None
-
-    # ── DROPS ─────────────────────────────────────────────────────────────
-    drops_list = []
-    for move in moves:
-        if move.get("manager_id") != name: continue
-        ts = move.get("timestamp")
-        for dropped in move.get("dropped", []):
-            pk   = dropped.get("player_key") or ""
-            paid = faab_paid.get(pk)
-            drops_list.append({
-                "player_key":     pk,
-                "player_name":    dropped.get("name"),
-                "position":       dropped.get("position"),
-                "nfl_team":       dropped.get("nfl_team"),
-                "bid_when_added": paid,
-                "timestamp":      ts,
-            })
-
-    drops_list.sort(key=lambda x: -(x["bid_when_added"] or 0))
-    costly_drop = drops_list[0] if drops_list else None
-
-    # ── TRADES ────────────────────────────────────────────────────────────
-    trades_list = []
-    for trade in trades:
-        is_trader = trade.get("trader_manager") == name
-        is_tradee = trade.get("tradee_manager") == name
-        if not is_trader and not is_tradee: continue
-
-        partner   = trade.get("tradee_manager") if is_trader else trade.get("trader_manager")
-        i_received = trade.get("trader_receives" if is_trader else "tradee_receives", [])
-        i_sent     = trade.get("tradee_receives" if is_trader else "trader_receives", [])
-
-        trades_list.append({
-            "partner_manager_id":   partner,
-            "partner_display_name": _display_name(partner, results),
-            "timestamp":            trade.get("timestamp"),
-            "i_received":           i_received,
-            "i_sent":               i_sent,
-        })
-
-    trades_list.sort(key=lambda x: x.get("timestamp") or 0, reverse=True)
-
-    # ── DRAFT ─────────────────────────────────────────────────────────────
-    draft_type  = yr_draft.get("draft_type", "snake")
-    all_picks   = yr_draft.get("picks", [])
-    my_picks    = [p for p in all_picks if p.get("manager_id") == name]
-    my_picks.sort(key=lambda x: x.get("overall_pick") or 999)
-
-    draft_summary = None
-    if my_picks:
-        if draft_type == "snake":
-            avg_pick = round(
-                sum(p.get("overall_pick") or 0 for p in my_picks) / len(my_picks), 1
-            ) if my_picks else None
-            draft_summary = {
-                "type":           "snake",
-                "total_picks":    len(my_picks),
-                "avg_pick":       avg_pick,
-                "picks":          my_picks,
-            }
-        else:
-            top_pick = max(my_picks, key=lambda x: x.get("cost") or 0)
-            total_spent = sum(p.get("cost") or 0 for p in my_picks)
-            draft_summary = {
-                "type":           "auction",
-                "total_picks":    len(my_picks),
-                "total_spent":    total_spent,
-                "top_pick":       top_pick,
-                "picks":          my_picks,
-                "note": "pos_label (e.g. WR5) = rank among rostered players at that position. Requires player_stats.",
-            }
-
-    return {
-        "manager_id":   name,
-        "display_name": _display_name(name, results),
-        "year":         year,
-        "adds": {
-            "total":          len(adds_list),
-            "best_faab_add":  best_faab,
-            "all_adds":       adds_list,
-        },
-        "drops": {
-            "total":           len(drops_list),
-            "most_costly_drop":costly_drop,
-            "all_drops":       drops_list,
-            "note": "bid_when_added = FAAB paid when this player was originally added this season (null if picked up free or unknown)",
-        },
-        "trades": {
-            "total":      len(trades_list),
-            "all_trades": trades_list,
-        },
-        "draft": draft_summary,
-    }
-
-
-# ===========================================================================
-# GET /fantasy/teams/overview
-# ===========================================================================
-
-
-
-# ===========================================================================
-# GET /fantasy/{name}/results/{year}
-# ===========================================================================
-
 @router.get("/{name}/results/{year}")
 def manager_results_year(name: str, year: int):
     """
@@ -3824,13 +3421,16 @@ def manager_results_year(name: str, year: int):
         my_slots  = wk_roster.get(matched_id, {}).get("players", [])
         if not my_slots: continue
 
-        my_pks = {s.get("player_key") for s in my_slots
-                  if isinstance(s, dict) and s.get("player_key")}
-
-        for pk in my_pks:
+        # Track starters and all rostered players separately
+        for slot in my_slots:
+            if not isinstance(slot, dict): continue
+            pk  = slot.get("player_key") or ""
+            if not pk: continue
             pi  = yr_info.get(pk, {})
             nm  = (pi.get("name") or "").strip()
-            if nm: player_weeks[nm] = player_weeks.get(nm, 0) + 1
+            # most_weeks_as_starter: only count weeks where is_starting=true
+            if nm and slot.get("is_starting"):
+                player_weeks[nm] = player_weeks.get(nm, 0) + 1
 
             pd  = wk_data.get(pk)
             if not isinstance(pd, dict): continue
@@ -3850,8 +3450,8 @@ def manager_results_year(name: str, year: int):
 
     top_tenures = sorted(player_weeks.items(), key=lambda x: -x[1])[:5]
     most_weeks_players = [
-        {"player_name": nm, "weeks_on_team": wks,
-         "pct_of_season": round(wks / max(rs_g, 1) * 100, 1)}
+        {"player_name": nm, "weeks_as_starter": wks,
+         "pct_of_season": round(wks / max(rs_g - (ps - rs_g - 1), 1) * 100, 1)}
         for nm, wks in top_tenures
     ]
 
@@ -3958,7 +3558,7 @@ def manager_results_year(name: str, year: int):
         },
 
         "players": {
-            "most_weeks_on_team": most_weeks_players,
+            "most_weeks_as_starter": most_weeks_players,
             "best_position_week": {
                 pos: pos_best.get(pos) for pos in ["QB","WR","RB","TE"]
             },
@@ -3974,5 +3574,375 @@ def manager_results_year(name: str, year: int):
             "weeks_vs_high_scorer":       weeks_vs_high_scorer,
             "total_ices_real":            total_ices_real,
             "ices_note":                  f"Real ices tracked from {REAL_ICES_START} (regular season only)",
+        },
+    }
+
+
+# ===========================================================================
+# GET /fantasy/{name}/transactions
+# ===========================================================================
+
+@router.get("/{name}/transactions")
+def manager_transactions_career(
+    name: str,
+    era:  str = Query(default="all_time"),
+):
+    """
+    Career transaction summary for one manager, filterable by era.
+
+    Covers: moves (adds/drops), FAAB usage, trades, draft history.
+    """
+    results      = _year_keyed(_load("results.json"))
+    transactions = _load("transactions.json")
+    drafts       = _load("drafts.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    name_lower = name.lower()
+    all_ids    = _all_manager_ids(results)
+    matched_id = next((m for m in all_ids if m.lower() == name_lower), None)
+    if not matched_id:
+        raise HTTPException(status_code=404, detail=f"Manager '{name}' not found.")
+
+    era_def = ERAS.get(era)
+    if not era_def:
+        raise HTTPException(status_code=400, detail=f"Unknown era: {era}")
+
+    finished = _finished_seasons(results)
+    FAAB_START = 2015
+
+    # ── accumulators ──────────────────────────────────────────────────────────
+    total_adds        = 0
+    total_drops       = 0
+    total_trades      = 0
+    seasons           = 0
+    faab_seasons      = 0
+    faab_spent        = 0
+    best_faab         = None
+    trade_partners:   dict = {}
+    traded_players:   dict = {}
+    snake_picks:      list = []
+    auction_costs:    list = []
+    drafted_by_pos:   dict = {}   # pos → {name: count}
+
+    for yr, yr_tx in transactions.items():
+        yr_int = int(yr)
+        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
+        if yr not in finished: continue
+        if matched_id not in finished[yr].get("managers", {}): continue
+        seasons += 1
+        if yr_int >= FAAB_START:
+            faab_seasons += 1
+
+        # Moves
+        for move in yr_tx.get("moves", []):
+            mid = move.get("manager_id") or move.get("manager") or ""
+            if mid != matched_id: continue
+            adds  = move.get("added",   [])
+            drops = move.get("dropped", [])
+            total_adds  += len(adds)
+            total_drops += len(drops)
+            for added in adds:
+                bid = added.get("waiver_bid")
+                if bid and yr_int >= FAAB_START:
+                    try:
+                        bid_int = int(bid)
+                        faab_spent += bid_int
+                        if best_faab is None or bid_int > best_faab["bid"]:
+                            best_faab = {
+                                "player_name": added.get("name"),
+                                "position":    added.get("position"),
+                                "bid":         bid_int,
+                                "year":        yr_int,
+                            }
+                    except: pass
+
+        # Trades
+        for trade in yr_tx.get("trades", []):
+            ma = trade.get("manager_a") or trade.get("trader_manager") or ""
+            mb = trade.get("manager_b") or trade.get("tradee_manager") or ""
+            is_a = ma == matched_id
+            is_b = mb == matched_id
+            if not is_a and not is_b: continue
+            total_trades += 1
+            partner = mb if is_a else ma
+            if partner:
+                trade_partners[partner] = trade_partners.get(partner, 0) + 1
+            # Track traded players (received side)
+            received = trade.get("a_received" if is_a else "b_received", [])
+            for p in received:
+                nm  = (p.get("name") or p.get("player_name") or "").strip()
+                pos = p.get("position") or ""
+                if nm and pos not in ("DEF","D/ST","K"):
+                    traded_players[nm] = traded_players.get(nm, 0) + 1
+
+    # Drafts
+    for yr, yr_draft in drafts.items():
+        yr_int = int(yr)
+        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
+        if yr not in finished: continue
+        draft_type = yr_draft.get("draft_type", "snake")
+        for p in yr_draft.get("picks", []):
+            if p.get("manager_id") != matched_id: continue
+            nm  = (p.get("player_name") or "").strip()
+            pos = (p.get("position") or "").strip()
+            if nm and pos not in ("DEF","D/ST"):
+                if pos not in drafted_by_pos: drafted_by_pos[pos] = {}
+                drafted_by_pos[pos][nm] = drafted_by_pos[pos].get(nm, 0) + 1
+            if draft_type == "snake":
+                pick = p.get("overall_pick")
+                if pick:
+                    try: snake_picks.append(int(pick))
+                    except: pass
+            else:
+                cost = p.get("cost")
+                if cost:
+                    try: auction_costs.append(int(cost))
+                    except: pass
+
+    # Format
+    seasons = seasons or 1
+    top_partner = None
+    if trade_partners:
+        tp = max(trade_partners, key=lambda x: trade_partners[x])
+        top_partner = {
+            "manager_id":   tp,
+            "display_name": _display_name(tp, results),
+            "trade_count":  trade_partners[tp],
+        }
+
+    top_traded = None
+    if traded_players:
+        tm = max(traded_players, key=lambda x: traded_players[x])
+        top_traded = {"player_name": tm, "times_traded": traded_players[tm]}
+
+    most_drafted: dict = {}
+    for pos, players in drafted_by_pos.items():
+        top = max(players, key=lambda x: players[x])
+        most_drafted[pos] = {"player_name": top, "times_drafted": players[top]}
+
+    avg_faab_remaining = None
+    if faab_seasons:
+        budget_total = 200 * faab_seasons
+        avg_faab_remaining = round((budget_total - faab_spent) / faab_seasons, 1)
+
+    return {
+        "manager_id":      matched_id,
+        "display_name":    _display_name(matched_id, results),
+        "era":             era,
+        "era_label":       era_def["label"],
+        "available_eras":  {k: v["label"] for k, v in ERAS.items()},
+        "seasons_tracked": seasons,
+        "moves": {
+            "total_adds":         total_adds,
+            "total_drops":        total_drops,
+            "total_moves":        total_adds + total_drops,
+            "avg_moves_per_season": round((total_adds + total_drops) / seasons, 1),
+            "best_faab_add":      best_faab,
+            "avg_faab_remaining": avg_faab_remaining,
+            "faab_seasons":       faab_seasons,
+        },
+        "trades": {
+            "total_trades":          total_trades,
+            "avg_trades_per_season": round(total_trades / seasons, 1),
+            "top_trade_partner":     top_partner,
+            "most_traded_player":    top_traded,
+        },
+        "draft": {
+            "avg_pick_snake":       round(sum(snake_picks) / len(snake_picks), 1) if snake_picks else None,
+            "avg_auction_top_cost": round(sum(auction_costs) / len(auction_costs), 1) if auction_costs else None,
+            "most_drafted_by_pos":  most_drafted,
+        },
+    }
+
+
+# ===========================================================================
+# GET /fantasy/{name}/transactions/{year}
+# ===========================================================================
+
+@router.get("/{name}/transactions/{year}")
+def manager_transactions_year(name: str, year: int):
+    """
+    Single-season transaction breakdown for one manager.
+
+    Sections: moves (adds/drops with FAAB), trades, draft.
+    """
+    results      = _year_keyed(_load("results.json"))
+    transactions = _load("transactions.json")
+    drafts       = _load("drafts.json")
+    player_stats = _load("player_stats.json")
+    player_info  = _load("player_info.json")
+
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    name_lower = name.lower()
+    all_ids    = _all_manager_ids(results)
+    matched_id = next((m for m in all_ids if m.lower() == name_lower), None)
+    if not matched_id:
+        raise HTTPException(status_code=404, detail=f"Manager '{name}' not found.")
+
+    yr     = str(year)
+    yr_tx  = transactions.get(yr, {})
+    yr_draft = drafts.get(yr, {})
+
+    # ── MOVES section ─────────────────────────────────────────────────────────
+    adds_list:  list = []
+    drops_list: list = []
+    faab_paid:  dict = {}   # player_key → max bid paid (for costly drop calc)
+
+    for move in yr_tx.get("moves", []):
+        mid = move.get("manager_id") or move.get("manager") or ""
+        if mid != matched_id: continue
+        ts = move.get("date") or move.get("timestamp") or ""
+
+        for added in move.get("added", []):
+            bid = added.get("waiver_bid")
+            try: bid_int = int(bid) if bid is not None else None
+            except: bid_int = None
+            pk = added.get("player_key") or ""
+            if pk and bid_int:
+                if bid_int > faab_paid.get(pk, 0):
+                    faab_paid[pk] = bid_int
+            adds_list.append({
+                "player_key":  pk,
+                "player_name": added.get("name"),
+                "position":    added.get("position"),
+                "nfl_team":    added.get("nfl_team"),
+                "waiver_bid":  bid_int,
+                "source_type": added.get("source_type"),
+                "date":        ts,
+            })
+
+        for dropped in move.get("dropped", []):
+            pk   = dropped.get("player_key") or ""
+            paid = faab_paid.get(pk)
+            drops_list.append({
+                "player_key":     pk,
+                "player_name":    dropped.get("name"),
+                "position":       dropped.get("position"),
+                "nfl_team":       dropped.get("nfl_team"),
+                "bid_when_added": paid,
+                "date":           ts,
+            })
+
+    adds_list.sort(key=lambda x: -(x["waiver_bid"] or 0))
+    drops_list.sort(key=lambda x: -(x["bid_when_added"] or 0))
+    total_faab_used = sum(a["waiver_bid"] for a in adds_list if a["waiver_bid"])
+    faab_remaining  = 200 - total_faab_used if year >= 2015 else None
+
+    best_faab_add  = adds_list[0]  if adds_list else None
+    most_costly_drop = next((d for d in drops_list if d["bid_when_added"]), None)
+
+    # ── TRADES section ────────────────────────────────────────────────────────
+    trades_list: list = []
+    for trade in yr_tx.get("trades", []):
+        ma = trade.get("manager_a") or trade.get("trader_manager") or ""
+        mb = trade.get("manager_b") or trade.get("tradee_manager") or ""
+        is_a = ma == matched_id
+        is_b = mb == matched_id
+        if not is_a and not is_b: continue
+        partner     = mb if is_a else ma
+        i_received  = trade.get("a_received" if is_a else "b_received", [])
+        i_sent      = trade.get("b_received" if is_a else "a_received", [])
+        trades_list.append({
+            "week":                 trade.get("week"),
+            "date":                 trade.get("date"),
+            "partner_manager_id":   partner,
+            "partner_display_name": _display_name(partner, results),
+            "i_received":           i_received,
+            "i_sent":               i_sent,
+        })
+
+    trades_list.sort(key=lambda x: x.get("week") or 0)
+
+    # ── DRAFT section ─────────────────────────────────────────────────────────
+    draft_type  = yr_draft.get("draft_type", "snake")
+    all_picks   = yr_draft.get("picks", [])
+    my_picks    = [p for p in all_picks if p.get("manager_id") == matched_id]
+    my_picks.sort(key=lambda x: x.get("overall_pick") or x.get("cost") or 0)
+
+    # Build position draft rank (e.g. 5th RB taken = RB5)
+    pos_draft_counter: dict = {}
+    draft_pos_rank: dict = {}
+    for p in sorted(all_picks, key=lambda x: x.get("overall_pick") or 999):
+        pk      = p.get("player_key") or ""
+        pos_raw = p.get("position") or ""
+        pos     = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
+        if not pos or not pk: continue
+        pos_draft_counter[pos] = pos_draft_counter.get(pos, 0) + 1
+        draft_pos_rank[pk] = f"{pos}{pos_draft_counter[pos]}"
+
+    # End-of-season position rank from player_stats
+    yr_stats = player_stats.get(yr, {})
+    yr_info  = (player_info.get(yr, {}) or {}).get("players", {})
+    player_season_pts: dict = {}
+    for wk_key, wk_data in yr_stats.items():
+        if not isinstance(wk_data, dict): continue
+        for pk, pd in wk_data.items():
+            if not isinstance(pd, dict): continue
+            try: fp = float(pd.get("fantasy_points") or 0)
+            except: continue
+            player_season_pts[pk] = player_season_pts.get(pk, 0) + fp
+
+    # Sort players by position by season pts for ranking
+    pos_season_ranks: dict = {}
+    pos_pts_groups: dict = {}
+    for pk, pts in player_season_pts.items():
+        pi  = yr_info.get(pk, {})
+        pos_raw = pi.get("position") or ""
+        pos = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
+        if not pos: continue
+        pos_pts_groups.setdefault(pos, []).append((pk, pts))
+    for pos, group in pos_pts_groups.items():
+        for rank, (pk, _) in enumerate(sorted(group, key=lambda x: -x[1]), 1):
+            pos_season_ranks[pk] = f"{pos}{rank}"
+
+    draft_picks_out = []
+    for p in my_picks:
+        pk          = p.get("player_key") or ""
+        draft_label = draft_pos_rank.get(pk)
+        pts_label   = pos_season_ranks.get(pk)
+        entry = {
+            "player_key":   pk,
+            "player_name":  p.get("player_name"),
+            "position":     p.get("position"),
+            "nfl_team":     p.get("nfl_team"),
+            "draft_label":  draft_label,   # RB5 = 5th RB drafted
+            "pts_label":    pts_label,     # RB3 = 3rd most pts among RBs
+            "season_pts":   round(player_season_pts.get(pk, 0), 2),
+        }
+        if draft_type == "snake":
+            entry["overall_pick"] = p.get("overall_pick")
+            entry["round"]        = p.get("round")
+        else:
+            entry["cost"] = p.get("cost")
+        draft_picks_out.append(entry)
+
+    return {
+        "manager_id":   matched_id,
+        "display_name": _display_name(matched_id, results),
+        "year":         year,
+        "moves": {
+            "total_adds":      len(adds_list),
+            "total_drops":     len(drops_list),
+            "total_moves":     len(adds_list) + len(drops_list),
+            "total_faab_used": total_faab_used,
+            "faab_remaining":  faab_remaining,
+            "best_faab_add":   best_faab_add,
+            "most_costly_drop":most_costly_drop,
+            "all_adds":        adds_list,
+            "all_drops":       drops_list,
+        },
+        "trades": {
+            "total_trades": len(trades_list),
+            "all_trades":   trades_list,
+        },
+        "draft": {
+            "draft_type":    draft_type,
+            "total_picks":   len(draft_picks_out),
+            "picks":         draft_picks_out,
+            "note": "draft_label = order drafted at position (RB5 = 5th RB taken). pts_label = end-of-season points rank (RB3 = 3rd most pts among all rostered RBs).",
         },
     }
