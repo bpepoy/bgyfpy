@@ -3853,24 +3853,36 @@ def manager_transactions_career(
             yr_int = int(yr)
             if not (start_yr <= yr_int <= end_yr): continue
             if yr not in finished: continue
-            draft_type = yr_draft.get("draft_type", "snake")
-            for p in yr_draft.get("picks", []):
-                if p.get("manager_id") != matched_id: continue
+            draft_type  = yr_draft.get("draft_type", "snake")
+            my_yr_picks = [p for p in yr_draft.get("picks", [])
+                           if p.get("manager_id") == matched_id]
+
+            # most_drafted tracking (all picks)
+            for p in my_yr_picks:
                 nm  = (p.get("player_name") or "").strip()
                 pos = (p.get("position") or "").strip()
                 if nm and pos not in ("DEF","D/ST"):
                     if pos not in drafted_by_pos: drafted_by_pos[pos] = {}
                     drafted_by_pos[pos][nm] = drafted_by_pos[pos].get(nm, 0) + 1
-                if draft_type == "snake":
-                    pick = p.get("overall_pick")
+
+            if draft_type == "snake":
+                # avg_pick_snake: round 1 pick only (overall_pick for round==1)
+                r1 = next((p for p in my_yr_picks if (p.get("round") or 0) == 1), None)
+                if r1:
+                    pick = r1.get("overall_pick")
                     if pick:
                         try: snake_picks.append(int(pick))
                         except: pass
-                else:
+            else:
+                # avg_auction_top_cost: highest cost pick this manager made this season
+                costs = []
+                for p in my_yr_picks:
                     cost = p.get("cost")
                     if cost:
-                        try: auction_costs.append(int(cost))
+                        try: costs.append(int(cost))
                         except: pass
+                if costs:
+                    auction_costs.append(max(costs))
 
         s = seasons or 1
         top_partner = None
