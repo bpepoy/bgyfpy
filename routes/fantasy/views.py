@@ -532,143 +532,144 @@ def teams_transactions(
 @router.get("/{name}/overview")
 def manager_overview(name: str):
     """
-    Career overview for one manager.
+    Career overview for one manager — their personal home base.
 
-    Returns:
-      - identity (display_name, profile image from most recent managers.json)
-      - total seasons played
-      - all-time W-L-T record
-      - championships and last-place finishes
-      - recent seasons summary (last 5)
+    Returns identity, career RS/playoff stats, and league rankings
+    (how they compare to all other managers across finished seasons).
     """
-    results  = _year_keyed(_load("results.json"))
-    managers = _year_keyed(_load("managers.json"))
+    results      = _year_keyed(_load("results.json"))
+    managers_raw = _load("managers.json")
 
     if not results:
         raise HTTPException(status_code=404, detail="results.json not found.")
 
-    manager_seasons = _get_manager_data(results, name)
-    if not manager_seasons:
-        raise HTTPException(status_code=404, detail=f"Manager '{name}' not found in results.json.")
+    # Accept both lower and title case
+    name_lower = name.lower()
+    all_ids    = _all_manager_ids(results)
+    matched_id = next((mid for mid in all_ids if mid.lower() == name_lower), None)
+    if not matched_id:
+        raise HTTPException(status_code=404, detail=f"Manager '{name}' not found.")
 
-    # Profile identity — from most recent season entry
-    most_recent_entry = manager_seasons[sorted(manager_seasons.keys(), reverse=True)[0]]
-    display_name = most_recent_entry.get("display_name") or name.title()
-    logo_url     = most_recent_entry.get("logo_url")
+    finished = _finished_seasons(results)
 
-    # Also check managers.json for profile image (more stable)
-    profile_image = None
-    for yr_data in managers.values():
-        for mgr in yr_data.get("managers", []):
-            if mgr.get("manager_id") == name:
-                profile_image = mgr.get("logo_url")
-                break
-        if profile_image:
-            break
+    # ── build career stats for ALL managers (needed for rankings) ────────────
+    all_stats: dict = {}
+    for yr, season in finished.items():
+        managers = season.get("managers", {})
+        num_teams = len(managers)
+        # Find last place this season
+        non_po = [(mid, m) for mid, m in managers.items()
+                  if not (m.get("playoffs") or m.get("playoff", {})).get("made_playoffs")]
+        last_mid = max(non_po,
+            key=lambda x: x[1].get("regular_season", {}).get("rank") or 0)[0] if non_po else None
 
-    # Career totals (regular season only from standings, finished seasons)
-    total_wins = total_losses = total_ties = total_games = 0
-    total_pf   = total_pa    = 0.0
-    championships = 0
-    last_places   = 0
-    seasons_played = 0
-    playoffs_made  = 0
-    avg_finish_sum = 0
+        for mid, m in managers.items():
+            if mid not in all_stats:
+                all_stats[mid] = {
+                    "rs_wins": 0, "rs_losses": 0, "rs_ties": 0, "rs_games": 0,
+                    "rs_pf": 0.0, "rs_pa": 0.0, "seasons": 0,
+                    "championships": 0, "last_places": 0,
+                    "po_apps": 0, "po_wins": 0, "po_losses": 0,
+                    "po_ties": 0, "po_games": 0, "po_pf": 0.0,
+                }
+            rs = m.get("regular_season", {})
+            po = m.get("playoffs", {}) or m.get("playoff", {})
+            all_stats[mid]["rs_wins"]   += rs.get("wins")    or 0
+            all_stats[mid]["rs_losses"] += rs.get("losses")  or 0
+            all_stats[mid]["rs_ties"]   += rs.get("ties")    or 0
+            all_stats[mid]["rs_games"]  += (rs.get("wins") or 0) + (rs.get("losses") or 0) + (rs.get("ties") or 0)
+            all_stats[mid]["rs_pf"]     += rs.get("points_for")     or 0
+            all_stats[mid]["rs_pa"]     += rs.get("points_against") or 0
+            all_stats[mid]["seasons"]   += 1
+            if po.get("made_playoffs"):
+                all_stats[mid]["po_apps"]   += 1
+                all_stats[mid]["po_wins"]   += po.get("wins")   or 0
+                all_stats[mid]["po_losses"] += po.get("losses") or 0
+                all_stats[mid]["po_ties"]   += po.get("ties")   or 0
+                po_g = (po.get("wins") or 0) + (po.get("losses") or 0) + (po.get("ties") or 0)
+                all_stats[mid]["po_games"]  += po_g
+                all_stats[mid]["po_pf"]     += po.get("points_for") or 0
+                if po.get("finish") == 1:
+                    all_stats[mid]["championships"] += 1
+            if mid == last_mid:
+                all_stats[mid]["last_places"] += 1
 
-    # Playoff career totals (from results.json playoffs block)
-    pl_wins = pl_losses = pl_ties = pl_games = 0
-    pl_pf   = pl_pa    = 0.0
+    # ── compute derived values for ranking ────────────────────────────────────
+    def _avg_pf(s):
+        return round(s["rs_pf"] / s["rs_games"], 2) if s["rs_games"] else 0
 
-    season_summaries = []
+    def _po_avg_pf(s):
+        return round(s["po_pf"] / s["po_games"], 2) if s["po_games"] else 0
 
-    for yr in sorted(manager_seasons.keys(), reverse=True):
-        m      = manager_seasons[yr]
-        rs     = m.get("regular_season", {})
-        pl     = m.get("playoffs", {})
-        season = results[yr]
+    # Active managers = appeared in last 3 seasons
+    recent_yrs   = sorted(results.keys(), reverse=True)[:3]
+    active_mids  = set()
+    for yr in recent_yrs:
+        active_mids.update(results[yr].get("managers", {}).keys())
+    active_stats = {mid: s for mid, s in all_stats.items() if mid in active_mids}
 
-        w   = rs.get("wins", 0)   or 0
-        l   = rs.get("losses", 0) or 0
-        t   = rs.get("ties", 0)   or 0
-        pf  = rs.get("points_for", 0) or 0
-        pa  = rs.get("points_against", 0) or 0
-        rnk = rs.get("rank")
-        seed = rs.get("playoff_seed")
+    # Rankings among active managers (ascending = best for wins/pf)
+    def _rank(mid, key_fn, higher_is_better=True):
+        vals = sorted(active_stats.items(), key=lambda x: key_fn(x[1]),
+                      reverse=higher_is_better)
+        for i, (m, _) in enumerate(vals):
+            if m == mid:
+                return i + 1
+        return None
 
-        if season.get("is_finished"):
-            seasons_played += 1
-            total_wins   += w
-            total_losses += l
-            total_ties   += t
-            total_games  += w + l + t
-            total_pf     += pf
-            total_pa     += pa
-            if rnk:
-                avg_finish_sum += int(rnk)
-            if rnk == 1:
-                championships += 1
-            if rnk == 10:
-                last_places += 1
-            if pl.get("made_playoffs"):
-                playoffs_made += 1
-                pl_wins   += pl.get("wins", 0)   or 0
-                pl_losses += pl.get("losses", 0) or 0
-                pl_ties   += pl.get("ties", 0)   or 0
-                pl_games  += (pl.get("wins", 0) or 0) + (pl.get("losses", 0) or 0) + (pl.get("ties", 0) or 0)
-                pl_pf     += pl.get("points_for", 0)     or 0
-                pl_pa     += pl.get("points_against", 0) or 0
+    n_active = len(active_stats)
+    me       = all_stats.get(matched_id, {})
+    me_games = me.get("rs_games") or 1
+    me_po_g  = me.get("po_games") or 1
 
-        season_summaries.append({
-            "year":         int(yr),
-            "team_name":    m.get("team_name"),
-            "is_finished":  season.get("is_finished", False),
-            "wins":         w,
-            "losses":       l,
-            "ties":         t,
-            "rank":         rnk,
-            "playoff_seed": seed,
-            "made_playoffs": pl.get("made_playoffs", False),
-            "finish":       pl.get("finish") if pl.get("made_playoffs") else rnk,
-            "points_for":   round(pf, 2),
-            "points_against": round(pa, 2),
-        })
+    rs_wins_rank  = _rank(matched_id, lambda s: s["rs_wins"])
+    rs_pf_rank    = _rank(matched_id, _avg_pf)
+    po_pf_rank    = _rank(matched_id, _po_avg_pf)
 
-    win_pct = round(total_wins / total_games, 4) if total_games else None
+    # ── profile identity ──────────────────────────────────────────────────────
+    display_name = _display_name(matched_id, results)
+    photo_url    = None   # populated from settings/profile when built
+
+    # Pull most recent team name
+    recent_yr      = sorted(finished.keys(), reverse=True)[0] if finished else None
+    recent_team_nm = None
+    if recent_yr:
+        recent_team_nm = (finished[recent_yr].get("managers", {})
+                          .get(matched_id, {}).get("team_name"))
 
     return {
-        "manager_id":        name,
-        "display_name":      display_name,
-        "logo_url":          logo_url,
-        "profile_image":     profile_image or logo_url,
-        "seasons_played":    seasons_played,
-        "career": {
-            "wins":           total_wins,
-            "losses":         total_losses,
-            "ties":           total_ties,
-            "games":          total_games,
-            "win_pct":        win_pct,
-            "championships":  championships,
-            "last_places":    last_places,
-            "playoffs_made":  playoffs_made,
-            "avg_finish":     round(avg_finish_sum / seasons_played, 2) if seasons_played else None,
-            "total_points_for":     round(total_pf, 2),
-            "total_points_against": round(total_pa, 2),
-            "avg_points_for":       round(total_pf / total_games, 2) if total_games else None,
-            "avg_points_against":   round(total_pa / total_games, 2) if total_games else None,
+        "manager_id":    matched_id,
+        "display_name":  display_name,
+        "photo_url":     photo_url,
+        "team_name":     recent_team_nm,
+        "seasons_played":me.get("seasons", 0),
+        "regular_season": {
+            "wins":         me.get("rs_wins"),
+            "losses":       me.get("rs_losses"),
+            "ties":         me.get("rs_ties"),
+            "games":        me.get("rs_games"),
+            "win_pct":      round(me["rs_wins"] / me_games, 4) if me.get("rs_games") else None,
+            "avg_pf":       round(me["rs_pf"]   / me_games, 2) if me.get("rs_games") else None,
+            "avg_pa":       round(me["rs_pa"]   / me_games, 2) if me.get("rs_games") else None,
+            "wins_rank":    f"{rs_wins_rank} of {n_active}" if rs_wins_rank else None,
+            "avg_pf_rank":  f"{rs_pf_rank} of {n_active}"  if rs_pf_rank  else None,
         },
-        "career_playoffs": {
-            "made_playoffs":  playoffs_made,
-            "wins":           pl_wins,
-            "losses":         pl_losses,
-            "ties":           pl_ties,
-            "games":          pl_games,
-            "win_pct":        round(pl_wins / pl_games, 4) if pl_games else None,
-            "total_points_for":     round(pl_pf, 2),
-            "total_points_against": round(pl_pa, 2),
-            "avg_points_for":       round(pl_pf / pl_games, 2) if pl_games else None,
-            "avg_points_against":   round(pl_pa / pl_games, 2) if pl_games else None,
+        "accolades": {
+            "championships":  me.get("championships", 0),
+            "last_places":    me.get("last_places", 0),
+            "playoff_appearances": me.get("po_apps", 0),
         },
-        "seasons": season_summaries,
+        "playoffs": {
+            "appearances":  me.get("po_apps", 0),
+            "wins":         me.get("po_wins"),
+            "losses":       me.get("po_losses"),
+            "ties":         me.get("po_ties"),
+            "games":        me.get("po_games"),
+            "win_pct":      round(me["po_wins"] / me_po_g, 4) if me.get("po_games") else None,
+            "avg_pf":       round(me["po_pf"]   / me_po_g, 2) if me.get("po_games") else None,
+            "avg_pf_rank":  f"{po_pf_rank} of {n_active}"     if po_pf_rank else None,
+        },
+        "_note": "photo_url populated once settings/profile is built. Rankings among active managers only.",
     }
 
 
