@@ -522,12 +522,67 @@ def teams_transactions(
             "best_auction_bid":      a["best_auction_bid"],
         })
 
+    # Most traded player (name-matched across all trades in era)
+    traded_name_counts: dict = {}
+    for yr, yr_tx in transactions.items():
+        yr_int = int(yr)
+        if not (era_def["start"] <= yr_int <= era_def["end"]): continue
+        for trade in yr_tx.get("trades", []):
+            for side in ["a_received","b_received","trader_receives","tradee_receives"]:
+                for p in trade.get(side, []):
+                    nm  = (p.get("name") or p.get("player_name") or "").strip()
+                    pos = p.get("position") or ""
+                    if nm and pos not in ("DEF","D/ST","K"):
+                        traded_name_counts[nm] = traded_name_counts.get(nm, 0) + 1
+    top5_traded = sorted(traded_name_counts.items(), key=lambda x: -x[1])[:5]
+    most_traded_players = [{"player_name": nm, "times_in_trades": cnt}
+                           for nm, cnt in top5_traded if cnt >= 2]
+
+    # Era breakdown
+    def _build_era_tx(e_start: int, e_end: int) -> list:
+        e_acc: dict = {}
+        for yr, yr_tx in transactions.items():
+            yr_int = int(yr)
+            if not (e_start <= yr_int <= e_end): continue
+            if yr not in finished: continue
+            for move in yr_tx.get("moves", []):
+                mid = move.get("manager_id") or move.get("manager") or ""
+                if not mid: continue
+                if mid not in e_acc: e_acc[mid] = {"adds":0,"drops":0,"trades":0,"seasons":set()}
+                e_acc[mid]["adds"]  += len(move.get("added",   []))
+                e_acc[mid]["drops"] += len(move.get("dropped", []))
+                e_acc[mid]["seasons"].add(yr)
+            for trade in yr_tx.get("trades", []):
+                m1 = trade.get("manager_a") or trade.get("trader_manager") or ""
+                m2 = trade.get("manager_b") or trade.get("tradee_manager") or ""
+                for mid in [m1, m2]:
+                    if mid:
+                        if mid not in e_acc: e_acc[mid] = {"adds":0,"drops":0,"trades":0,"seasons":set()}
+                        e_acc[mid]["trades"] += 1
+                        e_acc[mid]["seasons"].add(yr)
+        rows = []
+        for mid, a in e_acc.items():
+            s = len(a["seasons"]) or 1
+            rows.append({
+                "manager_id":    mid,
+                "display_name":  _display_name(mid, results),
+                "total_moves":   a["adds"] + a["drops"],
+                "avg_moves":     round((a["adds"]+a["drops"]) / s, 1),
+                "total_trades":  a["trades"],
+                "avg_trades":    round(a["trades"] / s, 1),
+            })
+        return sorted(rows, key=lambda x: -x["total_moves"])
+
+    era_breakdown = {key: _build_era_tx(val["start"], val["end"]) for key, val in ERAS.items()}
+
     table.sort(key=lambda x: -x["total_moves"])
     return {
-        "era":            era,
-        "era_label":      era_def["label"],
-        "available_eras": {k: v["label"] for k, v in ERAS.items()},
-        "managers":       table,
+        "era":               era,
+        "era_label":         era_def["label"],
+        "available_eras":    {k: v["label"] for k, v in ERAS.items()},
+        "managers":          table,
+        "most_traded_players": most_traded_players,
+        "era_breakdown":     era_breakdown,
     }
 @router.get("/{name}/overview")
 def manager_overview(name: str):
@@ -1096,6 +1151,174 @@ def manager_results(
     }
 
 
+
+@router.get("/teams/matchups")
+def teams_matchups_grid(
+    era: str = Query(default="all_time", description=(
+        "Era filter: all_time | darkness | sam_era | frank_era | jordan_era | auction_era"
+    )),
+):
+    """
+    League-wide head-to-head grid — every manager vs every other manager.
+
+    Returns a 10×10 matrix of RS and playoff records suitable for rendering
+    as a table. Each cell is manager_row's record vs manager_col.
+
+    grid[row_manager][col_manager] = {
+        regular_season: {wins, losses, ties, games, avg_pf, avg_pa, avg_diff},
+        playoffs:       {wins, losses, ties, games},
+        combined:       {wins, losses, ties, games, record_str}
+    }
+
+    Diagonal (self vs self) is null.
+    managers list gives the display order for row/column headers.
+    """
+    matchups_data = _year_keyed(_load("matchups.json"))
+    results       = _year_keyed(_load("results.json"))
+
+    if not matchups_data:
+        raise HTTPException(status_code=404, detail="matchups.json not found.")
+
+    era_def = ERAS.get(era)
+    if not era_def:
+        raise HTTPException(status_code=400, detail=f"Unknown era '{era}'. Valid: {list(ERAS.keys())}")
+
+    all_ids = sorted(_all_manager_ids(results))
+
+    def _acc():
+        return {"wins": 0, "losses": 0, "ties": 0, "games": 0,
+                "pf_sum": 0.0, "pa_sum": 0.0}
+
+    # grid[row_id][col_id] = {rs: acc, pl: acc}
+    grid: dict = {
+        mid: {opp: {"rs": _acc(), "pl": _acc()}
+              for opp in all_ids if opp != mid}
+        for mid in all_ids
+    }
+
+    for yr, season in matchups_data.items():
+        if not (era_def["start"] <= int(yr) <= era_def["end"]):
+            continue
+        for week_obj in season.get("weeks", []):
+            for matchup in week_obj.get("matchups", []):
+                teams = matchup.get("teams", [])
+                if len(teams) != 2: continue
+
+                is_consolation = matchup.get("is_consolation", False)
+                if is_consolation: continue
+
+                is_playoffs = matchup.get("is_playoffs", False)
+                is_tied     = matchup.get("is_tied", False)
+                t0, t1      = teams[0], teams[1]
+                m0 = t0.get("manager_id") or ""
+                m1 = t1.get("manager_id") or ""
+                if not m0 or not m1: continue
+                if m0 not in grid or m1 not in grid[m0]: continue
+
+                bucket_key = "pl" if is_playoffs else "rs"
+                pts0 = float(t0.get("points") or 0)
+                pts1 = float(t1.get("points") or 0)
+
+                # Update both directions
+                for my_id, opp_id, my_pts, opp_pts, is_winner in [
+                    (m0, m1, pts0, pts1, t0.get("is_winner", False)),
+                    (m1, m0, pts1, pts0, t1.get("is_winner", False)),
+                ]:
+                    if opp_id not in grid.get(my_id, {}): continue
+                    b = grid[my_id][opp_id][bucket_key]
+                    b["games"]  += 1
+                    b["pf_sum"]  = round(b["pf_sum"] + my_pts,  2)
+                    b["pa_sum"]  = round(b["pa_sum"] + opp_pts, 2)
+                    if is_tied:    b["ties"]   += 1
+                    elif is_winner: b["wins"]  += 1
+                    else:           b["losses"] += 1
+
+    def _fmt_rs(acc: dict) -> dict:
+        g = acc["games"]
+        return {
+            "wins":    acc["wins"],
+            "losses":  acc["losses"],
+            "ties":    acc["ties"],
+            "games":   g,
+            "win_pct": round(acc["wins"] / g, 4) if g else None,
+            "avg_pf":  round(acc["pf_sum"] / g, 2) if g else None,
+            "avg_pa":  round(acc["pa_sum"] / g, 2) if g else None,
+            "avg_diff":round((acc["pf_sum"] - acc["pa_sum"]) / g, 2) if g else None,
+        }
+
+    def _fmt_pl(acc: dict) -> dict:
+        g = acc["games"]
+        return {"wins": acc["wins"], "losses": acc["losses"],
+                "ties": acc["ties"], "games": g}
+
+    # Build formatted grid + row totals
+    formatted_grid: dict = {}
+    row_totals:     dict = {}
+
+    for mid in all_ids:
+        formatted_grid[mid] = {}
+        rs_tot = _acc()
+        pl_tot = _acc()
+
+        for opp_id in all_ids:
+            if opp_id == mid:
+                formatted_grid[mid][opp_id] = None  # diagonal
+                continue
+            cell     = grid[mid][opp_id]
+            rs, pl   = cell["rs"], cell["pl"]
+            comb_w   = rs["wins"]   + pl["wins"]
+            comb_l   = rs["losses"] + pl["losses"]
+            comb_t   = rs["ties"]   + pl["ties"]
+            comb_g   = rs["games"]  + pl["games"]
+
+            formatted_grid[mid][opp_id] = {
+                "regular_season": _fmt_rs(rs),
+                "playoffs":       _fmt_pl(pl),
+                "combined": {
+                    "wins": comb_w, "losses": comb_l, "ties": comb_t,
+                    "games": comb_g,
+                    "record_str": f"{comb_w}-{comb_l}" + (f"-{comb_t}" if comb_t else ""),
+                },
+            }
+
+            # Accumulate row totals (RS only for PF/PA, both for W-L)
+            for field in ("wins","losses","ties","games"):
+                rs_tot[field] += rs[field]
+                pl_tot[field] += pl[field]
+            rs_tot["pf_sum"]  = round(rs_tot["pf_sum"] + rs["pf_sum"],  2)
+            rs_tot["pa_sum"]  = round(rs_tot["pa_sum"] + rs["pa_sum"],  2)
+
+        row_totals[mid] = {
+            "regular_season": _fmt_rs(rs_tot),
+            "playoffs":       _fmt_pl(pl_tot),
+            "combined_wins":  rs_tot["wins"]   + pl_tot["wins"],
+            "combined_losses":rs_tot["losses"] + pl_tot["losses"],
+            "combined_ties":  rs_tot["ties"]   + pl_tot["ties"],
+        }
+
+    # Manager list sorted by all-time wins desc for natural table ordering
+    managers_sorted = sorted(
+        all_ids,
+        key=lambda mid: -(row_totals[mid]["combined_wins"]),
+    )
+
+    managers_meta = [
+        {"manager_id": mid, "display_name": _display_name(mid, results)}
+        for mid in managers_sorted
+    ]
+
+    return {
+        "era":            era,
+        "era_label":      era_def["label"],
+        "era_years":      f"{era_def['start']}–present" if era_def['end'] == 9999 else f"{era_def['start']}–{era_def['end']}",
+        "available_eras": {k: v["label"] for k, v in ERAS.items()},
+        "managers":       managers_meta,
+        "grid":           formatted_grid,
+        "row_totals":     row_totals,
+        "note":           "grid[row][col] = row manager's record vs col manager. Diagonal is null.",
+    }
+
+
 @router.get("/{name}/matchups")
 def manager_matchups(
     name: str,
@@ -1252,10 +1475,10 @@ def manager_matchups(
             "avg_diff": round((b["pf"] - b["pa"]) / g, 2) if b["g"] else None,
         }
 
-    # ── era breakdown — recompute for each era ────────────────────────────────
-    def _compute_era_summary(start_yr: int, end_yr: int) -> dict:
-        era_rs = {"w":0,"l":0,"t":0,"g":0,"pf":0.0,"pa":0.0}
-        era_po = {"w":0,"l":0,"t":0,"g":0,"pf":0.0,"pa":0.0}
+    # ── era breakdown — recompute summary + vs_opponents per era ────────────
+    def _compute_era_full(start_yr: int, end_yr: int) -> dict:
+        era_opp_rs: dict = {}
+        era_opp_po: dict = {}
         for yr, season in matchups_data.items():
             yr_int = int(yr)
             if not (start_yr <= yr_int <= end_yr): continue
@@ -1270,7 +1493,11 @@ def manager_matchups(
                     me  = next((t for t in teams if t.get("manager_id") == matched_id), None)
                     opp = next((t for t in teams if t.get("manager_id") != matched_id), None)
                     if not me or not opp: continue
-                    b       = era_po if is_po else era_rs
+                    opp_id  = opp.get("manager_id") or ""
+                    bucket  = era_opp_po if is_po else era_opp_rs
+                    if opp_id not in era_opp_rs: era_opp_rs[opp_id] = _acc()
+                    if opp_id not in era_opp_po: era_opp_po[opp_id] = _acc()
+                    b       = bucket[opp_id]
                     pts_me  = float(me.get("points")  or 0)
                     pts_opp = float(opp.get("points") or 0)
                     tied    = m.get("is_tied", False)
@@ -1280,13 +1507,44 @@ def manager_matchups(
                     if tied:              b["t"] += 1
                     elif me.get("is_winner"): b["w"] += 1
                     else:             b["l"] += 1
+
+        # Build summary
+        era_rs_tot = {"w":0,"l":0,"t":0,"g":0,"pf":0.0,"pa":0.0}
+        era_po_tot = {"w":0,"l":0,"t":0,"g":0,"pf":0.0,"pa":0.0}
+        era_opps   = []
+        all_opp_ids = set(list(era_opp_rs.keys()) + list(era_opp_po.keys()))
+        for opp_id in all_opp_ids:
+            rs = era_opp_rs.get(opp_id, _acc())
+            po = era_opp_po.get(opp_id, _acc())
+            cw = rs["w"] + po["w"]; cl = rs["l"] + po["l"]
+            era_opps.append({
+                "manager_id":     opp_id,
+                "display_name":   _display_name(opp_id, results),
+                "regular_season": _fmt(rs),
+                "playoffs":       _fmt(po),
+                "combined": {
+                    "wins": cw, "losses": cl, "ties": rs["t"]+po["t"],
+                    "games": rs["g"]+po["g"],
+                    "record_str": f"{cw}-{cl}" + (f"-{rs['t']+po['t']}" if rs["t"]+po["t"] else ""),
+                },
+            })
+            for k in ["w","l","t","g"]:
+                era_rs_tot[k] += rs[k]; era_po_tot[k] += po[k]
+            era_rs_tot["pf"] += rs["pf"]; era_rs_tot["pa"] += rs["pa"]
+            era_po_tot["pf"] += po["pf"]; era_po_tot["pa"] += po["pa"]
+
+        era_opps.sort(key=lambda x: (-x["combined"]["wins"],
+                                      -(x["regular_season"]["avg_pf"] or 0)))
         return {
-            "regular_season": _sum_fmt(era_rs),
-            "playoffs":       _sum_fmt(era_po),
+            "summary": {
+                "regular_season": _sum_fmt(era_rs_tot),
+                "playoffs":       _sum_fmt(era_po_tot),
+            },
+            "vs_opponents": era_opps,
         }
 
     era_breakdown = {
-        key: _compute_era_summary(val["start"], val["end"])
+        key: _compute_era_full(val["start"], val["end"])
         for key, val in ERAS.items()
     }
 
@@ -1649,9 +1907,10 @@ def teams_matchups_vs(
             "avg_projected_pa": round(acc["proj_pa_sum"] / pw, 2) if pw else None,
         }
 
-    # ── streak: walk newest-first until result changes ────────────────────────
+    # ── rs_current_streak: regular season only ────────────────────────────────
     streak = {"type": None, "count": 0}
     for m in all_matchups:
+        if m.get("is_playoffs"): continue   # RS only
         result = ("W" if m[name1]["is_winner"] else
                   ("T" if m["is_tied"] else "L"))
         if streak["type"] is None:
@@ -1713,7 +1972,7 @@ def teams_matchups_vs(
         "total_matchups": len(all_matchups),
         "regular_season": _fmt(rs_totals),
         "playoffs":       _fmt(pl_totals),
-        "current_streak": streak,
+        "rs_current_streak": streak,
         "last_5": {
             "wins": last5_wins, "losses": last5_losses, "ties": last5_ties,
             "matchups": last5,
@@ -1732,172 +1991,6 @@ def teams_matchups_vs(
 # ===========================================================================
 # GET /fantasy/teams/matchups  — league-wide H2H grid
 # ===========================================================================
-
-@router.get("/teams/matchups")
-def teams_matchups_grid(
-    era: str = Query(default="all_time", description=(
-        "Era filter: all_time | darkness | sam_era | frank_era | jordan_era | auction_era"
-    )),
-):
-    """
-    League-wide head-to-head grid — every manager vs every other manager.
-
-    Returns a 10×10 matrix of RS and playoff records suitable for rendering
-    as a table. Each cell is manager_row's record vs manager_col.
-
-    grid[row_manager][col_manager] = {
-        regular_season: {wins, losses, ties, games, avg_pf, avg_pa, avg_diff},
-        playoffs:       {wins, losses, ties, games},
-        combined:       {wins, losses, ties, games, record_str}
-    }
-
-    Diagonal (self vs self) is null.
-    managers list gives the display order for row/column headers.
-    """
-    matchups_data = _year_keyed(_load("matchups.json"))
-    results       = _year_keyed(_load("results.json"))
-
-    if not matchups_data:
-        raise HTTPException(status_code=404, detail="matchups.json not found.")
-
-    era_def = ERAS.get(era)
-    if not era_def:
-        raise HTTPException(status_code=400, detail=f"Unknown era '{era}'. Valid: {list(ERAS.keys())}")
-
-    all_ids = sorted(_all_manager_ids(results))
-
-    def _acc():
-        return {"wins": 0, "losses": 0, "ties": 0, "games": 0,
-                "pf_sum": 0.0, "pa_sum": 0.0}
-
-    # grid[row_id][col_id] = {rs: acc, pl: acc}
-    grid: dict = {
-        mid: {opp: {"rs": _acc(), "pl": _acc()}
-              for opp in all_ids if opp != mid}
-        for mid in all_ids
-    }
-
-    for yr, season in matchups_data.items():
-        if not (era_def["start"] <= int(yr) <= era_def["end"]):
-            continue
-        for week_obj in season.get("weeks", []):
-            for matchup in week_obj.get("matchups", []):
-                teams = matchup.get("teams", [])
-                if len(teams) != 2: continue
-
-                is_consolation = matchup.get("is_consolation", False)
-                if is_consolation: continue
-
-                is_playoffs = matchup.get("is_playoffs", False)
-                is_tied     = matchup.get("is_tied", False)
-                t0, t1      = teams[0], teams[1]
-                m0 = t0.get("manager_id") or ""
-                m1 = t1.get("manager_id") or ""
-                if not m0 or not m1: continue
-                if m0 not in grid or m1 not in grid[m0]: continue
-
-                bucket_key = "pl" if is_playoffs else "rs"
-                pts0 = float(t0.get("points") or 0)
-                pts1 = float(t1.get("points") or 0)
-
-                # Update both directions
-                for my_id, opp_id, my_pts, opp_pts, is_winner in [
-                    (m0, m1, pts0, pts1, t0.get("is_winner", False)),
-                    (m1, m0, pts1, pts0, t1.get("is_winner", False)),
-                ]:
-                    if opp_id not in grid.get(my_id, {}): continue
-                    b = grid[my_id][opp_id][bucket_key]
-                    b["games"]  += 1
-                    b["pf_sum"]  = round(b["pf_sum"] + my_pts,  2)
-                    b["pa_sum"]  = round(b["pa_sum"] + opp_pts, 2)
-                    if is_tied:    b["ties"]   += 1
-                    elif is_winner: b["wins"]  += 1
-                    else:           b["losses"] += 1
-
-    def _fmt_rs(acc: dict) -> dict:
-        g = acc["games"]
-        return {
-            "wins":    acc["wins"],
-            "losses":  acc["losses"],
-            "ties":    acc["ties"],
-            "games":   g,
-            "win_pct": round(acc["wins"] / g, 4) if g else None,
-            "avg_pf":  round(acc["pf_sum"] / g, 2) if g else None,
-            "avg_pa":  round(acc["pa_sum"] / g, 2) if g else None,
-            "avg_diff":round((acc["pf_sum"] - acc["pa_sum"]) / g, 2) if g else None,
-        }
-
-    def _fmt_pl(acc: dict) -> dict:
-        g = acc["games"]
-        return {"wins": acc["wins"], "losses": acc["losses"],
-                "ties": acc["ties"], "games": g}
-
-    # Build formatted grid + row totals
-    formatted_grid: dict = {}
-    row_totals:     dict = {}
-
-    for mid in all_ids:
-        formatted_grid[mid] = {}
-        rs_tot = _acc()
-        pl_tot = _acc()
-
-        for opp_id in all_ids:
-            if opp_id == mid:
-                formatted_grid[mid][opp_id] = None  # diagonal
-                continue
-            cell     = grid[mid][opp_id]
-            rs, pl   = cell["rs"], cell["pl"]
-            comb_w   = rs["wins"]   + pl["wins"]
-            comb_l   = rs["losses"] + pl["losses"]
-            comb_t   = rs["ties"]   + pl["ties"]
-            comb_g   = rs["games"]  + pl["games"]
-
-            formatted_grid[mid][opp_id] = {
-                "regular_season": _fmt_rs(rs),
-                "playoffs":       _fmt_pl(pl),
-                "combined": {
-                    "wins": comb_w, "losses": comb_l, "ties": comb_t,
-                    "games": comb_g,
-                    "record_str": f"{comb_w}-{comb_l}" + (f"-{comb_t}" if comb_t else ""),
-                },
-            }
-
-            # Accumulate row totals (RS only for PF/PA, both for W-L)
-            for field in ("wins","losses","ties","games"):
-                rs_tot[field] += rs[field]
-                pl_tot[field] += pl[field]
-            rs_tot["pf_sum"]  = round(rs_tot["pf_sum"] + rs["pf_sum"],  2)
-            rs_tot["pa_sum"]  = round(rs_tot["pa_sum"] + rs["pa_sum"],  2)
-
-        row_totals[mid] = {
-            "regular_season": _fmt_rs(rs_tot),
-            "playoffs":       _fmt_pl(pl_tot),
-            "combined_wins":  rs_tot["wins"]   + pl_tot["wins"],
-            "combined_losses":rs_tot["losses"] + pl_tot["losses"],
-            "combined_ties":  rs_tot["ties"]   + pl_tot["ties"],
-        }
-
-    # Manager list sorted by all-time wins desc for natural table ordering
-    managers_sorted = sorted(
-        all_ids,
-        key=lambda mid: -(row_totals[mid]["combined_wins"]),
-    )
-
-    managers_meta = [
-        {"manager_id": mid, "display_name": _display_name(mid, results)}
-        for mid in managers_sorted
-    ]
-
-    return {
-        "era":            era,
-        "era_label":      era_def["label"],
-        "era_years":      f"{era_def['start']}–present" if era_def['end'] == 9999 else f"{era_def['start']}–{era_def['end']}",
-        "available_eras": {k: v["label"] for k, v in ERAS.items()},
-        "managers":       managers_meta,
-        "grid":           formatted_grid,
-        "row_totals":     row_totals,
-        "note":           "grid[row][col] = row manager's record vs col manager. Diagonal is null.",
-    }
 
 @router.get("/league/managers")
 def league_managers():
