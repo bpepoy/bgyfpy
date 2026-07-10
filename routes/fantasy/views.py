@@ -1252,6 +1252,44 @@ def manager_matchups(
             "avg_diff": round((b["pf"] - b["pa"]) / g, 2) if b["g"] else None,
         }
 
+    # ── era breakdown — recompute for each era ────────────────────────────────
+    def _compute_era_summary(start_yr: int, end_yr: int) -> dict:
+        era_rs = {"w":0,"l":0,"t":0,"g":0,"pf":0.0,"pa":0.0}
+        era_po = {"w":0,"l":0,"t":0,"g":0,"pf":0.0,"pa":0.0}
+        for yr, season in matchups_data.items():
+            yr_int = int(yr)
+            if not (start_yr <= yr_int <= end_yr): continue
+            ps = season.get("playoff_start") or 99
+            for wk_entry in season.get("weeks", []):
+                wk_num = wk_entry.get("week", 0)
+                is_po  = wk_num >= ps
+                for m in wk_entry.get("matchups", []):
+                    if m.get("is_consolation"): continue
+                    teams = m.get("teams", [])
+                    if len(teams) != 2: continue
+                    me  = next((t for t in teams if t.get("manager_id") == matched_id), None)
+                    opp = next((t for t in teams if t.get("manager_id") != matched_id), None)
+                    if not me or not opp: continue
+                    b       = era_po if is_po else era_rs
+                    pts_me  = float(me.get("points")  or 0)
+                    pts_opp = float(opp.get("points") or 0)
+                    tied    = m.get("is_tied", False)
+                    b["g"]  += 1
+                    b["pf"]  = round(b["pf"] + pts_me,  2)
+                    b["pa"]  = round(b["pa"] + pts_opp, 2)
+                    if tied:              b["t"] += 1
+                    elif me.get("is_winner"): b["w"] += 1
+                    else:             b["l"] += 1
+        return {
+            "regular_season": _sum_fmt(era_rs),
+            "playoffs":       _sum_fmt(era_po),
+        }
+
+    era_breakdown = {
+        key: _compute_era_summary(val["start"], val["end"])
+        for key, val in ERAS.items()
+    }
+
     return {
         "manager_id":     matched_id,
         "display_name":   display,
@@ -1262,7 +1300,8 @@ def manager_matchups(
             "regular_season": _sum_fmt(tot_rs),
             "playoffs":       _sum_fmt(tot_po),
         },
-        "vs_opponents": opponents,
+        "vs_opponents":  opponents,
+        "era_breakdown": era_breakdown,
     }
 
 
