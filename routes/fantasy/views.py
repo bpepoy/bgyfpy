@@ -4266,3 +4266,109 @@ def manager_transactions_year(name: str, year: int):
             "note": "draft_label = order drafted at position (RB5 = 5th RB taken). pts_label = end-of-season points rank (RB3 = 3rd most pts among all rostered RBs).",
         },
     }
+
+
+# ===========================================================================
+# GET /fantasy/league/analytics
+# ===========================================================================
+
+@router.get("/league/analytics")
+def league_analytics(
+    era: str = Query(default="all_time"),
+):
+    """
+    Reads pre-computed analytics.json — instant response.
+
+    Run GET /league/data/analytics/build-all to generate this file.
+    Optionally filter by era (filters season-based data by year range).
+    """
+    data = _load("analytics.json")
+    if not data or not data.get("_built_at"):
+        raise HTTPException(
+            status_code=404,
+            detail="analytics.json not built yet. Run GET /league/data/analytics/build-all first."
+        )
+
+    era_def = ERAS.get(era)
+    if not era_def:
+        raise HTTPException(status_code=400, detail=f"Unknown era: {era}")
+
+    start_yr = era_def["start"]
+    end_yr   = era_def["end"]
+
+    # Helper to filter any list that has a "year" field
+    def _era_filter(lst: list) -> list:
+        if not lst or not isinstance(lst, list): return lst
+        if not isinstance(lst[0], dict): return lst
+        if "year" not in lst[0]: return lst
+        return [x for x in lst if start_yr <= x.get("year", 0) <= end_yr]
+
+    # Filter era-sensitive fields
+    def _filter_pos_dict(d: dict) -> dict:
+        return {pos: _era_filter(entries) for pos, entries in d.items()} if d else d
+
+    # For wl_records and standings we need to re-filter by year if not all_time
+    # These are pre-computed across all seasons, so note era filter applies to
+    # season-level data only (weekly lists are already year-tagged)
+
+    return {
+        "era":              era,
+        "era_label":        era_def["label"],
+        "available_eras":   {k: v["label"] for k, v in ERAS.items()},
+        "_built_at":        data.get("_built_at"),
+        "_seasons_covered": data.get("_seasons_covered"),
+        "_first_season":    data.get("_first_season"),
+        "_last_season":     data.get("_last_season"),
+
+        # W-L records — full all-time (theoretical/actual computed across all seasons)
+        "wl_records":              data.get("wl_records"),
+        "best_season_per_manager": data.get("best_season_per_manager"),
+        "theoretical_standings":   _era_filter(data.get("theoretical_standings", [])),
+
+        # Points
+        "top10_weekly_pf":         _era_filter(data.get("top10_weekly_pf",    [])),
+        "bottom10_weekly_pf":      _era_filter(data.get("bottom10_weekly_pf", [])),
+        "top10_season_pf":         _era_filter(data.get("top10_season_pf",    [])),
+        "bottom10_season_pf":      _era_filter(data.get("bottom10_season_pf", [])),
+
+        # Bar chart race — full history always (cumulative by design)
+        "bar_chart_race":          data.get("bar_chart_race"),
+
+        # Championship
+        "championship_players":    data.get("championship_players"),
+
+        # Ices
+        "ice_records":             data.get("ice_records"),
+
+        # FAAB + Auction
+        "faab_records": {
+            "top10_bids":         _era_filter(data.get("faab_records", {}).get("top10_bids",         [])),
+            "bottom10_remaining": _era_filter(data.get("faab_records", {}).get("bottom10_remaining", [])),
+            "avg_remaining":      data.get("faab_records", {}).get("avg_remaining", []),
+        },
+        "auction_records": {
+            "top10_bids":         _era_filter(data.get("auction_records", {}).get("top10_bids", [])),
+        },
+
+        # Draft
+        "top10_draft_picks":       _era_filter(data.get("top10_draft_picks", [])),
+
+        # Position records
+        "position_week_records":   _filter_pos_dict(data.get("position_week_records",   {})),
+        "position_season_records": _filter_pos_dict(data.get("position_season_records", {})),
+
+        # Manager + player
+        "top10_mgr_player_weeks":  data.get("top10_mgr_player_weeks"),
+
+        # Trades
+        "trade_records":           data.get("trade_records"),
+
+        # Double play frequency
+        "double_play_frequency":   data.get("double_play_frequency"),
+
+        # Position rankings
+        "position_rankings":       data.get("position_rankings"),
+
+        # Touchdowns (2022+ only)
+        "touchdown_records":       data.get("touchdown_records"),
+    }

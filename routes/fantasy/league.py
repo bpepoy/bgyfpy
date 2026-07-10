@@ -4903,3 +4903,915 @@ def debug_trade_structure(year: str = Query(default="2025")):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ===========================================================================
+# Data generation — analytics.json
+# ===========================================================================
+
+@router.get("/data/analytics/build-all")
+def build_analytics(
+    force_clean: bool = Query(default=False),
+):
+    """
+    Pre-computes the full league analytics payload and writes analytics.json.
+
+    This is intentionally slow (~30-60s) — run once per season after is_finished.
+    The /fantasy/league/analytics read endpoint just reads the file instantly.
+
+    Computes:
+      - Theoretical W-L-T (score vs all 9 opponents each week, divided by 9)
+      - Best ball W-L-T (optimal lineup each week, same comparison)
+      - Luck factor (actual wins - theoretical wins)
+      - Win percentage rankings
+      - Best season per manager
+      - Theoretical vs actual standings (flags playoff changes)
+      - Top/bottom 10 weekly and season PF
+      - Bar chart race data (cumulative wins by season)
+      - Championship roster players (weighted, 2+ appearances)
+      - Ice totals by manager and position
+      - Ices opponent had against each manager
+      - FAAB records (2015+)
+      - Auction records (2023+)
+      - Top 10 weekly/season player points by position (QB/WR/RB/TE)
+      - Most weeks per manager+player pairing (name-matched)
+      - Most common trade partners
+      - Most commonly traded players
+      - Frequency of playing each opponent twice
+      - Points by position ranking per manager
+      - Touchdowns for vs against (2022+ only)
+    """
+    try:
+        import time, json, os, random
+        from services.fantasy.league_service import _convert_to_dict
+
+        path = _get_data_path("analytics.json")
+        if os.path.exists(path) and not force_clean:
+            existing = _load_json(path)
+            if existing.get("_built_at"):
+                return {"status": "already_built", "built_at": existing["_built_at"],
+                        "note": "Use force_clean=true to rebuild"}
+
+        # ── load all data files ───────────────────────────────────────────────
+        results_raw  = _load_json(_get_data_path("results.json"))
+        matchups_raw = _load_json(_get_data_path("matchups.json"))
+        rosters_raw  = _load_json(_get_data_path("rosters.json"))
+        stats_raw    = _load_json(_get_data_path("player_stats.json"))
+        info_raw     = _load_json(_get_data_path("player_info.json"))
+        rules_raw    = _load_json(_get_data_path("rules.json"))
+        ices_raw     = _load_json(_get_data_path("ices.json"))
+        payouts_raw  = _load_json(_get_data_path("payouts.json"))
+        drafts_raw   = _load_json(_get_data_path("drafts.json"))
+        tx_raw       = _load_json(_get_data_path("transactions.json"))
+
+        finished = {yr: s for yr, s in results_raw.items()
+                    if str(yr).isdigit() and s.get("is_finished")}
+        all_yrs  = sorted(finished.keys())
+        all_mids = set()
+        for yr in finished:
+            all_mids.update(finished[yr].get("managers", {}).keys())
+
+        FAAB_START    = 2015
+        AUCTION_START = 2023
+        REAL_ICE_START= 2023
+        STATS_START   = 2015   # rosters + stats needed for best ball
+
+        # ── helper: get display name ──────────────────────────────────────────
+        def _dn(mid):
+            for yr in sorted(finished.keys(), reverse=True):
+                m = finished[yr].get("managers", {}).get(mid, {})
+                if m.get("display_name"):
+                    return m["display_name"]
+            return mid.title()
+
+        # ── Theoretical + Best Ball W-L-T ─────────────────────────────────────
+        # theoretical: compare actual score vs all other teams that week
+        # best_ball:   compare optimal score vs all other teams that week
+        # Both divided by 9 to normalize to single-game equivalents
+
+        # Per manager accumulators
+        theo:  dict = {m: {"w":0.0,"l":0.0,"t":0.0} for m in all_mids}
+        bb:    dict = {m: {"w":0.0,"l":0.0,"t":0.0} for m in all_mids}
+        actual:dict = {m: {"w":0,"l":0,"t":0} for m in all_mids}
+
+        def _optimal_score(mid, yr, wk_key):
+            """Best-ball: find optimal starter score for manager this week."""
+            yr_roster = rosters_raw.get(yr, {})
+            yr_stats  = stats_raw.get(yr, {})
+            wk_roster = yr_roster.get(wk_key, {}).get(mid, {})
+            wk_stats  = yr_stats.get(wk_key, {})
+            if not wk_roster or not wk_stats: return None
+            yr_info   = (info_raw.get(yr, {}) or {}).get("players", {})
+
+            # Get rules for this year to know roster slots
+            yr_rules  = rules_raw.get(yr, {})
+            slots_def = yr_rules.get("roster_positions", [])
+            # Build position requirements from slot definitions
+            # e.g. [{"position":"QB","count":1},{"position":"RB","count":2},...]
+            slot_reqs: dict = {}
+            for slot in slots_def:
+                pos = slot if isinstance(slot, str) else slot.get("position","")
+                if pos and pos not in ("BN","IR","IR+"):
+                    slot_reqs[pos] = slot_reqs.get(pos, 0) + 1
+
+            # Score each player on roster
+            player_pts: list = []
+            for slot in wk_roster.get("players", []):
+                if not isinstance(slot, dict): continue
+                pk  = slot.get("player_key") or ""
+                pi  = yr_info.get(pk, {})
+                pos_raw = pi.get("position") or slot.get("selected_position") or ""
+                pos = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
+                pd  = wk_stats.get(pk)
+                pts = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0.0
+                player_pts.append({"pk": pk, "pos": pos, "pts": pts})
+
+            # Greedy best-ball: fill slots with highest pts
+            player_pts.sort(key=lambda x: -x["pts"])
+            used = set()
+            total = 0.0
+            remaining_reqs = dict(slot_reqs)
+            flex_pos = {"WR","RB","TE"}
+            flex_count = remaining_reqs.pop("W/R/T", 0) + remaining_reqs.pop("FLEX", 0)
+
+            for p in player_pts:
+                if p["pk"] in used: continue
+                pos = p["pos"]
+                if remaining_reqs.get(pos, 0) > 0:
+                    remaining_reqs[pos] -= 1
+                    total += p["pts"]
+                    used.add(p["pk"])
+
+            # Fill flex slots
+            for p in player_pts:
+                if flex_count <= 0: break
+                if p["pk"] in used: continue
+                if p["pos"] in flex_pos:
+                    total += p["pts"]
+                    used.add(p["pk"])
+                    flex_count -= 1
+
+            return round(total, 2) if total > 0 else None
+
+        for yr in all_yrs:
+            yr_mu = matchups_raw.get(yr, {})
+            ps    = yr_mu.get("playoff_start") or 99
+            yr_int= int(yr)
+
+            for wk_entry in yr_mu.get("weeks", []):
+                wk_num = wk_entry.get("week", 0)
+                if wk_num >= ps: continue   # RS only
+
+                # Collect all team scores this week
+                wk_scores: dict = {}   # mid → actual_pts
+                for m in wk_entry.get("matchups", []):
+                    if m.get("is_consolation"): continue
+                    for t in m.get("teams", []):
+                        mid = t.get("manager_id") or ""
+                        try: pts = float(t.get("points") or 0)
+                        except: pts = 0.0
+                        if mid: wk_scores[mid] = pts
+                        # actual W-L-T
+                        if mid and mid in actual:
+                            if t.get("is_winner"):      actual[mid]["w"] += 1
+                            elif m.get("is_tied"):       actual[mid]["t"] += 1
+                            else:                        actual[mid]["l"] += 1
+
+                all_scores = list(wk_scores.values())
+                n = len(all_scores)
+                if n < 2: continue
+
+                wk_key = f"week_{wk_num}"
+
+                for mid, my_pts in wk_scores.items():
+                    opp_scores = [s for m2, s in wk_scores.items() if m2 != mid]
+                    if not opp_scores: continue
+
+                    # Theoretical
+                    theo_w = sum(1 for s in opp_scores if my_pts > s)
+                    theo_l = sum(1 for s in opp_scores if my_pts < s)
+                    theo_t = sum(1 for s in opp_scores if my_pts == s)
+                    denom  = len(opp_scores)
+                    theo[mid]["w"] += round(theo_w / denom, 4)
+                    theo[mid]["l"] += round(theo_l / denom, 4)
+                    theo[mid]["t"] += round(theo_t / denom, 4)
+
+                    # Best ball (only for years with rosters+stats)
+                    if yr_int >= STATS_START:
+                        opt = _optimal_score(mid, yr, wk_key)
+                        if opt is not None:
+                            bb_w = sum(1 for s in opp_scores if opt > s)
+                            bb_l = sum(1 for s in opp_scores if opt < s)
+                            bb_t = sum(1 for s in opp_scores if opt == s)
+                            bb[mid]["w"] += round(bb_w / denom, 4)
+                            bb[mid]["l"] += round(bb_l / denom, 4)
+                            bb[mid]["t"] += round(bb_t / denom, 4)
+
+        wl_records = []
+        for mid in all_mids:
+            act = actual[mid]
+            th  = theo[mid]
+            b   = bb[mid]
+            act_games = act["w"] + act["l"] + act["t"]
+            luck = round(act["w"] - th["w"], 2)
+            wl_records.append({
+                "manager_id":   mid,
+                "display_name": _dn(mid),
+                "actual":       {"w": act["w"], "l": act["l"], "t": act["t"],
+                                  "win_pct": round(act["w"]/act_games,4) if act_games else None},
+                "theoretical":  {"w": round(th["w"],1), "l": round(th["l"],1), "t": round(th["t"],1),
+                                  "win_pct": round(th["w"]/act_games,4) if act_games else None},
+                "best_ball":    {"w": round(b["w"],1),  "l": round(b["l"],1),  "t": round(b["t"],1),
+                                  "win_pct": round(b["w"]/act_games,4) if act_games else None},
+                "luck_factor":  luck,
+                "luck_label":   "lucky" if luck > 0 else ("unlucky" if luck < 0 else "neutral"),
+            })
+        wl_records.sort(key=lambda x: -(x["actual"]["win_pct"] or 0))
+
+        # ── Best season per manager ───────────────────────────────────────────
+        best_seasons: dict = {}
+        for yr, season in finished.items():
+            for mid, m in season.get("managers", {}).items():
+                rs  = m.get("regular_season", {})
+                wp  = rs.get("win_pct") or 0
+                if mid not in best_seasons or wp > best_seasons[mid]["win_pct"]:
+                    best_seasons[mid] = {
+                        "year": int(yr), "wins": rs.get("wins"), "losses": rs.get("losses"),
+                        "win_pct": round(wp, 4),
+                        "avg_pf": round(rs.get("avg_points_for") or 0, 2),
+                        "rank":   rs.get("rank"),
+                    }
+
+        # ── Theoretical standings per season ──────────────────────────────────
+        theo_standings: list = []
+        for yr in all_yrs:
+            yr_mu = matchups_raw.get(yr, {})
+            ps    = yr_mu.get("playoff_start") or 99
+            wk_theo: dict = {mid: 0.0 for mid in finished[yr].get("managers", {})}
+
+            for wk_entry in yr_mu.get("weeks", []):
+                wk_num = wk_entry.get("week", 0)
+                if wk_num >= ps: continue
+                wk_scores: dict = {}
+                for m in wk_entry.get("matchups", []):
+                    if m.get("is_consolation"): continue
+                    for t in m.get("teams", []):
+                        mid = t.get("manager_id") or ""
+                        try: pts = float(t.get("points") or 0)
+                        except: pts = 0.0
+                        if mid: wk_scores[mid] = pts
+                for mid, my_pts in wk_scores.items():
+                    opp = [s for m2,s in wk_scores.items() if m2 != mid]
+                    if opp:
+                        wk_theo[mid] += sum(1 for s in opp if my_pts > s) / len(opp)
+
+            # Actual playoff seeds (seeds 1-4)
+            actual_seeds = {mid: m.get("regular_season", {}).get("rank")
+                            for mid, m in finished[yr].get("managers", {}).items()}
+            actual_po    = {mid for mid, rk in actual_seeds.items() if rk and rk <= 4}
+
+            # Theoretical seeds by theoretical wins
+            theo_sorted  = sorted(wk_theo.items(), key=lambda x: -x[1])
+            theo_po      = {mid for mid, _ in theo_sorted[:4]}
+
+            changed = actual_po != theo_po
+            theo_standings.append({
+                "year":         int(yr),
+                "playoff_changed": changed,
+                "actual_playoff": sorted(actual_po),
+                "theo_playoff":   sorted(theo_po),
+                "gained_playoff": sorted(theo_po - actual_po),
+                "lost_playoff":   sorted(actual_po - theo_po),
+            })
+
+        # ── Top/bottom 10 weekly and season PF ───────────────────────────────
+        all_weekly: list = []
+        all_season: list = []
+        for yr, season in finished.items():
+            yr_mu = matchups_raw.get(yr, {})
+            ps    = yr_mu.get("playoff_start") or 99
+            mgr_season_pts: dict = {}
+            for wk_entry in yr_mu.get("weeks", []):
+                wk_num = wk_entry.get("week", 0)
+                if wk_num >= ps: continue
+                for m in wk_entry.get("matchups", []):
+                    for t in m.get("teams", []):
+                        mid = t.get("manager_id") or ""
+                        try: pts = float(t.get("points") or 0)
+                        except: continue
+                        if pts <= 0: continue
+                        all_weekly.append({"manager_id":mid,"display_name":_dn(mid),
+                                           "year":int(yr),"week":wk_num,"points":round(pts,2)})
+                        mgr_season_pts[mid] = round(mgr_season_pts.get(mid,0)+pts,2)
+            for mid, pts in mgr_season_pts.items():
+                rs = season.get("managers",{}).get(mid,{}).get("regular_season",{})
+                all_season.append({"manager_id":mid,"display_name":_dn(mid),
+                                   "year":int(yr),"total_pf":pts,
+                                   "avg_pf":round(pts/(rs.get("games") or 1),2)})
+
+        all_weekly.sort(key=lambda x: -x["points"])
+        all_season.sort(key=lambda x: -x["total_pf"])
+
+        top10_weekly     = all_weekly[:10]
+        bottom10_weekly  = list(reversed(all_weekly[-10:]))
+        top10_season     = all_season[:10]
+        bottom10_season  = list(reversed(all_season[-10:]))
+
+        # ── Bar chart race data ───────────────────────────────────────────────
+        cumulative_wins: dict = {mid: 0 for mid in all_mids}
+        bar_chart_race: list  = []
+        for yr in all_yrs:
+            for mid, m in finished[yr].get("managers", {}).items():
+                cumulative_wins[mid] += m.get("regular_season", {}).get("wins") or 0
+            bar_chart_race.append({
+                "year":   int(yr),
+                "totals": {mid: cumulative_wins.get(mid, 0) for mid in all_mids},
+            })
+
+        # ── Championship roster players (weighted) ────────────────────────────
+        champ_players: dict = {}
+        for yr, season in finished.items():
+            yr_int = int(yr)
+            champ_mid = next(
+                (mid for mid, m in season.get("managers",{}).items()
+                 if (m.get("playoffs") or m.get("playoff",{})).get("finish") == 1),
+                None
+            )
+            if not champ_mid: continue
+            yr_roster = rosters_raw.get(yr, {})
+            yr_info   = (info_raw.get(yr, {}) or {}).get("players", {})
+            yr_mu     = matchups_raw.get(yr, {})
+            ps        = yr_mu.get("playoff_start") or 99
+            wk_keys   = sorted([k for k in yr_roster.keys() if k.startswith("week_")],
+                                key=lambda x: int(x.split("_")[1]))
+            last_wk   = wk_keys[-1] if wk_keys else None
+            if not last_wk: continue
+            slots = yr_roster.get(last_wk, {}).get(champ_mid, {}).get("players", [])
+            for slot in slots:
+                if not isinstance(slot, dict): continue
+                pk = slot.get("player_key") or ""
+                pi = yr_info.get(pk, {})
+                nm = (pi.get("name") or "").strip()
+                if not nm or not pi.get("position"): continue
+                weight = 5 if slot.get("is_starting") else (1 if slot.get("is_on_ir") else 3)
+                if nm not in champ_players:
+                    champ_players[nm] = {"weight":0,"appearances":0,"position":pi.get("position"),"years":[]}
+                champ_players[nm]["weight"]      += weight
+                champ_players[nm]["appearances"] += 1
+                champ_players[nm]["years"].append(yr_int)
+
+        top_champ = sorted(
+            [(nm,v) for nm,v in champ_players.items() if v["appearances"] >= 2],
+            key=lambda x: -x[1]["weight"]
+        )[:10]
+        championship_players = [
+            {"player_name": nm, "position": v["position"],
+             "appearances": v["appearances"], "weighted_score": v["weight"],
+             "years": sorted(v["years"])}
+            for nm, v in top_champ
+        ]
+
+        # ── Ices by manager and position ──────────────────────────────────────
+        ice_by_mgr:  dict = {}
+        ice_by_pos:  dict = {}
+        ice_vs_mgr:  dict = {}   # ices your opponents had against you
+
+        for yr, yr_ices in ices_raw.items():
+            yr_int = int(yr)
+            if not isinstance(yr_ices, list): continue
+            yr_mu = matchups_raw.get(yr, {})
+            ps    = yr_mu.get("playoff_start") or 99
+
+            # Build weekly opponent map
+            opp_map: dict = {}  # mid → set of opponent mids that week
+            for wk_entry in yr_mu.get("weeks", []):
+                wk_num = wk_entry.get("week", 0)
+                if wk_num >= ps: continue
+                for m in wk_entry.get("matchups", []):
+                    teams = [t.get("manager_id") for t in m.get("teams", [])]
+                    if len(teams) == 2:
+                        opp_map.setdefault((teams[0], wk_num), teams[1])
+                        opp_map.setdefault((teams[1], wk_num), teams[0])
+
+            for ice in yr_ices:
+                if ice.get("is_playoffs"): continue
+                mid  = ice.get("manager_id") or ""
+                pos  = ice.get("position") or ""
+                wk   = ice.get("week") or 0
+                if not mid: continue
+                ice_by_mgr[mid] = ice_by_mgr.get(mid, 0) + 1
+                if pos: ice_by_pos.setdefault(pos, {})
+                if pos: ice_by_pos[pos][mid] = ice_by_pos[pos].get(mid, 0) + 1
+                opp = opp_map.get((mid, wk))
+                if opp:
+                    ice_vs_mgr.setdefault(opp, {})
+                    ice_vs_mgr[opp][mid] = ice_vs_mgr[opp].get(mid, 0) + 1
+
+        ice_summary = {
+            "by_manager":  sorted([{"manager_id":m,"display_name":_dn(m),"count":c}
+                                    for m,c in ice_by_mgr.items()], key=lambda x: -x["count"]),
+            "by_position": {pos: sorted([{"manager_id":m,"display_name":_dn(m),"count":c}
+                                          for m,c in counts.items()], key=lambda x: -x["count"])
+                             for pos, counts in ice_by_pos.items()},
+            "opponent_ices_against_you": {
+                mid: sorted([{"manager_id":opp,"display_name":_dn(opp),"count":c}
+                              for opp,c in opps.items()], key=lambda x: -x["count"])
+                for mid, opps in ice_vs_mgr.items()
+            },
+        }
+
+        # ── FAAB records (2015+) ──────────────────────────────────────────────
+        faab_bids:      list = []
+        faab_remaining: dict = {}  # mid → [remaining per season]
+
+        for yr, yr_tx in tx_raw.items():
+            yr_int = int(yr)
+            if yr_int < FAAB_START: continue
+            spent: dict = {}
+            for move in yr_tx.get("moves", []):
+                mid = move.get("manager_id") or move.get("manager") or ""
+                if not mid: continue
+                for added in move.get("added", []):
+                    bid = added.get("waiver_bid")
+                    if bid:
+                        try:
+                            bid_int = int(bid)
+                            spent[mid] = spent.get(mid, 0) + bid_int
+                            faab_bids.append({"manager_id":mid,"display_name":_dn(mid),
+                                              "player_name":added.get("name"),
+                                              "position":added.get("position"),
+                                              "bid":bid_int,"year":yr_int})
+                        except: pass
+            for mid, total_spent in spent.items():
+                faab_remaining.setdefault(mid, []).append(200 - total_spent)
+
+        faab_bids.sort(key=lambda x: -x["bid"])
+        top10_faab  = faab_bids[:10]
+        # Bottom 10 = least used FAAB (most remaining)
+        faab_season_remaining: list = []
+        for yr, yr_tx in tx_raw.items():
+            yr_int = int(yr)
+            if yr_int < FAAB_START: continue
+            spent: dict = {}
+            for move in yr_tx.get("moves", []):
+                mid = move.get("manager_id") or move.get("manager") or ""
+                for added in move.get("added", []):
+                    bid = added.get("waiver_bid")
+                    if bid and mid:
+                        try: spent[mid] = spent.get(mid,0) + int(bid)
+                        except: pass
+            for mid, s in spent.items():
+                faab_season_remaining.append({"manager_id":mid,"display_name":_dn(mid),
+                                              "year":yr_int,"spent":s,"remaining":200-s})
+        faab_season_remaining.sort(key=lambda x: -x["remaining"])
+        bottom10_faab = faab_season_remaining[:10]
+        avg_faab_rem  = {mid: round(sum(v)/len(v),1)
+                         for mid, v in faab_remaining.items() if v}
+
+        # ── Auction records (2023+) ───────────────────────────────────────────
+        auction_bids: list = []
+        for yr, yr_draft in drafts_raw.items():
+            yr_int = int(yr)
+            if yr_int < AUCTION_START: continue
+            if yr_draft.get("draft_type") != "auction": continue
+            for p in yr_draft.get("picks", []):
+                cost = p.get("cost")
+                if cost:
+                    try:
+                        auction_bids.append({
+                            "manager_id":  p.get("manager_id"),
+                            "display_name":_dn(p.get("manager_id") or ""),
+                            "player_name": p.get("player_name"),
+                            "position":    p.get("position"),
+                            "cost":        int(cost),
+                            "year":        yr_int,
+                        })
+                    except: pass
+        auction_bids.sort(key=lambda x: -x["cost"])
+        top10_auction = auction_bids[:10]
+
+        # ── Top 10 draft first round / top auction picks per manager ──────────
+        draft_top_picks: list = []
+        for yr, yr_draft in drafts_raw.items():
+            yr_int    = int(yr)
+            draft_type= yr_draft.get("draft_type","snake")
+            picks     = yr_draft.get("picks", [])
+            if draft_type == "snake":
+                r1 = [p for p in picks if (p.get("round") or 0) == 1]
+                for p in r1:
+                    draft_top_picks.append({
+                        "manager_id":  p.get("manager_id"),
+                        "display_name":_dn(p.get("manager_id") or ""),
+                        "player_name": p.get("player_name"),
+                        "position":    p.get("position"),
+                        "overall_pick":p.get("overall_pick"),
+                        "year":        yr_int,
+                        "draft_type":  "snake",
+                    })
+            else:
+                # Per team: highest cost pick
+                team_top: dict = {}
+                for p in picks:
+                    mid = p.get("manager_id") or ""
+                    c   = p.get("cost") or 0
+                    if not mid: continue
+                    if mid not in team_top or c > (team_top[mid].get("cost") or 0):
+                        team_top[mid] = p
+                for mid, p in team_top.items():
+                    try: cost_int = int(p.get("cost") or 0)
+                    except: cost_int = 0
+                    draft_top_picks.append({
+                        "manager_id":  mid,
+                        "display_name":_dn(mid),
+                        "player_name": p.get("player_name"),
+                        "position":    p.get("position"),
+                        "cost":        cost_int,
+                        "year":        yr_int,
+                        "draft_type":  "auction",
+                    })
+
+        draft_top_picks.sort(key=lambda x: -(x.get("cost") or 0) if x["draft_type"]=="auction"
+                              else -(x.get("overall_pick") or 99))
+        top10_draft_picks = draft_top_picks[:10]
+
+        # ── Top 10 weekly + season player points by position ─────────────────
+        pos_week_top:   dict = {"QB":[],"WR":[],"RB":[],"TE":[]}
+        pos_season_top: dict = {"QB":[],"WR":[],"RB":[],"TE":[]}
+
+        for yr, yr_stats in stats_raw.items():
+            if not isinstance(yr_stats, dict): continue
+            yr_info   = (info_raw.get(yr, {}) or {}).get("players", {})
+            yr_mu     = matchups_raw.get(yr, {})
+            ps        = yr_mu.get("playoff_start") or 99
+
+            # Build owner map
+            yr_roster = rosters_raw.get(yr, {})
+            owner_map: dict = {}
+            wk_keys = sorted([k for k in yr_roster.keys() if k.startswith("week_")],
+                              key=lambda x: int(x.split("_")[1]))
+            if wk_keys:
+                last_wk = yr_roster.get(wk_keys[-1], {})
+                for mid, team in last_wk.items():
+                    if not isinstance(team, dict): continue
+                    for slot in team.get("players", []):
+                        pk = slot.get("player_key") if isinstance(slot, dict) else None
+                        if pk: owner_map[pk] = {"manager_id": mid, "display_name": _dn(mid)}
+
+            player_season: dict = {}
+            for wk_key, wk_data in yr_stats.items():
+                if not isinstance(wk_data, dict): continue
+                wk_num = int(wk_key.split("_")[1])
+                if wk_num >= ps: continue
+                for pk, pd in wk_data.items():
+                    if not isinstance(pd, dict): continue
+                    try: fp = float(pd.get("fantasy_points") or 0)
+                    except: continue
+                    if fp <= 0: continue
+                    pi  = yr_info.get(pk, {})
+                    pos_raw = pi.get("position") or ""
+                    pos = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
+                    if pos not in pos_week_top: continue
+                    nm  = pi.get("name") or pk
+                    owner = owner_map.get(pk, {})
+                    entry = {
+                        "player_name":  nm, "position": pos,
+                        "manager_id":   owner.get("manager_id"),
+                        "display_name": owner.get("display_name"),
+                        "year": int(yr), "week": wk_num, "points": round(fp,2),
+                    }
+                    pos_week_top[pos].append(entry)
+                    player_season.setdefault(pk, {"nm":nm,"pos":pos,"pts":0.0,"owner":owner})
+                    player_season[pk]["pts"] += fp
+
+            for pk, info in player_season.items():
+                pos = info["pos"]
+                if pos not in pos_season_top: continue
+                pos_season_top[pos].append({
+                    "player_name":  info["nm"], "position": pos,
+                    "manager_id":   info["owner"].get("manager_id"),
+                    "display_name": info["owner"].get("display_name"),
+                    "year": int(yr), "season_pts": round(info["pts"],2),
+                })
+
+        for pos in pos_week_top:
+            pos_week_top[pos]   = sorted(pos_week_top[pos],   key=lambda x: -x["points"])[:10]
+            pos_season_top[pos] = sorted(pos_season_top[pos], key=lambda x: -x["season_pts"])[:10]
+
+        # ── Most weeks per manager+player pairing ─────────────────────────────
+        mgr_player_weeks: dict = {}   # (mid, player_name) → weeks
+        player_total_weeks: dict = {} # player_name → total weeks in player_info
+
+        for yr, yr_roster in rosters_raw.items():
+            if not isinstance(yr_roster, dict): continue
+            yr_info = (info_raw.get(yr, {}) or {}).get("players", {})
+            for wk_key, wk_data in yr_roster.items():
+                if not wk_key.startswith("week_"): continue
+                if not isinstance(wk_data, dict): continue
+                for mid, team in wk_data.items():
+                    if not isinstance(team, dict): continue
+                    for slot in team.get("players", []):
+                        if not isinstance(slot, dict): continue
+                        pk  = slot.get("player_key") or ""
+                        pi  = yr_info.get(pk, {})
+                        nm  = (pi.get("name") or "").strip()
+                        if not nm: continue
+                        key = (mid, nm)
+                        mgr_player_weeks[key] = mgr_player_weeks.get(key, 0) + 1
+
+        # Total weeks a player appears in player_info (across all years)
+        for yr, yr_info_data in info_raw.items():
+            if not isinstance(yr_info_data, dict): continue
+            yr_info  = yr_info_data.get("players", {})
+            yr_roster= rosters_raw.get(yr, {})
+            # Count roster weeks for this year
+            yr_wk_count = sum(1 for k in yr_roster if k.startswith("week_"))
+            for pk, pi in yr_info.items():
+                nm = (pi.get("name") or "").strip()
+                if nm:
+                    player_total_weeks[nm] = player_total_weeks.get(nm, 0) + yr_wk_count
+
+        top10_mgr_player = sorted(
+            [{"manager_id": mid, "display_name": _dn(mid),
+              "player_name": nm, "weeks_together": wks,
+              "approx_seasons": round(wks / 16, 1)}
+             for (mid, nm), wks in mgr_player_weeks.items()],
+            key=lambda x: -x["weeks_together"]
+        )[:10]
+
+        # ── Most common trade partners ────────────────────────────────────────
+        pair_counts: dict = {}
+        for yr, yr_tx in tx_raw.items():
+            for trade in yr_tx.get("trades", []):
+                m1 = trade.get("manager_a") or trade.get("trader_manager") or ""
+                m2 = trade.get("manager_b") or trade.get("tradee_manager") or ""
+                if not m1 or not m2: continue
+                key = tuple(sorted([m1, m2]))
+                pair_counts[key] = pair_counts.get(key, 0) + 1
+        top_trade_partners = sorted(
+            [{"manager_1":{"manager_id":p[0],"display_name":_dn(p[0])},
+              "manager_2":{"manager_id":p[1],"display_name":_dn(p[1])},
+              "total_trades":cnt}
+             for p, cnt in pair_counts.items()],
+            key=lambda x: -x["total_trades"]
+        )[:10]
+
+        # ── Most commonly traded players ──────────────────────────────────────
+        traded_counts: dict = {}
+        for yr, yr_tx in tx_raw.items():
+            for trade in yr_tx.get("trades", []):
+                for side in ["a_received","b_received","trader_receives","tradee_receives"]:
+                    for p in trade.get(side, []):
+                        nm  = (p.get("name") or p.get("player_name") or "").strip()
+                        pos = p.get("position") or ""
+                        if nm and pos not in ("DEF","D/ST","K"):
+                            traded_counts[nm] = traded_counts.get(nm, 0) + 1
+        top_traded_players = sorted(
+            [{"player_name": nm, "times_in_trades": cnt}
+             for nm, cnt in traded_counts.items() if cnt >= 2],
+            key=lambda x: -x["times_in_trades"]
+        )[:10]
+
+        # ── Frequency of playing each opponent twice ──────────────────────────
+        play_twice: dict = {}   # mid → {opp_mid: {seasons, twice_count}}
+        for yr, yr_mu in matchups_raw.items():
+            if yr not in finished: continue
+            ps = yr_mu.get("playoff_start") or 99
+            game_counts: dict = {}  # (mid1, mid2) → count
+            for wk_entry in yr_mu.get("weeks", []):
+                if wk_entry.get("week", 0) >= ps: continue
+                for m in wk_entry.get("matchups", []):
+                    if m.get("is_consolation"): continue
+                    teams = [t.get("manager_id") for t in m.get("teams", []) if t.get("manager_id")]
+                    if len(teams) == 2:
+                        key = tuple(sorted(teams))
+                        game_counts[key] = game_counts.get(key, 0) + 1
+            for (m1, m2), count in game_counts.items():
+                for mid, opp in [(m1, m2), (m2, m1)]:
+                    play_twice.setdefault(mid, {}).setdefault(opp, {"seasons":0,"twice":0})
+                    play_twice[mid][opp]["seasons"] += 1
+                    if count >= 2:
+                        play_twice[mid][opp]["twice"] += 1
+
+        # Find furthest from expected for each manager
+        twice_summary: list = []
+        for mid, opps in play_twice.items():
+            opp_details = []
+            for opp, data in opps.items():
+                s   = data["seasons"]
+                exp = round(s * 0.6667, 2)   # expected ~66.67% of seasons
+                actual_pct = round(data["twice"] / s, 4) if s else 0
+                dev = round(actual_pct - 0.6667, 4)
+                opp_details.append({
+                    "opponent_id":  opp,
+                    "display_name": _dn(opp),
+                    "seasons":      s,
+                    "twice_count":  data["twice"],
+                    "expected":     exp,
+                    "actual_pct":   actual_pct,
+                    "deviation":    dev,
+                })
+            opp_details.sort(key=lambda x: abs(x["deviation"]), reverse=True)
+            twice_summary.append({
+                "manager_id":       mid,
+                "display_name":     _dn(mid),
+                "furthest_from_expected": opp_details[0] if opp_details else None,
+                "all_opponents":    opp_details,
+            })
+
+        # ── Points by position ranking ────────────────────────────────────────
+        # For each manager: avg weekly points at each position (from player_stats+rosters)
+        pos_rank_acc: dict = {}   # mid → {pos → [weekly_pts]}
+        RANK_POSITIONS = ["QB","WR","RB","TE","K","DEF"]
+
+        for yr, yr_stats in stats_raw.items():
+            if not isinstance(yr_stats, dict): continue
+            yr_info   = (info_raw.get(yr, {}) or {}).get("players", {})
+            yr_roster = rosters_raw.get(yr, {})
+            yr_mu     = matchups_raw.get(yr, {})
+            ps        = yr_mu.get("playoff_start") or 99
+
+            for wk_key, wk_data in yr_stats.items():
+                if not isinstance(wk_data, dict): continue
+                wk_num = int(wk_key.split("_")[1])
+                if wk_num >= ps: continue
+                wk_roster = yr_roster.get(wk_key, {})
+
+                for mid, team in wk_roster.items():
+                    if not isinstance(team, dict): continue
+                    for slot in team.get("players", []):
+                        if not isinstance(slot, dict): continue
+                        if not slot.get("is_starting"): continue
+                        pk  = slot.get("player_key") or ""
+                        pi  = yr_info.get(pk, {})
+                        pos_raw = pi.get("position") or slot.get("selected_position") or ""
+                        pos = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
+                        if pos not in RANK_POSITIONS: continue
+                        pd  = wk_data.get(pk)
+                        try: fp = float(pd.get("fantasy_points") or 0) if isinstance(pd, dict) else 0.0
+                        except: continue
+                        pos_rank_acc.setdefault(mid, {}).setdefault(pos, []).append(fp)
+
+        pos_rankings: dict = {}
+        for pos in RANK_POSITIONS:
+            mgr_avgs = []
+            for mid, pos_data in pos_rank_acc.items():
+                pts = pos_data.get(pos, [])
+                if pts:
+                    mgr_avgs.append({
+                        "manager_id":   mid,
+                        "display_name": _dn(mid),
+                        "avg_pts":      round(sum(pts)/len(pts), 2),
+                        "weeks":        len(pts),
+                    })
+            mgr_avgs.sort(key=lambda x: -x["avg_pts"])
+            for i, entry in enumerate(mgr_avgs):
+                entry["rank"] = i + 1
+            pos_rankings[pos] = mgr_avgs
+
+        # ── Touchdowns for vs against (2022+ only via stat_ids) ──────────────
+        # stat_id 4 = passing yards, 5 = passing TD, 10 = rushing TD, 15 = receiving TD
+        TD_STAT_IDS = {"5", "10", "15"}   # passing TD, rushing TD, receiving TD
+        td_for:     dict = {mid: 0 for mid in all_mids}
+        td_against: dict = {mid: 0 for mid in all_mids}
+
+        for yr, yr_stats in stats_raw.items():
+            yr_int = int(yr)
+            if yr_int < 2022: continue
+            if not isinstance(yr_stats, dict): continue
+            yr_info   = (info_raw.get(yr, {}) or {}).get("players", {})
+            yr_roster = rosters_raw.get(yr, {})
+            yr_mu     = matchups_raw.get(yr, {})
+            ps        = yr_mu.get("playoff_start") or 99
+
+            # Build weekly opponent map
+            wk_opp_map: dict = {}
+            for wk_entry in yr_mu.get("weeks", []):
+                wk_num = wk_entry.get("week", 0)
+                if wk_num >= ps: continue
+                for m in wk_entry.get("matchups", []):
+                    teams = [t.get("manager_id") for t in m.get("teams", []) if t.get("manager_id")]
+                    if len(teams) == 2:
+                        wk_opp_map[(teams[0], wk_num)] = teams[1]
+                        wk_opp_map[(teams[1], wk_num)] = teams[0]
+
+            for wk_key, wk_data in yr_stats.items():
+                if not isinstance(wk_data, dict): continue
+                wk_num = int(wk_key.split("_")[1])
+                if wk_num >= ps: continue
+                wk_roster = yr_roster.get(wk_key, {})
+
+                for mid, team in wk_roster.items():
+                    if not isinstance(team, dict): continue
+                    opp = wk_opp_map.get((mid, wk_num))
+                    wk_tds = 0
+                    for slot in team.get("players", []):
+                        if not isinstance(slot, dict): continue
+                        if not slot.get("is_starting"): continue
+                        pk = slot.get("player_key") or ""
+                        pd = wk_data.get(pk)
+                        if not isinstance(pd, dict): continue
+                        for sid, val in (pd.get("stats") or {}).items():
+                            if str(sid) in TD_STAT_IDS:
+                                try: wk_tds += int(float(val))
+                                except: pass
+                    td_for[mid]    = td_for.get(mid, 0)    + wk_tds
+                    if opp:
+                        td_against[opp] = td_against.get(opp, 0) + wk_tds
+
+        touchdown_records = sorted([
+            {"manager_id":   mid,
+             "display_name": _dn(mid),
+             "td_for":       td_for.get(mid, 0),
+             "td_against":   td_against.get(mid, 0),
+             "td_diff":      td_for.get(mid, 0) - td_against.get(mid, 0)}
+            for mid in all_mids
+        ], key=lambda x: -x["td_for"])
+
+        # ── Assemble and write ────────────────────────────────────────────────
+        output = {
+            "_built_at":          __import__("datetime").datetime.utcnow().isoformat(),
+            "_seasons_covered":   len(all_yrs),
+            "_first_season":      int(all_yrs[0])  if all_yrs else None,
+            "_last_season":       int(all_yrs[-1]) if all_yrs else None,
+            "wl_records":         wl_records,
+            "best_season_per_manager": [
+                {"manager_id": mid, "display_name": _dn(mid), **v}
+                for mid, v in best_seasons.items()
+            ],
+            "theoretical_standings":   theo_standings,
+            "top10_weekly_pf":         top10_weekly,
+            "bottom10_weekly_pf":      bottom10_weekly,
+            "top10_season_pf":         top10_season,
+            "bottom10_season_pf":      bottom10_season,
+            "bar_chart_race":          bar_chart_race,
+            "championship_players":    championship_players,
+            "ice_records":             ice_summary,
+            "faab_records": {
+                "top10_bids":         top10_faab,
+                "bottom10_remaining": bottom10_faab,
+                "avg_remaining":      [{"manager_id":m,"display_name":_dn(m),"avg_remaining":v}
+                                        for m,v in sorted(avg_faab_rem.items(),
+                                                          key=lambda x: -x[1])],
+            },
+            "auction_records": {
+                "top10_bids":         top10_auction,
+            },
+            "top10_draft_picks":       top10_draft_picks,
+            "position_week_records":   pos_week_top,
+            "position_season_records": pos_season_top,
+            "top10_mgr_player_weeks":  top10_mgr_player,
+            "trade_records": {
+                "top_partners":       top_trade_partners,
+                "most_traded_players":top_traded_players,
+            },
+            "double_play_frequency":   twice_summary,
+            "position_rankings":       pos_rankings,
+            "touchdown_records":       touchdown_records,
+        }
+
+        _write_json(path, output)
+
+        return {
+            "status":           "complete",
+            "file_written":     path,
+            "seasons_computed": len(all_yrs),
+            "built_at":         output["_built_at"],
+            "next_step":        "GET /league/data/analytics/download to save locally",
+        }
+
+    except Exception as e:
+        import traceback
+        raise HTTPException(status_code=500, detail=f"{str(e)}\n{traceback.format_exc()[:500]}")
+
+
+@router.get("/data/analytics/status")
+def analytics_status():
+    """Check if analytics.json has been built and when."""
+    try:
+        data = _load_json(_get_data_path("analytics.json"))
+        if not data:
+            return {"status": "not_built", "note": "Run /league/data/analytics/build-all"}
+        return {
+            "status":    "built",
+            "built_at":  data.get("_built_at"),
+            "seasons":   data.get("_seasons_covered"),
+            "first_season": data.get("_first_season"),
+            "last_season":  data.get("_last_season"),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/data/analytics/download")
+def download_analytics():
+    """Returns analytics.json for local save."""
+    try:
+        data = _load_json(_get_data_path("analytics.json"))
+        if not data:
+            raise HTTPException(status_code=404,
+                detail="analytics.json not found. Run /league/data/analytics/build-all first.")
+        return data
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
