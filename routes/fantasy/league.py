@@ -5473,19 +5473,12 @@ def build_analytics(
                     # by position
                     if pos_i:
                         if is_real:
-                            ice_by_pos_real.setdefault(pos_i,{})[mid_i] = \
-                                ice_by_pos_real[pos_i].get(mid_i,0)+1
-                        ice_by_pos_theo.setdefault(pos_i,{})[mid_i] = \
-                            ice_by_pos_theo[pos_i].get(mid_i,0)+1
-                    # vs opponent
-                    wk_i  = ice.get("week") or 0
-                    opp_i = wk_opp_map.get((mid_i, wk_i))
-                    if opp_i:
-                        if is_real:
-                            ice_vs_real.setdefault(opp_i,{})[mid_i] = \
-                                ice_vs_real[opp_i].get(mid_i,0)+1
-                        ice_vs_theo.setdefault(opp_i,{})[mid_i] = \
-                            ice_vs_theo[opp_i].get(mid_i,0)+1
+                            if pos_i not in ice_by_pos_real:
+                                ice_by_pos_real[pos_i] = {}
+                            ice_by_pos_real[pos_i][mid_i] = ice_by_pos_real[pos_i].get(mid_i, 0) + 1
+                        if pos_i not in ice_by_pos_theo:
+                            ice_by_pos_theo[pos_i] = {}
+                        ice_by_pos_theo[pos_i][mid_i] = ice_by_pos_theo[pos_i].get(mid_i, 0) + 1
 
         # ── Post-season aggregation ───────────────────────────────────────────
         # Career W-L with luck + per-season avg
