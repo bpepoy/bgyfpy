@@ -1656,10 +1656,14 @@ def build_team_points_breakdown(results: dict, matchups: dict, rosters: dict,
                     a["weeks"] += 1
 
     # ── era accumulation ─────────────────────────────────────────────────────
+    # Only include seasons from BREAKDOWN_START onward — pre-2022 has no
+    # stat-level breakdown so including those years corrupts the percentages
     era_acc: dict = {era: {} for era in ERAS}
 
     for yr, yr_data in season_acc.items():
         yr_int = int(yr)
+        if yr_int < BREAKDOWN_START:
+            continue   # skip — no stat breakdown available
         active = [era for era, (s, e) in ERAS.items() if s <= yr_int <= e]
         for mid, counts in yr_data.items():
             for era in active:
@@ -1736,7 +1740,10 @@ def build_team_points_breakdown(results: dict, matchups: dict, rosters: dict,
 
     return {
         "era_blocks": {era: fmt_breakdown(era_acc[era]) for era in ERAS},
-        "seasons":    {yr: fmt_breakdown(yr_data) for yr, yr_data in season_acc.items()},
+        "seasons":    {yr: fmt_breakdown(yr_data)
+                       for yr, yr_data in season_acc.items()
+                       if int(yr) >= BREAKDOWN_START},
+        "_data_note": f"Stat-level breakdown available from {BREAKDOWN_START} onward only.",
     }
 
 
