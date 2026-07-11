@@ -79,7 +79,7 @@ def parse_roster_reqs(yr_rules: dict) -> tuple:
 
 
 def optimal_score(mid: str, wk_roster: dict, wk_stats: dict,
-                  yr_info: dict, yr_rules: dict) -> float | None:
+                  yr_info: dict, yr_rules: dict):
     """Best-ball score: optimal lineup from all rostered non-IR players."""
     team = wk_roster.get(mid, {})
     if not team:
@@ -1872,7 +1872,6 @@ def build_analytics_endpoint(
     _load_json,
     _get_data_path,
     _write_json,
-    _year_sort,
 ):
     """
     Drop-in for the @router.get("/data/analytics/build-all") endpoint body.
@@ -1881,12 +1880,11 @@ def build_analytics_endpoint(
       _load_json(path)         → dict
       _get_data_path(filename) → str
       _write_json(path, data)  → None
-      _year_sort(data)         → dict (sorted by year key)
 
     Usage in league.py:
       from analytics_builder import build_analytics_endpoint
       # then inside the route function body, replace all logic with:
-      return build_analytics_endpoint(_load_json, _get_data_path, _write_json, _year_sort)
+      return build_analytics_endpoint(_load_json, _get_data_path, _write_json)
     """
     import datetime
 
@@ -1981,7 +1979,11 @@ def build_analytics_endpoint(
         "team_points_breakdown": tpb,
     }
 
-    _write_json(path, output)
+    try:
+        _write_json(path, output)
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Write failed: {e}")
 
     return {
         "status":           "complete",

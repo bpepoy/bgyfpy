@@ -4911,13 +4911,29 @@ def debug_trade_structure(year: str = Query(default="2025")):
 
 @router.get("/data/analytics/build-all")
 def build_analytics(force_clean: bool = Query(default=False)):
-    from analytics_builder import build_analytics_endpoint, KNOWN_MEMBERS
-    if not force_clean:
-        existing = _load_json(_get_data_path("analytics.json")) or {}
-        if existing.get("_built_at"):
-            return {"status": "already_built", "built_at": existing["_built_at"],
-                    "note": "Use force_clean=true to rebuild"}
-    return build_analytics_endpoint(_load_json, _get_data_path, _write_json, _year_sort)
+    """
+    Pre-computes full league analytics and writes analytics.json.
+    All computation lives in analytics_builder.py — update that file
+    to improve analytics without touching league.py.
+
+    Run once per season after is_finished. Read endpoint is instant.
+    Use force_clean=true to force a rebuild.
+    """
+    try:
+        if not force_clean:
+            existing = _load_json(_get_data_path("analytics.json")) or {}
+            if existing.get("_built_at"):
+                return {
+                    "status":   "already_built",
+                    "built_at": existing["_built_at"],
+                    "note":     "Use force_clean=true to rebuild",
+                }
+        from analytics_builder import build_analytics_endpoint
+        return build_analytics_endpoint(_load_json, _get_data_path, _write_json)
+    except Exception as e:
+        import traceback
+        raise HTTPException(status_code=500,
+            detail=f"{str(e)}\n{traceback.format_exc()[:1000]}")
 
 
 @router.get("/data/analytics/status")
