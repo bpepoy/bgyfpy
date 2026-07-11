@@ -1875,6 +1875,7 @@ def build_analytics_endpoint(
     _load_json,
     _get_data_path,
     _write_json,
+    force_clean: bool = False,
 ):
     """
     Drop-in for the @router.get("/data/analytics/build-all") endpoint body.
@@ -1887,18 +1888,19 @@ def build_analytics_endpoint(
     Usage in league.py:
       from analytics_builder import build_analytics_endpoint
       # then inside the route function body, replace all logic with:
-      return build_analytics_endpoint(_load_json, _get_data_path, _write_json)
+      return build_analytics_endpoint(_load_json, _get_data_path, _write_json, force_clean)
     """
     import datetime
 
-    path     = _get_data_path("analytics.json")
-    existing = _load_json(path) or {}
-    if existing.get("_built_at"):
-        return {
-            "status":    "already_built",
-            "built_at":  existing["_built_at"],
-            "note":      "Use force_clean=true to rebuild",
-        }
+    path = _get_data_path("analytics.json")
+    if not force_clean:
+        existing = _load_json(path) or {}
+        if existing.get("_built_at"):
+            return {
+                "status":    "already_built",
+                "built_at":  existing["_built_at"],
+                "note":      "Use force_clean=true to rebuild",
+            }
 
     # Load all data files
     def _load(filename):

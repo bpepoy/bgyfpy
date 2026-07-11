@@ -4931,7 +4931,7 @@ def build_analytics(force_clean: bool = Query(default=False)):
         import sys, os
         sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         from analytics_builder import build_analytics_endpoint
-        return build_analytics_endpoint(_load_json, _get_data_path, _write_json)
+        return build_analytics_endpoint(_load_json, _get_data_path, _write_json, force_clean)
     except Exception as e:
         import traceback
         raise HTTPException(status_code=500,
