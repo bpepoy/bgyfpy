@@ -1,0 +1,5 @@
+{
+  "_note": "Structure: {season: [{id, season, week, submitted_at, submitted_by, submitted_by_display, opposing_manager, opposing_manager_display, bet_text, result, result_updated_by, result_updated_at}]}",
+  "_results": "waiting | submitter_wins | opponent_wins",
+  "2025": []
+}
