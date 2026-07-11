@@ -3889,6 +3889,247 @@ def manager_results_year(name: str, year: int):
 # GET /fantasy/{name}/transactions
 # ===========================================================================
 
+
+@router.get("/season/analytics")
+def season_analytics_latest():
+    """
+    Season-specific analytics for the latest season.
+    Pulls the relevant season slices from analytics.json.
+    Season fields: wl_records, ice_records, trade_records, scoring_records,
+    position_rankings, touchdown_records, team_points_breakdown (2022+).
+    """
+    results = _year_keyed(_load("results.json"))
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+
+    # Latest season — finished or in progress
+    latest_yr = sorted(results.keys(), key=int, reverse=True)[0]
+    return _build_season_analytics(int(latest_yr))
+
+
+
+@router.get("/season/analytics/{year}")
+def season_analytics_by_year(year: int):
+    """Season-specific analytics for a specific year."""
+    return _build_season_analytics(year)
+
+
+def _build_season_analytics(year: int) -> dict:
+    """
+    Shared builder — pulls season-keyed slices from analytics.json.
+    """
+    data = _load("analytics.json")
+    if not data or not data.get("_built_at"):
+        raise HTTPException(
+            status_code=404,
+            detail="analytics.json not built. Run GET /league/data/analytics/build-all first."
+        )
+
+    yr = str(year)
+
+    def _season_slice(section_key: str):
+        """Extract one year from a section that has a 'seasons' sub-dict."""
+        section = data.get(section_key, {})
+        if isinstance(section, dict) and "seasons" in section:
+            return section["seasons"].get(yr)
+        return None
+
+    wl_season = None
+    wl = data.get("wl_records", {})
+    if isinstance(wl, dict) and "seasons" in wl:
+        wl_season = wl["seasons"].get(yr)
+
+    ice_season = None
+    ice = data.get("ice_records", {})
+    if isinstance(ice, dict) and "seasons" in ice:
+        ice_season = ice["seasons"].get(yr)
+
+    breakdown_season = _season_slice("team_points_breakdown")
+
+    extras = (data.get("season_extras") or {}).get(yr) or {}
+
+    return {
+        "year":              year,
+        "_built_at":         data.get("_built_at"),
+
+        # W-L: actual / theoretical / best ball + playoff picture
+        "wl_records":        wl_season,
+
+        # Ices
+        "ice_records":       ice_season,
+        "ices_faced":        extras.get("ices_faced"),
+
+        # Points
+        "scoring_records":   _season_slice("scoring_records"),
+        "top5_weekly_pf":    extras.get("top5_weekly_pf"),
+        "bottom5_weekly_pf": extras.get("bottom5_weekly_pf"),
+        "top5_position_week":extras.get("top5_position_week"),
+
+        # Position rankings + points breakdown
+        "position_rankings":     _season_slice("position_rankings"),
+        "team_points_breakdown": breakdown_season,
+
+        # Touchdowns
+        "touchdown_records": _season_slice("touchdown_records"),
+
+        # Transactions
+        "top5_faab_bids":      extras.get("top5_faab_bids"),
+        "top5_auction_bids":   extras.get("top5_auction_bids"),
+        "trade_partners":      extras.get("trade_partners"),
+        "most_traded_players": extras.get("most_traded_players"),
+
+        "_notes": {
+            "team_points_breakdown": "Available 2022+ only",
+            "top5_faab_bids":        "Available 2015+ only",
+            "top5_auction_bids":     "Available 2023+ only",
+            "trade_partners":        "Only shows pairs with 2+ trades this season",
+            "most_traded_players":   "Only shows players traded 2+ times this season",
+        },
+    }
+
+
+# ===========================================================================
+# GET /fantasy/season/transactions
+# GET /fantasy/season/transactions/{year}
+# ===========================================================================
+
+
+@router.get("/season/transactions")
+def season_transactions_latest():
+    """
+    Transaction log for the latest season (finished or in-progress).
+    Shows moves, trades, and draft grouped by week.
+    """
+    results = _year_keyed(_load("results.json"))
+    if not results:
+        raise HTTPException(status_code=404, detail="results.json not found.")
+    latest_yr = sorted(results.keys(), key=int, reverse=True)[0]
+    return _build_season_transactions(int(latest_yr))
+
+
+
+@router.get("/season/transactions/{year}")
+def season_transactions_by_year(year: int):
+    """Transaction log for a specific season."""
+    return _build_season_transactions(year)
+
+
+def _build_season_transactions(year: int) -> dict:
+    """
+    Shared builder — assembles moves, trades, and draft for one season,
+    grouped by week. Each week is a summary row; full details are inline
+    so the frontend can expand without extra API calls.
+    """
+    transactions = _load("transactions.json")
+    drafts       = _load("drafts.json")
+    results      = _year_keyed(_load("results.json"))
+
+    yr     = str(year)
+    yr_tx  = transactions.get(yr, {})
+    yr_draft = drafts.get(yr, {})
+
+    if not yr_tx and not yr_draft:
+        raise HTTPException(status_code=404,
+            detail=f"No transaction data found for {year}.")
+
+    # ── moves: group by week ─────────────────────────────────────────────────
+    moves_by_week: dict = {}
+    for move in yr_tx.get("moves", []):
+        wk  = move.get("week") or 0
+        mid = move.get("manager_id") or move.get("manager") or ""
+        dn_ = move.get("display_name") or _display_name(mid, results)
+        date= move.get("date") or ""
+
+        for added in move.get("added", []):
+            bid = added.get("waiver_bid")
+            try: bid = int(bid) if bid is not None else None
+            except: bid = None
+            moves_by_week.setdefault(wk, []).append({
+                "type":        "add",
+                "manager_id":  mid,
+                "display_name":dn_,
+                "date":        date,
+                "player_name": added.get("name"),
+                "position":    added.get("position"),
+                "nfl_team":    added.get("nfl_team"),
+                "source_type": added.get("source_type"),
+                "waiver_bid":  bid,
+            })
+
+        for dropped in move.get("dropped", []):
+            moves_by_week.setdefault(wk, []).append({
+                "type":        "drop",
+                "manager_id":  mid,
+                "display_name":dn_,
+                "date":        date,
+                "player_name": dropped.get("name"),
+                "position":    dropped.get("position"),
+                "nfl_team":    dropped.get("nfl_team"),
+            })
+
+    # ── trades: group by week ────────────────────────────────────────────────
+    trades_by_week: dict = {}
+    for trade in yr_tx.get("trades", []):
+        wk  = trade.get("week") or 0
+        ma  = trade.get("manager_a") or trade.get("trader_manager") or ""
+        mb  = trade.get("manager_b") or trade.get("tradee_manager") or ""
+        trades_by_week.setdefault(wk, []).append({
+            "date":              trade.get("date") or trade.get("timestamp") or "",
+            "manager_a":         {"manager_id": ma,
+                                  "display_name": _display_name(ma, results)},
+            "manager_b":         {"manager_id": mb,
+                                  "display_name": _display_name(mb, results)},
+            "a_received":        trade.get("a_received") or trade.get("trader_receives") or [],
+            "b_received":        trade.get("b_received") or trade.get("tradee_receives") or [],
+        })
+
+    # ── draft ────────────────────────────────────────────────────────────────
+    draft_type  = yr_draft.get("draft_type", "snake")
+    draft_picks = yr_draft.get("picks", [])
+
+    # Both snake and auction sorted by overall_pick (draft order)
+    draft_out = sorted(draft_picks, key=lambda x: x.get("overall_pick") or 999)
+
+    # ── assemble week-by-week summary ────────────────────────────────────────
+    all_weeks = sorted(set(list(moves_by_week.keys()) + list(trades_by_week.keys())))
+
+    weeks_out = []
+    for wk in all_weeks:
+        wk_moves  = moves_by_week.get(wk, [])
+        wk_trades = trades_by_week.get(wk, [])
+        adds      = [m for m in wk_moves if m["type"] == "add"]
+        drops     = [m for m in wk_moves if m["type"] == "drop"]
+        weeks_out.append({
+            "week":        wk,
+            "total_moves": len(wk_moves),
+            "total_adds":  len(adds),
+            "total_drops": len(drops),
+            "total_trades":len(wk_trades),
+            "moves":       wk_moves,    # full detail inline — frontend expands
+            "trades":      wk_trades,
+        })
+
+    # Season totals
+    total_adds   = sum(w["total_adds"]   for w in weeks_out)
+    total_drops  = sum(w["total_drops"]  for w in weeks_out)
+    total_trades = sum(w["total_trades"] for w in weeks_out)
+
+    return {
+        "year":          year,
+        "is_finished":   (results.get(yr) or {}).get("is_finished", False),
+        "summary": {
+            "total_adds":   total_adds,
+            "total_drops":  total_drops,
+            "total_moves":  total_adds + total_drops,
+            "total_trades": total_trades,
+        },
+        "weeks":  weeks_out,
+        "draft": {
+            "draft_type":  draft_type,
+            "total_picks": len(draft_picks),
+            "picks":       draft_out,
+        },
+    }
 @router.get("/{name}/transactions")
 def manager_transactions_career(
     name: str,
@@ -4292,213 +4533,3 @@ def league_analytics():
 # GET /fantasy/season/analytics
 # GET /fantasy/season/analytics/{year}
 # ===========================================================================
-
-@router.get("/season/analytics")
-def season_analytics_latest():
-    """
-    Season-specific analytics for the latest season.
-    Pulls the relevant season slices from analytics.json.
-    Season fields: wl_records, ice_records, trade_records, scoring_records,
-    position_rankings, touchdown_records, team_points_breakdown (2022+).
-    """
-    results = _year_keyed(_load("results.json"))
-    if not results:
-        raise HTTPException(status_code=404, detail="results.json not found.")
-
-    # Latest season — finished or in progress
-    latest_yr = sorted(results.keys(), key=int, reverse=True)[0]
-    return _build_season_analytics(int(latest_yr))
-
-
-@router.get("/season/analytics/{year}")
-def season_analytics_by_year(year: int):
-    """Season-specific analytics for a specific year."""
-    return _build_season_analytics(year)
-
-
-def _build_season_analytics(year: int) -> dict:
-    """
-    Shared builder — pulls season-keyed slices from analytics.json.
-    """
-    data = _load("analytics.json")
-    if not data or not data.get("_built_at"):
-        raise HTTPException(
-            status_code=404,
-            detail="analytics.json not built. Run GET /league/data/analytics/build-all first."
-        )
-
-    yr = str(year)
-
-    def _season_slice(section_key: str):
-        """Extract one year from a section that has a 'seasons' sub-dict."""
-        section = data.get(section_key, {})
-        if isinstance(section, dict) and "seasons" in section:
-            return section["seasons"].get(yr)
-        return None
-
-    wl_season = None
-    wl = data.get("wl_records", {})
-    if isinstance(wl, dict) and "seasons" in wl:
-        wl_season = wl["seasons"].get(yr)
-
-    ice_season = None
-    ice = data.get("ice_records", {})
-    if isinstance(ice, dict) and "seasons" in ice:
-        ice_season = ice["seasons"].get(yr)
-
-    breakdown_season = _season_slice("team_points_breakdown")
-
-    return {
-        "year":              year,
-        "_built_at":         data.get("_built_at"),
-        "wl_records":        wl_season,
-        "ice_records":       ice_season,
-        "scoring_records":   _season_slice("scoring_records"),
-        "position_rankings": _season_slice("position_rankings"),
-        "touchdown_records": _season_slice("touchdown_records"),
-        "team_points_breakdown": breakdown_season,
-        "_note": "team_points_breakdown only available 2022+. "
-                 "trade_records are era-level only (no per-season breakdown).",
-    }
-
-
-# ===========================================================================
-# GET /fantasy/season/transactions
-# GET /fantasy/season/transactions/{year}
-# ===========================================================================
-
-@router.get("/season/transactions")
-def season_transactions_latest():
-    """
-    Transaction log for the latest season (finished or in-progress).
-    Shows moves, trades, and draft grouped by week.
-    """
-    results = _year_keyed(_load("results.json"))
-    if not results:
-        raise HTTPException(status_code=404, detail="results.json not found.")
-    latest_yr = sorted(results.keys(), key=int, reverse=True)[0]
-    return _build_season_transactions(int(latest_yr))
-
-
-@router.get("/season/transactions/{year}")
-def season_transactions_by_year(year: int):
-    """Transaction log for a specific season."""
-    return _build_season_transactions(year)
-
-
-def _build_season_transactions(year: int) -> dict:
-    """
-    Shared builder — assembles moves, trades, and draft for one season,
-    grouped by week. Each week is a summary row; full details are inline
-    so the frontend can expand without extra API calls.
-    """
-    transactions = _load("transactions.json")
-    drafts       = _load("drafts.json")
-    results      = _year_keyed(_load("results.json"))
-
-    yr     = str(year)
-    yr_tx  = transactions.get(yr, {})
-    yr_draft = drafts.get(yr, {})
-
-    if not yr_tx and not yr_draft:
-        raise HTTPException(status_code=404,
-            detail=f"No transaction data found for {year}.")
-
-    # ── moves: group by week ─────────────────────────────────────────────────
-    moves_by_week: dict = {}
-    for move in yr_tx.get("moves", []):
-        wk  = move.get("week") or 0
-        mid = move.get("manager_id") or move.get("manager") or ""
-        dn_ = move.get("display_name") or _display_name(mid, results)
-        date= move.get("date") or ""
-
-        for added in move.get("added", []):
-            bid = added.get("waiver_bid")
-            try: bid = int(bid) if bid is not None else None
-            except: bid = None
-            moves_by_week.setdefault(wk, []).append({
-                "type":        "add",
-                "manager_id":  mid,
-                "display_name":dn_,
-                "date":        date,
-                "player_name": added.get("name"),
-                "position":    added.get("position"),
-                "nfl_team":    added.get("nfl_team"),
-                "source_type": added.get("source_type"),
-                "waiver_bid":  bid,
-            })
-
-        for dropped in move.get("dropped", []):
-            moves_by_week.setdefault(wk, []).append({
-                "type":        "drop",
-                "manager_id":  mid,
-                "display_name":dn_,
-                "date":        date,
-                "player_name": dropped.get("name"),
-                "position":    dropped.get("position"),
-                "nfl_team":    dropped.get("nfl_team"),
-            })
-
-    # ── trades: group by week ────────────────────────────────────────────────
-    trades_by_week: dict = {}
-    for trade in yr_tx.get("trades", []):
-        wk  = trade.get("week") or 0
-        ma  = trade.get("manager_a") or trade.get("trader_manager") or ""
-        mb  = trade.get("manager_b") or trade.get("tradee_manager") or ""
-        trades_by_week.setdefault(wk, []).append({
-            "date":              trade.get("date") or trade.get("timestamp") or "",
-            "manager_a":         {"manager_id": ma,
-                                  "display_name": _display_name(ma, results)},
-            "manager_b":         {"manager_id": mb,
-                                  "display_name": _display_name(mb, results)},
-            "a_received":        trade.get("a_received") or trade.get("trader_receives") or [],
-            "b_received":        trade.get("b_received") or trade.get("tradee_receives") or [],
-        })
-
-    # ── draft ────────────────────────────────────────────────────────────────
-    draft_type  = yr_draft.get("draft_type", "snake")
-    draft_picks = yr_draft.get("picks", [])
-
-    # Both snake and auction sorted by overall_pick (draft order)
-    draft_out = sorted(draft_picks, key=lambda x: x.get("overall_pick") or 999)
-
-    # ── assemble week-by-week summary ────────────────────────────────────────
-    all_weeks = sorted(set(list(moves_by_week.keys()) + list(trades_by_week.keys())))
-
-    weeks_out = []
-    for wk in all_weeks:
-        wk_moves  = moves_by_week.get(wk, [])
-        wk_trades = trades_by_week.get(wk, [])
-        adds      = [m for m in wk_moves if m["type"] == "add"]
-        drops     = [m for m in wk_moves if m["type"] == "drop"]
-        weeks_out.append({
-            "week":        wk,
-            "total_moves": len(wk_moves),
-            "total_adds":  len(adds),
-            "total_drops": len(drops),
-            "total_trades":len(wk_trades),
-            "moves":       wk_moves,    # full detail inline — frontend expands
-            "trades":      wk_trades,
-        })
-
-    # Season totals
-    total_adds   = sum(w["total_adds"]   for w in weeks_out)
-    total_drops  = sum(w["total_drops"]  for w in weeks_out)
-    total_trades = sum(w["total_trades"] for w in weeks_out)
-
-    return {
-        "year":          year,
-        "is_finished":   (results.get(yr) or {}).get("is_finished", False),
-        "summary": {
-            "total_adds":   total_adds,
-            "total_drops":  total_drops,
-            "total_moves":  total_adds + total_drops,
-            "total_trades": total_trades,
-        },
-        "weeks":  weeks_out,
-        "draft": {
-            "draft_type":  draft_type,
-            "total_picks": len(draft_picks),
-            "picks":       draft_out,
-        },
-    }

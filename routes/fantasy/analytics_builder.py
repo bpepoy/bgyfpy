@@ -1747,6 +1747,233 @@ def build_team_points_breakdown(results: dict, matchups: dict, rosters: dict,
     }
 
 
+# ── season extras ─────────────────────────────────────────────────────────────
+
+def build_season_extras(results: dict, matchups: dict, player_stats: dict,
+                        player_info: dict, rosters: dict, transactions: dict,
+                        drafts: dict, ices: dict) -> dict:
+    """
+    Season-specific data not already in other builders:
+      - top5/bottom5 weekly PF (KNOWN_MEMBERS)
+      - ices_faced: ices your opponent had against you this season
+      - top5 FAAB bids (2015+)
+      - top5 auction bids (2023+)
+      - top5 position week records (QB/WR/RB/TE)
+      - trade_partners: pairs with 2+ trades this season
+      - most_traded_players: players traded 2+ times this season
+
+    Returns dict keyed by year string.
+    """
+    FAAB_START    = 2015
+    AUCTION_START = 2023
+    REAL_ICE_START= 2023
+    POSITIONS     = ["QB","WR","RB","TE"]
+
+    finished = {yr: s for yr, s in results.items()
+                if str(yr).isdigit() and s.get("is_finished")}
+
+    season_extras: dict = {}
+
+    for yr in sorted(finished.keys(), key=int):
+        yr_int   = int(yr)
+        yr_mu    = matchups.get(yr, {})
+        ps       = yr_mu.get("playoff_start") or 99
+        yr_stats = player_stats.get(yr, {})
+        yr_info  = (player_info.get(yr, {}) or {}).get("players", {})
+        yr_roster= rosters.get(yr, {})
+        yr_tx    = transactions.get(yr, {})
+        yr_draft = drafts.get(yr, {})
+        yr_ices  = ices.get(yr, [])
+
+        # ── weekly PF ───────────────────────────────────────────────────────
+        weekly_pf: list = []
+        for wk_entry in yr_mu.get("weeks", []):
+            wk_num = wk_entry.get("week", 0)
+            if wk_num >= ps: continue
+            for m in wk_entry.get("matchups", []):
+                for t in m.get("teams", []):
+                    mid = t.get("manager_id") or ""
+                    if not mid: continue
+                    try: pts = float(t.get("points") or 0)
+                    except: continue
+                    if pts <= 0: continue
+                    weekly_pf.append({
+                        "manager_id":   mid,
+                        "display_name": dn(mid, results),
+                        "week":         wk_num,
+                        "points":       round(pts, 2),
+                    })
+        weekly_pf.sort(key=lambda x: -x["points"])
+        top5_weekly    = weekly_pf[:5]
+        bottom5_weekly = list(reversed(weekly_pf[-5:])) if len(weekly_pf) >= 5 else list(reversed(weekly_pf))
+
+        # ── position week records ────────────────────────────────────────────
+        pos_week: dict = {pos: [] for pos in POSITIONS}
+
+        # build owner map
+        owner_map: dict = {}
+        wk_keys_r = sorted([k for k in yr_roster if k.startswith("week_")],
+                            key=lambda x: int(x.split("_")[1]))
+        if wk_keys_r:
+            lw = yr_roster.get(wk_keys_r[-1], {})
+            for mid, team in lw.items():
+                if not isinstance(team, dict): continue
+                for slot in team.get("players", []):
+                    pk = slot.get("player_key") if isinstance(slot, dict) else None
+                    if pk: owner_map[pk] = {"manager_id": mid, "display_name": dn(mid, results)}
+
+        if yr_stats and yr_info:
+            for wk_key, wk_data in yr_stats.items():
+                if not isinstance(wk_data, dict): continue
+                wk_num = int(wk_key.split("_")[1])
+                if wk_num >= ps: continue
+                for pk, pd in wk_data.items():
+                    if not isinstance(pd, dict): continue
+                    try: fp = float(pd.get("fantasy_points") or 0)
+                    except: continue
+                    if fp <= 0: continue
+                    pi      = yr_info.get(pk, {})
+                    pos_raw = pi.get("position") or ""
+                    pos     = pos_raw.split("/")[0].strip() if "/" in pos_raw else pos_raw
+                    if pos not in POSITIONS: continue
+                    owner = owner_map.get(pk, {})
+                    mid   = owner.get("manager_id") or ""
+                    if mid and mid not in KNOWN_MEMBERS: continue
+                    pos_week[pos].append({
+                        "player_name":  pi.get("name") or pk,
+                        "position":     pos,
+                        "manager_id":   mid,
+                        "display_name": owner.get("display_name"),
+                        "week":         wk_num,
+                        "points":       round(fp, 2),
+                    })
+
+        top5_pos_week = {
+            pos: sorted(entries, key=lambda x: -x["points"])[:5]
+            for pos, entries in pos_week.items()
+        }
+
+        # ── ices faced (opponent ices against you) ────────────────────────────
+        # Build weekly opponent map
+        wk_opp: dict = {}
+        for wk_entry in yr_mu.get("weeks", []):
+            wk_num = wk_entry.get("week", 0)
+            if wk_num >= ps: continue
+            for m in wk_entry.get("matchups", []):
+                if m.get("is_consolation"): continue
+                teams = [t.get("manager_id") for t in m.get("teams", [])
+                         if t.get("manager_id")]
+                if len(teams) == 2:
+                    wk_opp[(teams[0], wk_num)] = teams[1]
+                    wk_opp[(teams[1], wk_num)] = teams[0]
+
+        ices_faced: dict = {}   # mid → {opp_mid: count}
+        if isinstance(yr_ices, list):
+            for ice in yr_ices:
+                if ice.get("is_playoffs"): continue
+                mid_i = ice.get("manager_id") or ""
+                wk_i  = ice.get("week") or 0
+                if mid_i not in KNOWN_MEMBERS: continue
+                opp = wk_opp.get((mid_i, wk_i))
+                if opp and opp in KNOWN_MEMBERS:
+                    ices_faced.setdefault(opp, {})
+                    ices_faced[opp][mid_i] = ices_faced[opp].get(mid_i, 0) + 1
+
+        ices_faced_out = {
+            mid: sorted([{"manager_id": opp, "display_name": dn(opp, results), "count": cnt}
+                          for opp, cnt in opps.items()], key=lambda x: -x["count"])
+            for mid, opps in ices_faced.items()
+        }
+
+        # ── FAAB top 5 ───────────────────────────────────────────────────────
+        top5_faab: list = []
+        if yr_int >= FAAB_START:
+            bids = []
+            for move in yr_tx.get("moves", []):
+                mid = move.get("manager_id") or move.get("manager") or ""
+                if mid not in KNOWN_MEMBERS: continue
+                for added in move.get("added", []):
+                    bid = added.get("waiver_bid")
+                    if bid is None: continue
+                    try: bid_int = int(bid)
+                    except: continue
+                    if bid_int <= 0: continue
+                    bids.append({
+                        "manager_id":   mid,
+                        "display_name": dn(mid, results),
+                        "player_name":  added.get("name"),
+                        "position":     added.get("position"),
+                        "bid":          bid_int,
+                    })
+            bids.sort(key=lambda x: -x["bid"])
+            top5_faab = bids[:5]
+
+        # ── Auction top 5 ────────────────────────────────────────────────────
+        top5_auction: list = []
+        if yr_int >= AUCTION_START and yr_draft.get("draft_type") == "auction":
+            auction = []
+            for p in yr_draft.get("picks", []):
+                mid = p.get("manager_id") or ""
+                if mid not in KNOWN_MEMBERS: continue
+                cost = p.get("cost")
+                if not cost: continue
+                try: cost_int = int(cost)
+                except: continue
+                auction.append({
+                    "manager_id":   mid,
+                    "display_name": dn(mid, results),
+                    "player_name":  p.get("player_name"),
+                    "position":     p.get("position"),
+                    "cost":         cost_int,
+                })
+            auction.sort(key=lambda x: -x["cost"])
+            top5_auction = auction[:5]
+
+        # ── trade partners (2+ trades) ───────────────────────────────────────
+        pair_counts: dict = {}
+        for trade in yr_tx.get("trades", []):
+            m1 = trade.get("manager_a") or trade.get("trader_manager") or ""
+            m2 = trade.get("manager_b") or trade.get("tradee_manager") or ""
+            if m1 in KNOWN_MEMBERS and m2 in KNOWN_MEMBERS:
+                key = tuple(sorted([m1, m2]))
+                pair_counts[key] = pair_counts.get(key, 0) + 1
+
+        trade_partners = sorted([
+            {"manager_1": {"manager_id": p[0], "display_name": dn(p[0], results)},
+             "manager_2": {"manager_id": p[1], "display_name": dn(p[1], results)},
+             "total_trades": cnt}
+            for p, cnt in pair_counts.items() if cnt >= 2
+        ], key=lambda x: -x["total_trades"])
+
+        # ── most traded players (2+ times this season) ───────────────────────
+        traded_counts: dict = {}
+        for trade in yr_tx.get("trades", []):
+            for side in ["a_received","b_received","trader_receives","tradee_receives"]:
+                for p in trade.get(side, []):
+                    nm  = (p.get("name") or p.get("player_name") or "").strip()
+                    pos = p.get("position") or ""
+                    if nm and pos not in ("DEF","D/ST","K"):
+                        traded_counts[nm] = traded_counts.get(nm, 0) + 1
+
+        most_traded = sorted([
+            {"player_name": nm, "times_traded": cnt}
+            for nm, cnt in traded_counts.items() if cnt >= 2
+        ], key=lambda x: -x["times_traded"])
+
+        season_extras[yr] = {
+            "top5_weekly_pf":         top5_weekly,
+            "bottom5_weekly_pf":      bottom5_weekly,
+            "top5_position_week":     top5_pos_week,
+            "ices_faced":             ices_faced_out,
+            "top5_faab_bids":         top5_faab,
+            "top5_auction_bids":      top5_auction,
+            "trade_partners":         trade_partners,
+            "most_traded_players":    most_traded,
+        }
+
+    return season_extras
+
+
 # ── run ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
@@ -1943,7 +2170,9 @@ def build_analytics_endpoint(
     dp       = build_double_play(results, matchups)
     pos_rank = build_position_rankings(results, matchups, rosters, player_stats, player_info)
     td_rec   = build_touchdown_records(results, matchups, rosters, player_stats)
-    tpb      = build_team_points_breakdown(results, matchups, rosters, player_stats, rules)
+    tpb          = build_team_points_breakdown(results, matchups, rosters, player_stats, rules)
+    season_extras= build_season_extras(results, matchups, player_stats, player_info,
+                                        rosters, transactions, drafts, ices)
 
     output = {
         "_built_at":       datetime.datetime.utcnow().isoformat(),
@@ -1988,6 +2217,9 @@ def build_analytics_endpoint(
 
         # Team points breakdown — era_blocks + seasons
         "team_points_breakdown": tpb,
+
+        # Season extras — per-season data for /season/analytics
+        "season_extras":         season_extras,
     }
 
     try:
