@@ -226,6 +226,7 @@ def _get_parlays_inner(season, week):
     # Build available weeks for navigation
     available = []
     for yr, wks in sorted(parlays.items(), reverse=True):
+        if not isinstance(wks, dict): continue   # skip _note, _results keys
         for wk_k in sorted(wks.keys(), reverse=True):
             wk_n = int(wk_k.replace("week_", ""))
             wk_d = wks[wk_k]
@@ -463,6 +464,7 @@ def update_water_bet_result(bet_id: str, body: WaterBetResult):
     found_bet = None
     found_yr  = None
     for yr, bets in water_bets.items():
+        if not isinstance(bets, list): continue
         for bet in bets:
             if bet.get("id") == bet_id:
                 found_bet = bet
@@ -687,6 +689,7 @@ def betting_overall():
     mgr_seasons: dict = {m["manager_id"]: set() for m in ACTIVE_MEMBERS}
 
     for yr, yr_parlays in sorted(parlays.items()):
+        if not isinstance(yr_parlays, dict): continue
         for wk_key, wk_data in yr_parlays.items():
             legs = wk_data.get("legs", [])
             wr   = _week_result(legs)
@@ -710,6 +713,7 @@ def betting_overall():
                     m["total_waiting"] += 1
 
     for yr, bets in water_bets.items():
+        if not isinstance(bets, list): continue
         for bet in bets:
             sub = bet.get("submitted_by")
             opp = bet.get("opposing_manager")
