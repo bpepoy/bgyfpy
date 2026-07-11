@@ -1266,7 +1266,8 @@ def build_position_rankings(results: dict, matchups: dict, rosters: dict,
 
     for yr in sorted(finished.keys(), key=int):
         yr_int    = int(yr)
-        yr_mu     = matchups.get(yr, {})
+        if yr_int < BREAKDOWN_START:
+            continue   # skip pre-2022 — no stat-level breakdown available
         ps        = yr_mu.get("playoff_start") or 99
         yr_stats  = player_stats.get(yr, {})
         yr_info   = (player_info.get(yr, {}) or {}).get("players", {})
@@ -1553,6 +1554,8 @@ def build_team_points_breakdown(results: dict, matchups: dict, rosters: dict,
 
     finished = {yr: s for yr, s in results.items()
                 if str(yr).isdigit() and s.get("is_finished")}
+
+    BREAKDOWN_START = 2022   # stat-level breakdown only available from 2022+
 
     # Pre-build ppu_map per year from rules.json
     # ppu_map[yr][stat_id_str] = points_per_unit (float)
