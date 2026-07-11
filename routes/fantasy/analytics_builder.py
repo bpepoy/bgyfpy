@@ -1266,8 +1266,6 @@ def build_position_rankings(results: dict, matchups: dict, rosters: dict,
 
     for yr in sorted(finished.keys(), key=int):
         yr_int    = int(yr)
-        if yr_int < BREAKDOWN_START:
-            continue   # skip pre-2022 — no stat-level breakdown available
         ps        = yr_mu.get("playoff_start") or 99
         yr_stats  = player_stats.get(yr, {})
         yr_info   = (player_info.get(yr, {}) or {}).get("players", {})
