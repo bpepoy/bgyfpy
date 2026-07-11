@@ -4929,7 +4929,7 @@ def build_analytics(force_clean: bool = Query(default=False)):
                     "note":     "Use force_clean=true to rebuild",
                 }
         import sys, os
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
         from analytics_builder import build_analytics_endpoint
         return build_analytics_endpoint(_load_json, _get_data_path, _write_json)
     except Exception as e:
