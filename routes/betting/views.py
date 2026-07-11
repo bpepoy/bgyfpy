@@ -74,9 +74,11 @@ ACTIVE_MEMBERS = [
 ]
 ACTIVE_IDS = {m["manager_id"] for m in ACTIVE_MEMBERS}
 
-BETTING_DIR = os.path.join(
-    os.path.dirname(__file__), "..", "..", "data", "betting"
-)
+# Resolve data/betting relative to project root (works regardless of where
+# this file lives within routes/)
+_HERE        = os.path.dirname(os.path.abspath(__file__))
+_PROJECT_ROOT= os.path.abspath(os.path.join(_HERE, "..", ".."))
+BETTING_DIR  = os.path.join(_PROJECT_ROOT, "data", "betting")
 
 VALID_LEG_RESULTS = {"waiting", "hit", "miss", "no_leg"}
 VALID_BET_RESULTS = {"waiting", "submitter_wins", "opponent_wins"}
@@ -112,7 +114,7 @@ def _current_season_week(matchups_path: str) -> tuple:
     Returns (season_int, next_week_int).
     """
     try:
-        data_dir = os.path.join(os.path.dirname(__file__), "..", "..", "data", "fantasy")
+        data_dir = os.path.join(_PROJECT_ROOT, "data", "fantasy")
         mu_path  = os.path.join(data_dir, "matchups.json")
         if not os.path.exists(mu_path):
             return (datetime.now().year, 1)
@@ -189,6 +191,14 @@ def get_parlays(
     season: Optional[int] = Query(default=None),
     week:   Optional[int] = Query(default=None),
 ):
+    import traceback
+    try:
+        return _get_parlays_inner(season, week)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{str(e)}\n{traceback.format_exc()[:800]}")
+
+
+def _get_parlays_inner(season, week):
     """
     Returns parlay data.
 
