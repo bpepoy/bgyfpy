@@ -1,5 +1,5 @@
 """
-routes/settings/views.py
+routes/settings/views_settings.py
 ===================================
 Settings endpoints for BlackGold PWA.
 
@@ -251,7 +251,8 @@ def update_punishment(body: PunishmentUpdate):
     data_path  = os.path.join(_root, "data", "fantasy", "punishment.json")
     try:
         with open(data_path) as f:
-            punishment = json.load(f)
+            raw = json.load(f)
+        punishment = raw.get("data", raw) if isinstance(raw, dict) and "data" in raw else raw
     except FileNotFoundError:
         punishment = {}
 
@@ -282,7 +283,9 @@ def get_punishment_next_year():
     data_path  = os.path.join(_root, "data", "fantasy", "punishment.json")
     try:
         with open(data_path) as f:
-            punishment = json.load(f)
+            raw = json.load(f)
+        # unwrap {"data": {...}} wrapper if present
+        punishment = raw.get("data", raw) if isinstance(raw, dict) and "data" in raw else raw
         existing = [int(k) for k in punishment.keys() if k.isdigit()]
         next_yr  = max(existing) + 1 if existing else 2025
     except Exception:
