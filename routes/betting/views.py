@@ -169,7 +169,7 @@ class LegUpdate(BaseModel):
 
 class WaterBetSubmit(BaseModel):
     season:                  int
-    week:                    int
+    ending_week:             int    # week by which the bet resolves (or 17 for full season)
     submitted_by:            str
     submitted_by_display:    str
     opposing_manager:        str
@@ -178,8 +178,8 @@ class WaterBetSubmit(BaseModel):
 
 
 class WaterBetResult(BaseModel):
-    updated_by: str
-    result:     str   # submitter_wins | opponent_wins
+    updated_by:  str
+    winner_id:   str   # manager_id of the winner — either submitted_by or opposing_manager
 
 
 # ===========================================================================
@@ -428,7 +428,7 @@ def submit_water_bet(body: WaterBetSubmit):
     water_bets[yr_key].append({
         "id":                      bet_id,
         "season":                  body.season,
-        "week":                    body.week,
+        "ending_week":             body.ending_week,
         "submitted_at":            _now(),
         "submitted_by":            body.submitted_by,
         "submitted_by_display":    body.submitted_by_display,
@@ -475,21 +475,40 @@ def update_water_bet_result(bet_id: str, body: WaterBetResult):
     if not found_bet:
         raise HTTPException(status_code=404, detail=f"Water bet '{bet_id}' not found.")
 
-    found_bet["result"]            = body.result
+    # Derive result from winner_id
+    if body.winner_id == found_bet.get("submitted_by"):
+        result = "submitter_wins"
+    elif body.winner_id == found_bet.get("opposing_manager"):
+        result = "opponent_wins"
+    elif body.winner_id == "reset":
+        result = "waiting"
+    else:
+        raise HTTPException(status_code=400,
+            detail=f"winner_id must be '{found_bet.get('submitted_by')}', "
+                   f"'{found_bet.get('opposing_manager')}', or 'reset'.")
+
+    found_bet["result"]            = result
     found_bet["result_updated_by"] = body.updated_by
     found_bet["result_updated_at"] = _now()
 
     _save("water_bets.json", water_bets)
     return {
-        "status": "updated",
-        "id":     bet_id,
-        "result": body.result,
+        "status":    "updated",
+        "id":        bet_id,
+        "result":    result,
+        "winner_id": body.winner_id,
     }
 
 
 # ===========================================================================
 # GET /betting/season
 # ===========================================================================
+
+@router.get("/season/{year}")
+def betting_season_by_year(year: int):
+    """Season betting summary for a specific year."""
+    return _betting_season_inner(year)
+
 
 @router.get("/season")
 def betting_season(
@@ -510,7 +529,10 @@ def betting_season(
     """
     if season is None:
         season, _ = _current_season_week("")
+    return _betting_season_inner(season)
 
+
+def _betting_season_inner(season: int) -> dict:
     parlays    = _load("parlays.json")
     water_bets = _load("water_bets.json")
     yr_key     = str(season)
