@@ -71,6 +71,8 @@ class MediaUpload(BaseModel):
     cloudinary_id: str
     tags:          list[str] = []
     restaurant:    Optional[str] = None   # food_review only
+    rating:        Optional[float] = None # food_review only, 0-10
+    review_text:   Optional[str] = None  # food_review only
     season:        Optional[int] = None
     caption:       Optional[str] = None
 
@@ -184,6 +186,9 @@ def upload_media(body: MediaUpload):
     if body.category == "food_review" and not body.restaurant:
         raise HTTPException(status_code=400,
             detail="food_review uploads require a restaurant name.")
+    if body.rating is not None and not (0 <= body.rating <= 10):
+        raise HTTPException(status_code=400,
+            detail="rating must be between 0 and 10.")
     if body.category == "ice_video" and body.media_type != "video":
         raise HTTPException(status_code=400,
             detail="ice_video must be a video.")
@@ -197,6 +202,8 @@ def upload_media(body: MediaUpload):
         "cloudinary_id":  body.cloudinary_id,
         "tags":           body.tags,
         "restaurant":     body.restaurant,
+        "rating":         body.rating,
+        "review_text":    body.review_text,
         "season":         body.season,
         "caption":        body.caption,
     }).execute()
