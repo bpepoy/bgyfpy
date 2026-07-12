@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from oauth import router as oauth_router
-from routes.auth import router as auth_router
+from routes.auth_legacy import router as auth_router
 from routes.views import router as views_router
 from routes.fantasy.league import router as fantasy_league_router
 from routes.fantasy.teams import router as fantasy_teams_router
