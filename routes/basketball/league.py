@@ -33,7 +33,7 @@ Notes
 """
 
 from fastapi import APIRouter, HTTPException, Query, Depends
-from routes.auth import require_permission
+from routes.auth_legacy import require_permission
 
 router = APIRouter(prefix="/basketball/league", tags=["Basketball League"])
 

@@ -16,7 +16,7 @@ Files: managers, results, transactions, drafts, punishment
 """
 
 from fastapi import APIRouter, HTTPException, Query, Depends
-from routes.auth import require_permission
+from routes.auth_legacy import require_permission
 from services.fantasy.league_service import (
     get_league_settings,
     get_all_seasons,
