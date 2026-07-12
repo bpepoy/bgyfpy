@@ -1,5 +1,5 @@
 """
-routes/settings/views_settings.py
+routes/settings/views.py
 ===================================
 Settings endpoints for BlackGold PWA.
 
@@ -246,9 +246,9 @@ def update_punishment(body: PunishmentUpdate):
     _require_role(body.manager_id, ADMIN_ROLES)
 
     import json
-    data_path = os.path.join(
-        os.path.dirname(__file__), "..", "..", "data", "fantasy", "punishment.json"
-    )
+    _here      = os.path.dirname(os.path.abspath(__file__))
+    _root      = os.path.abspath(os.path.join(_here, "..", ".."))
+    data_path  = os.path.join(_root, "data", "fantasy", "punishment.json")
     try:
         with open(data_path) as f:
             punishment = json.load(f)
@@ -277,9 +277,9 @@ def get_punishment_next_year():
     Auto-detects by finding highest year in punishment.json + 1.
     """
     import json
-    data_path = os.path.join(
-        os.path.dirname(__file__), "..", "..", "data", "fantasy", "punishment.json"
-    )
+    _here      = os.path.dirname(os.path.abspath(__file__))
+    _root      = os.path.abspath(os.path.join(_here, "..", ".."))
+    data_path  = os.path.join(_root, "data", "fantasy", "punishment.json")
     try:
         with open(data_path) as f:
             punishment = json.load(f)
