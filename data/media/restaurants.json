@@ -1,0 +1,10 @@
+{
+  "data": {
+    "restaurants": [
+      {"id": 1, "name": "McDonalds"},
+      {"id": 2, "name": "Burger King"},
+      {"id": 3, "name": "Wendy's"},
+      {"id": 4, "name": "Taco Bell"}
+    ]
+  }
+}

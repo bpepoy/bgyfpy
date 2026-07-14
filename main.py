@@ -11,6 +11,7 @@ from routes.explore import router as explore_router
 from routes.basketball.league import router as basketball_league_router
 from routes.betting.views import router as betting_router
 from routes.settings.views import router as settings_router
+from routes.media.views import router as media_router
 from routes.auth.views import router as auth_views_router
 import os
 
@@ -46,6 +47,7 @@ app.include_router(yahoo_router)
 app.include_router(basketball_league_router)
 app.include_router(betting_router)
 app.include_router(settings_router)
+app.include_router(media_router)
 app.include_router(auth_views_router)
 
 @app.get("/")

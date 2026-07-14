@@ -71,8 +71,10 @@ class MediaUpload(BaseModel):
     cloudinary_id: str
     tags:          list[str] = []
     restaurant:    Optional[str] = None   # food_review only
+    menu_item:     Optional[str] = None   # food_review only
     rating:        Optional[float] = None # food_review only, 0-10
     review_text:   Optional[str] = None  # food_review only
+    media_year:    Optional[int] = None   # year from photo/video metadata
     season:        Optional[int] = None
     caption:       Optional[str] = None
 
@@ -192,6 +194,7 @@ def upload_media(body: MediaUpload):
     if body.category == "ice_video" and body.media_type != "video":
         raise HTTPException(status_code=400,
             detail="ice_video must be a video.")
+    # food_review allows both photo and video — no restriction needed
 
     sb   = _sb()
     resp = sb.table("media").insert({
@@ -202,8 +205,10 @@ def upload_media(body: MediaUpload):
         "cloudinary_id":  body.cloudinary_id,
         "tags":           body.tags,
         "restaurant":     body.restaurant,
+        "menu_item":      body.menu_item,
         "rating":         body.rating,
         "review_text":    body.review_text,
+        "media_year":     body.media_year,
         "season":         body.season,
         "caption":        body.caption,
     }).execute()
