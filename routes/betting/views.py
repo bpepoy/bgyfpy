@@ -323,6 +323,17 @@ def update_parlay_leg(
     Update a single leg result.
     result: hit | miss | no_leg | waiting (reset)
     """
+    import traceback
+    try:
+        return _update_parlay_leg_inner(season, week, manager_id, body)
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500,
+            detail=str(e) + " | " + traceback.format_exc()[:600])
+
+
+def _update_parlay_leg_inner(season, week, manager_id, body):
     if body.result not in VALID_LEG_RESULTS:
         raise HTTPException(status_code=400,
             detail=f"Invalid result '{body.result}'. Must be: {VALID_LEG_RESULTS}")
