@@ -28,18 +28,61 @@ ADMIN_ROLES        = {"app_owner", "commissioner"}
 VOTE_THRESHOLD     = 6   # majority of 10
 
 
-def _commit(path: str, message: str) -> None:
-    """Commit a file to GitHub. Fails silently if unavailable."""
-    try:
-        import sys
-        _here = os.path.dirname(os.path.abspath(__file__))
-        _root = os.path.abspath(os.path.join(_here, "..", ".."))
-        if _root not in sys.path:
-            sys.path.insert(0, _root)
-        from github_sync import commit_file
-        _commit(path, message)
-    except Exception as e:
-        print(f"[github_sync] commit failed: {e}")
+def _commit(path, message):
+    """Commit a file to GitHub — fully inlined."""
+    import base64
+    import httpx as _httpx
+
+    token  = os.environ.get("GITHUB_TOKEN", "")
+    repo   = os.environ.get("GITHUB_REPO", "bpepoy/bgyfpy")
+    branch = os.environ.get("GITHUB_BRANCH", "main")
+    api    = "https://api.github.com"
+
+    if not token:
+        return {"status": "error", "detail": "GITHUB_TOKEN not set"}
+
+    _here    = os.path.dirname(os.path.abspath(__file__))
+    _root    = os.path.abspath(os.path.join(_here, "..", ".."))
+    abs_path = os.path.join(_root, path.lstrip("/"))
+
+    print("[_commit] abs_path=" + abs_path)
+    print("[_commit] exists=" + str(os.path.exists(abs_path)))
+
+    if not os.path.exists(abs_path):
+        return {"status": "error", "detail": "File not found: " + abs_path}
+
+    with open(abs_path, "rb") as f:
+        content_b64 = base64.b64encode(f.read()).decode()
+
+    headers = {
+        "Authorization": "Bearer " + token,
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    url  = api + "/repos/" + repo + "/contents/" + path.lstrip("/")
+    resp = _httpx.get(url, headers=headers, params={"ref": branch})
+    sha  = resp.json().get("sha") if resp.status_code == 200 else None
+
+    print("[_commit] sha=" + str(sha))
+
+    payload = {"message": message, "content": content_b64, "branch": branch}
+    if sha:
+        payload["sha"] = sha
+
+    resp = _httpx.put(url, headers=headers, json=payload)
+    print("[_commit] status=" + str(resp.status_code))
+
+    if resp.status_code in (200, 201):
+        return {
+            "status": "committed",
+            "path":   path,
+            "url":    "https://github.com/" + repo + "/blob/" + branch + "/" + path,
+        }
+    return {
+        "status": "error",
+        "detail": resp.json().get("message", "GitHub API error"),
+        "code":   resp.status_code,
+    }
 
 
 def _commit_tree(files: list, message: str) -> dict:
