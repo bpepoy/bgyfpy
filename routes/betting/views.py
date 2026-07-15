@@ -312,13 +312,14 @@ def submit_parlay(body: ParlaySubmit):
     }
 
     _save("parlays.json", parlays)
-    _commit("data/betting/parlays.json",
+    github = _commit("data/betting/parlays.json",
                 f"Parlay entered: {body.season} week {body.week} by {body.entered_by}")
     return {
-        "status":  "created",
-        "season":  body.season,
-        "week":    body.week,
-        "legs":    len(legs),
+        "status":       "created",
+        "season":       body.season,
+        "week":         body.week,
+        "legs":         len(legs),
+        "github_sync":  github,
     }
 
 
