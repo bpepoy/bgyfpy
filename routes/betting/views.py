@@ -298,6 +298,8 @@ def submit_parlay(body: ParlaySubmit):
     }
 
     _save("parlays.json", parlays)
+    commit_file("data/betting/parlays.json",
+                f"Parlay entered: {body.season} week {body.week} by {body.entered_by}")
     return {
         "status":  "created",
         "season":  body.season,
@@ -344,6 +346,8 @@ def update_parlay_leg(
     leg["updated_at"] = _now()
 
     _save("parlays.json", parlays)
+    commit_file("data/betting/parlays.json",
+                f"Parlay leg updated: {season} wk{week} {manager_id}={body.result}")
     return {
         "status":      "updated",
         "manager_id":  manager_id,
@@ -441,6 +445,8 @@ def submit_water_bet(body: WaterBetSubmit):
     })
 
     _save("water_bets.json", water_bets)
+    commit_file("data/betting/water_bets.json",
+                f"Water bet added: {body.submitted_by} vs {body.opposing_manager} ({body.season})")
     return {"status": "created", "id": bet_id}
 
 
@@ -492,6 +498,8 @@ def update_water_bet_result(bet_id: str, body: WaterBetResult):
     found_bet["result_updated_at"] = _now()
 
     _save("water_bets.json", water_bets)
+    commit_file("data/betting/water_bets.json",
+                f"Water bet result: {bet_id} winner={body.winner_id}")
     return {
         "status":    "updated",
         "id":        bet_id,

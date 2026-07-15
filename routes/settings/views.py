@@ -15,6 +15,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from supabase import create_client, Client
+from github_sync import commit_file, commit_tree
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
@@ -216,6 +217,8 @@ def upload_media(body: MediaUpload):
             raw["data"]["restaurants"] = restaurants
             with open(r_path, "w") as f:
                 json.dump(raw, f, indent=2)
+            commit_file("data/media/restaurants.json",
+                        f"New restaurant added: {body.restaurant}")
 
     sb   = _sb()
     resp = sb.table("media").insert({
@@ -289,6 +292,8 @@ def update_punishment(body: PunishmentUpdate):
 
     with open(data_path, "w") as f:
         json.dump(punishment, f, indent=2)
+    commit_file("data/fantasy/punishment.json",
+                f"Punishment updated: {body.year} by {body.manager_id}")
 
     return {
         "status": "updated",
@@ -494,24 +499,85 @@ def get_notifications(limit: int = Query(default=20)):
 @router.post("/refresh-data")
 def refresh_data(manager_id: str = Query(...)):
     """
-    Trigger a data refresh. app_owner only.
-    Currently returns instructions — wire to Yahoo API builders
-    once automated refresh strategy is confirmed.
+    Trigger a full data refresh from Yahoo API. app_owner only.
+    Runs all builders in sequence then commits all JSON to GitHub.
     """
     _require_role(manager_id, {"app_owner"})
 
+    import sys
+    _here = os.path.dirname(os.path.abspath(__file__))
+    _root = os.path.abspath(os.path.join(_here, "..", ".."))
+    if _root not in sys.path:
+        sys.path.insert(0, _root)
+
+    results = []
+
+    # Import and run each builder
+    try:
+        from routes.fantasy.league import (
+            build_managers, build_results, build_matchups,
+            build_rosters, build_player_stats, build_player_info,
+            build_drafts, build_transactions, build_payouts, build_ices,
+        )
+        from routes.fantasy.analytics_builder import build_analytics_endpoint
+        from routes.fantasy.league import _load_json, _get_data_path, _write_json
+
+        builders = [
+            ("managers",      lambda: build_managers()),
+            ("results",       lambda: build_results()),
+            ("matchups",      lambda: build_matchups()),
+            ("rosters",       lambda: build_rosters()),
+            ("player_info",   lambda: build_player_info()),
+            ("player_stats",  lambda: build_player_stats()),
+            ("drafts",        lambda: build_drafts()),
+            ("transactions",  lambda: build_transactions()),
+            ("payouts",       lambda: build_payouts()),
+            ("ices",          lambda: build_ices()),
+            ("analytics",     lambda: build_analytics_endpoint(
+                                  _load_json, _get_data_path, _write_json, True)),
+        ]
+
+        for name, fn in builders:
+            try:
+                fn()
+                results.append({"file": name, "status": "ok"})
+            except Exception as e:
+                results.append({"file": name, "status": "error", "detail": str(e)[:200]})
+
+    except ImportError as e:
+        return {"status": "error", "detail": f"Import error: {str(e)}"}
+
+    # Commit all updated files to GitHub in one atomic commit
+    files_to_commit = [
+        "data/fantasy/managers.json",
+        "data/fantasy/results.json",
+        "data/fantasy/matchups.json",
+        "data/fantasy/rosters.json",
+        "data/fantasy/player_info.json",
+        "data/fantasy/player_stats.json",
+        "data/fantasy/drafts.json",
+        "data/fantasy/transactions.json",
+        "data/fantasy/payouts.json",
+        "data/fantasy/ices.json",
+        "data/fantasy/analytics.json",
+    ]
+
+    # Only commit files that built successfully
+    successful = [r["file"] for r in results if r["status"] == "ok"]
+    commit_files = [f for f in files_to_commit
+                    if any(s in f for s in successful)]
+
+    github_result = {"status": "skipped", "detail": "No files to commit"}
+    if commit_files:
+        from github_sync import commit_tree
+        github_result = commit_tree(
+            commit_files,
+            f"Auto-refresh: {len(commit_files)} files updated"
+        )
+
     return {
-        "status": "acknowledged",
-        "message": "Manual refresh: run the build-all endpoints in order.",
-        "endpoints": [
-            "GET /league/data/managers/build-all",
-            "GET /league/data/results/build-all",
-            "GET /league/data/matchups/build-all",
-            "GET /league/data/rosters/build-all",
-            "GET /league/data/player-stats/build-all",
-            "GET /league/data/payouts/build-all",
-            "GET /league/data/ices/build-all",
-            "GET /league/data/analytics/build-all?force_clean=true",
-        ],
-        "note": "Automated refresh via cron will be added in Phase 2.",
+        "status":        "complete",
+        "builders":      results,
+        "github_commit": github_result,
+        "triggered_by":  manager_id,
     }
