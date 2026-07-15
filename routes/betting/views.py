@@ -74,6 +74,20 @@ ACTIVE_MEMBERS = [
 ]
 ACTIVE_IDS = {m["manager_id"] for m in ACTIVE_MEMBERS}
 
+
+def _commit(path: str, message: str) -> None:
+    """Commit a file to GitHub. Fails silently if github_sync unavailable."""
+    try:
+        import sys
+        _here = os.path.dirname(os.path.abspath(__file__))
+        _root = os.path.abspath(os.path.join(_here, "..", ".."))
+        if _root not in sys.path:
+            sys.path.insert(0, _root)
+        from github_sync import commit_file
+        _commit(path, message)
+    except Exception as e:
+        print(f"[github_sync] commit failed: {e}")
+
 # Resolve data/betting relative to project root (works regardless of where
 # this file lives within routes/)
 _HERE        = os.path.dirname(os.path.abspath(__file__))
@@ -298,7 +312,7 @@ def submit_parlay(body: ParlaySubmit):
     }
 
     _save("parlays.json", parlays)
-    commit_file("data/betting/parlays.json",
+    _commit("data/betting/parlays.json",
                 f"Parlay entered: {body.season} week {body.week} by {body.entered_by}")
     return {
         "status":  "created",
@@ -357,7 +371,7 @@ def _update_parlay_leg_inner(season, week, manager_id, body):
     leg["updated_at"] = _now()
 
     _save("parlays.json", parlays)
-    commit_file("data/betting/parlays.json",
+    _commit("data/betting/parlays.json",
                 f"Parlay leg updated: {season} wk{week} {manager_id}={body.result}")
     return {
         "status":      "updated",
@@ -456,7 +470,7 @@ def submit_water_bet(body: WaterBetSubmit):
     })
 
     _save("water_bets.json", water_bets)
-    commit_file("data/betting/water_bets.json",
+    _commit("data/betting/water_bets.json",
                 f"Water bet added: {body.submitted_by} vs {body.opposing_manager} ({body.season})")
     return {"status": "created", "id": bet_id}
 
@@ -509,7 +523,7 @@ def update_water_bet_result(bet_id: str, body: WaterBetResult):
     found_bet["result_updated_at"] = _now()
 
     _save("water_bets.json", water_bets)
-    commit_file("data/betting/water_bets.json",
+    _commit("data/betting/water_bets.json",
                 f"Water bet result: {bet_id} winner={body.winner_id}")
     return {
         "status":    "updated",

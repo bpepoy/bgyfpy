@@ -15,7 +15,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 from supabase import create_client, Client
-from github_sync import commit_file, commit_tree
+# github_sync imported at runtime via _commit() helper
 
 router = APIRouter(prefix="/settings", tags=["Settings"])
 
@@ -26,6 +26,34 @@ ACTIVE_MEMBERS = [
 COMMISSIONER_ROLES = {"app_owner", "commissioner", "betting_czar"}
 ADMIN_ROLES        = {"app_owner", "commissioner"}
 VOTE_THRESHOLD     = 6   # majority of 10
+
+
+def _commit(path: str, message: str) -> None:
+    """Commit a file to GitHub. Fails silently if unavailable."""
+    try:
+        import sys
+        _here = os.path.dirname(os.path.abspath(__file__))
+        _root = os.path.abspath(os.path.join(_here, "..", ".."))
+        if _root not in sys.path:
+            sys.path.insert(0, _root)
+        from github_sync import commit_file
+        _commit(path, message)
+    except Exception as e:
+        print(f"[github_sync] commit failed: {e}")
+
+
+def _commit_tree(files: list, message: str) -> dict:
+    """Commit multiple files atomically. Returns result dict."""
+    try:
+        import sys
+        _here = os.path.dirname(os.path.abspath(__file__))
+        _root = os.path.abspath(os.path.join(_here, "..", ".."))
+        if _root not in sys.path:
+            sys.path.insert(0, _root)
+        from github_sync import commit_tree
+        return commit_tree(files, message)
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
 
 # ── Supabase client ───────────────────────────────────────────────────────────
 
@@ -217,7 +245,7 @@ def upload_media(body: MediaUpload):
             raw["data"]["restaurants"] = restaurants
             with open(r_path, "w") as f:
                 json.dump(raw, f, indent=2)
-            commit_file("data/media/restaurants.json",
+            _commit("data/media/restaurants.json",
                         f"New restaurant added: {body.restaurant}")
 
     sb   = _sb()
@@ -292,7 +320,7 @@ def update_punishment(body: PunishmentUpdate):
 
     with open(data_path, "w") as f:
         json.dump(punishment, f, indent=2)
-    commit_file("data/fantasy/punishment.json",
+    _commit("data/fantasy/punishment.json",
                 f"Punishment updated: {body.year} by {body.manager_id}")
 
     return {
@@ -569,8 +597,7 @@ def refresh_data(manager_id: str = Query(...)):
 
     github_result = {"status": "skipped", "detail": "No files to commit"}
     if commit_files:
-        from github_sync import commit_tree
-        github_result = commit_tree(
+        github_result = _commit_tree(
             commit_files,
             f"Auto-refresh: {len(commit_files)} files updated"
         )
