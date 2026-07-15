@@ -196,6 +196,27 @@ def upload_media(body: MediaUpload):
             detail="ice_video must be a video.")
     # food_review allows both photo and video — no restriction needed
 
+    # Auto-add restaurant to restaurants.json if it's a new food_review
+    if body.category == "food_review" and body.restaurant:
+        import json
+        _here  = os.path.dirname(os.path.abspath(__file__))
+        _root  = os.path.abspath(os.path.join(_here, "..", ".."))
+        r_path = os.path.join(_root, "data", "media", "restaurants.json")
+        try:
+            with open(r_path) as f:
+                raw = json.load(f)
+        except FileNotFoundError:
+            raw = {"data": {"restaurants": []}}
+        restaurants = raw.get("data", {}).get("restaurants", [])
+        exists = any(r["name"].lower() == body.restaurant.lower().strip()
+                     for r in restaurants)
+        if not exists:
+            new_id = max((r["id"] for r in restaurants), default=0) + 1
+            restaurants.append({"id": new_id, "name": body.restaurant.strip()})
+            raw["data"]["restaurants"] = restaurants
+            with open(r_path, "w") as f:
+                json.dump(raw, f, indent=2)
+
     sb   = _sb()
     resp = sb.table("media").insert({
         "uploaded_by":    body.manager_id,

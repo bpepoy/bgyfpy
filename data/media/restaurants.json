@@ -4,7 +4,8 @@
       {"id": 1, "name": "McDonalds"},
       {"id": 2, "name": "Burger King"},
       {"id": 3, "name": "Wendy's"},
-      {"id": 4, "name": "Taco Bell"}
+      {"id": 4, "name": "Taco Bell"},
+      {"id": 5, "name": "Amelia Street Pizza Co"}
     ]
   }
 }
