@@ -202,7 +202,7 @@ class MediaUpload(BaseModel):
     menu_item:     Optional[str] = None   # food_review only
     rating:        Optional[float] = None # food_review only, 0-10
     review_text:   Optional[str] = None  # food_review only
-    media_year:    Optional[int] = None   # year from photo/video metadata
+    media_date:    Optional[str] = None   # full date from photo/video metadata e.g. "2024-03-15"
     season:        Optional[int] = None
     caption:       Optional[str] = None
 
@@ -359,7 +359,7 @@ def upload_media(body: MediaUpload):
         "menu_item":      body.menu_item,
         "rating":         body.rating,
         "review_text":    body.review_text,
-        "media_year":     body.media_year,
+        "media_date":     body.media_date,
         "season":         body.season,
         "caption":        body.caption,
     }).execute()

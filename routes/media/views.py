@@ -50,8 +50,8 @@ def get_content(
                      description="all | meme | draft_weekend | faceswap"),
     sort:        str = Query(default="newest",
                      description="newest | oldest"),
-    year:        Optional[int] = Query(default=None,
-                     description="Filter by photo creation year"),
+    year:        Optional[str] = Query(default=None,
+                     description="Filter by photo creation date or year prefix e.g. 2024 or 2024-03-15"),
     uploaded_by: Optional[str] = Query(default=None,
                      description="Filter by manager_id"),
 ):
@@ -67,7 +67,7 @@ def get_content(
     if tag and tag != "all":
         query = query.contains("tags", [tag])
     if year:
-        query = query.eq("media_year", year)
+        query = query.ilike("media_date", year + "%")
     if uploaded_by:
         query = query.eq("uploaded_by", uploaded_by)
 
@@ -106,7 +106,7 @@ def get_ice_videos(
     query = sb.table("media").select("*").eq("category", "ice_video")
 
     if year:
-        query = query.eq("media_year", year)
+        query = query.ilike("media_date", year + "%")
     if uploaded_by:
         query = query.eq("uploaded_by", uploaded_by)
 
@@ -143,7 +143,7 @@ def get_punishment(
     query = sb.table("media").select("*").eq("category", "punishment")
 
     if year:
-        query = query.eq("media_year", year)
+        query = query.ilike("media_date", year + "%")
     if uploaded_by:
         query = query.eq("uploaded_by", uploaded_by)
 
@@ -186,7 +186,7 @@ def get_food_reviews(
     query = sb.table("media").select("*").eq("category", "food_review")
 
     if year:
-        query = query.eq("media_year", year)
+        query = query.ilike("media_date", year + "%")
     if uploaded_by:
         query = query.eq("uploaded_by", uploaded_by)
     if restaurant:
@@ -244,7 +244,7 @@ def get_all_media(
     if category:
         query = query.eq("category", category)
     if year:
-        query = query.eq("media_year", year)
+        query = query.ilike("media_date", year + "%")
     if uploaded_by:
         query = query.eq("uploaded_by", uploaded_by)
 
