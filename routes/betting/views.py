@@ -75,61 +75,18 @@ ACTIVE_MEMBERS = [
 ACTIVE_IDS = {m["manager_id"] for m in ACTIVE_MEMBERS}
 
 
-def _commit(path, message):
-    """Commit a file to GitHub — fully inlined."""
-    import base64
-    import httpx as _httpx
-
-    token  = os.environ.get("GITHUB_TOKEN", "")
-    repo   = os.environ.get("GITHUB_REPO", "bpepoy/bgyfpy")
-    branch = os.environ.get("GITHUB_BRANCH", "main")
-    api    = "https://api.github.com"
-
-    if not token:
-        return {"status": "error", "detail": "GITHUB_TOKEN not set"}
-
-    _here    = os.path.dirname(os.path.abspath(__file__))
-    _root    = os.path.abspath(os.path.join(_here, "..", ".."))
-    abs_path = os.path.join(_root, path.lstrip("/"))
-
-    print("[_commit] abs_path=" + abs_path)
-    print("[_commit] exists=" + str(os.path.exists(abs_path)))
-
-    if not os.path.exists(abs_path):
-        return {"status": "error", "detail": "File not found: " + abs_path}
-
-    with open(abs_path, "rb") as f:
-        content_b64 = base64.b64encode(f.read()).decode()
-
-    headers = {
-        "Authorization": "Bearer " + token,
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    url  = api + "/repos/" + repo + "/contents/" + path.lstrip("/")
-    resp = _httpx.get(url, headers=headers, params={"ref": branch})
-    sha  = resp.json().get("sha") if resp.status_code == 200 else None
-
-    print("[_commit] sha=" + str(sha))
-
-    payload = {"message": message, "content": content_b64, "branch": branch}
-    if sha:
-        payload["sha"] = sha
-
-    resp = _httpx.put(url, headers=headers, json=payload)
-    print("[_commit] status=" + str(resp.status_code))
-
-    if resp.status_code in (200, 201):
-        return {
-            "status": "committed",
-            "path":   path,
-            "url":    "https://github.com/" + repo + "/blob/" + branch + "/" + path,
-        }
-    return {
-        "status": "error",
-        "detail": resp.json().get("message", "GitHub API error"),
-        "code":   resp.status_code,
-    }
+def _commit(path: str, message: str) -> None:
+    """Commit a file to GitHub. Fails silently if github_sync unavailable."""
+    try:
+        import sys
+        _here = os.path.dirname(os.path.abspath(__file__))
+        _root = os.path.abspath(os.path.join(_here, "..", ".."))
+        if _root not in sys.path:
+            sys.path.insert(0, _root)
+        from github_sync import commit_file
+        _commit(path, message)
+    except Exception as e:
+        print(f"[github_sync] commit failed: {e}")
 
 # Resolve data/betting relative to project root (works regardless of where
 # this file lives within routes/)
@@ -212,16 +169,33 @@ def _week_result(legs: list) -> dict:
 
 # ── Pydantic models ───────────────────────────────────────────────────────────
 
+class ParlayLeg(BaseModel):
+    manager_id:  str
+    player_name: Optional[str] = None
+    player_pos:  Optional[str] = None
+    stat_count:  Optional[float] = None
+    stat_op:     Optional[str] = None    # over | under | equal
+    stat_type:   Optional[str] = None
+    bet_text:    Optional[str] = None    # optional free-text override
+
+
 class ParlaySubmit(BaseModel):
-    season:      int
-    week:        int
-    entered_by:  str
-    legs: list[dict]   # [{manager_id, bet_text}] — 1 per member max
+    season:           int
+    week:             int
+    entered_by:       str
+    no_leg_managers:  list[str] = []     # immediately set to no_leg
+    legs:             list[ParlayLeg]    # one per participating manager
 
 
 class LegUpdate(BaseModel):
-    updated_by: str
-    result:     str    # hit | miss | no_leg
+    updated_by:  str
+    result:      str              # hit | miss | no_leg | waiting
+    # Optional fields to update the leg detail after entry
+    player_name: Optional[str] = None
+    player_pos:  Optional[str] = None
+    stat_count:  Optional[float] = None
+    stat_op:     Optional[str] = None
+    stat_type:   Optional[str] = None
 
 
 class WaterBetSubmit(BaseModel):
@@ -237,6 +211,67 @@ class WaterBetSubmit(BaseModel):
 class WaterBetResult(BaseModel):
     updated_by:  str
     winner_id:   str   # manager_id of the winner — either submitted_by or opposing_manager
+
+
+# ===========================================================================
+# GET /betting/parlay-options
+# ===========================================================================
+
+PLAYER_POSITIONS = [
+    "QB", "RB", "WR", "TE", "K", "DEF",
+    "DB", "LB", "DL", "OL", "LS",
+]
+
+STAT_OPERATIONS = [
+    {"value": "over",  "label": "Over"},
+    {"value": "under", "label": "Under"},
+    {"value": "equal", "label": "Equal to"},
+]
+
+STAT_TYPES = [
+    # Passing
+    {"value": "passing_yards",       "label": "Passing Yards",       "group": "Passing"},
+    {"value": "passing_tds",         "label": "Passing TDs",         "group": "Passing"},
+    {"value": "completions",         "label": "Completions",         "group": "Passing"},
+    {"value": "attempts",            "label": "Attempts",            "group": "Passing"},
+    {"value": "interceptions_thrown","label": "Interceptions Thrown","group": "Passing"},
+    # Rushing
+    {"value": "rushing_yards",       "label": "Rushing Yards",       "group": "Rushing"},
+    {"value": "rushing_tds",         "label": "Rushing TDs",         "group": "Rushing"},
+    {"value": "carries",             "label": "Carries",             "group": "Rushing"},
+    # Receiving
+    {"value": "receiving_yards",     "label": "Receiving Yards",     "group": "Receiving"},
+    {"value": "receiving_tds",       "label": "Receiving TDs",       "group": "Receiving"},
+    {"value": "receptions",          "label": "Receptions",          "group": "Receiving"},
+    {"value": "targets",             "label": "Targets",             "group": "Receiving"},
+    # Combined
+    {"value": "total_yards",         "label": "Total Yards",         "group": "Combined"},
+    {"value": "total_tds",           "label": "Total TDs",           "group": "Combined"},
+    {"value": "fantasy_points",      "label": "Fantasy Points",      "group": "Combined"},
+    # Defense / Special
+    {"value": "sacks",               "label": "Sacks",               "group": "Defense"},
+    {"value": "interceptions",       "label": "Interceptions",       "group": "Defense"},
+    {"value": "tackles",             "label": "Tackles",             "group": "Defense"},
+    {"value": "forced_fumbles",      "label": "Forced Fumbles",      "group": "Defense"},
+    {"value": "defensive_tds",       "label": "Defensive TDs",       "group": "Defense"},
+    {"value": "field_goals_made",    "label": "Field Goals Made",    "group": "Kicking"},
+    {"value": "field_goal_pct",      "label": "Field Goal %",        "group": "Kicking"},
+    {"value": "longest_fg",          "label": "Longest FG",          "group": "Kicking"},
+]
+
+
+@router.get("/parlay-options")
+def get_parlay_options():
+    """
+    Returns dropdown options for parlay entry form.
+    Frontend uses these to populate player_pos and stat_type dropdowns.
+    """
+    return {
+        "player_positions": PLAYER_POSITIONS,
+        "stat_operations":  STAT_OPERATIONS,
+        "stat_types":       STAT_TYPES,
+        "active_members":   ACTIVE_MEMBERS,
+    }
 
 
 # ===========================================================================
@@ -302,6 +337,10 @@ def _get_parlays_inner(season, week):
             "entered_at":  wk_data.get("entered_at")  if wk_data else None,
             "legs":        wk_data.get("legs", [])    if wk_data else [],
             "week_result": _week_result(wk_data.get("legs", [])) if wk_data else None,
+            "no_leg_managers": [
+                l["manager_id"] for l in (wk_data.get("legs", []) if wk_data else [])
+                if l.get("result") == "no_leg"
+            ],
             "exists":      wk_data is not None,
         },
         "available_weeks": available,
@@ -332,20 +371,28 @@ def submit_parlay(body: ParlaySubmit):
             detail=f"Parlay for {body.season} week {body.week} already exists. "
                    f"Use update-leg to change individual legs.")
 
-    # Build legs — ensure all active members present
-    leg_map = {l["manager_id"]: l.get("bet_text", "") for l in body.legs
-               if l.get("manager_id") in ACTIVE_IDS}
+    now = _now()
+
+    # Build leg map from submitted legs
+    leg_map = {l.manager_id: l for l in body.legs if l.manager_id in ACTIVE_IDS}
 
     legs = []
     for m in ACTIVE_MEMBERS:
         mid = m["manager_id"]
+        is_no_leg = mid in body.no_leg_managers
+        leg_data  = leg_map.get(mid)
         legs.append({
             "manager_id":   mid,
             "display_name": m["display_name"],
-            "bet_text":     leg_map.get(mid, ""),
-            "result":       "waiting",
-            "updated_by":   None,
-            "updated_at":   None,
+            "player_name":  leg_data.player_name if leg_data else None,
+            "player_pos":   leg_data.player_pos  if leg_data else None,
+            "stat_count":   leg_data.stat_count  if leg_data else None,
+            "stat_op":      leg_data.stat_op     if leg_data else None,
+            "stat_type":    leg_data.stat_type   if leg_data else None,
+            "bet_text":     leg_data.bet_text    if leg_data else None,
+            "result":       "no_leg" if is_no_leg else "waiting",
+            "updated_by":   body.entered_by if is_no_leg else None,
+            "updated_at":   now if is_no_leg else None,
         })
 
     parlays[yr_key][wk_key] = {
@@ -413,6 +460,12 @@ def _update_parlay_leg_inner(season, week, manager_id, body):
     leg["result"]     = body.result
     leg["updated_by"] = body.updated_by
     leg["updated_at"] = _now()
+    # Update leg detail fields if provided
+    if body.player_name is not None: leg["player_name"] = body.player_name
+    if body.player_pos  is not None: leg["player_pos"]  = body.player_pos
+    if body.stat_count  is not None: leg["stat_count"]  = body.stat_count
+    if body.stat_op     is not None: leg["stat_op"]     = body.stat_op
+    if body.stat_type   is not None: leg["stat_type"]   = body.stat_type
 
     _save("parlays.json", parlays)
     _commit("data/betting/parlays.json",
