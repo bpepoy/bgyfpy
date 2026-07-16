@@ -88,5 +88,143 @@
         }
       ]
     }
+  },
+  "2026": {
+    "week_1": {
+      "entered_by": "frank",
+      "entered_at": "2026-07-16T00:39:26.936947+00:00",
+      "legs": [
+        {
+          "manager_id": "blake",
+          "display_name": "Blake",
+          "player_name": "Patrick Mahomes",
+          "player_pos": "QB",
+          "stat_count": 2.5,
+          "stat_op": "over",
+          "stat_type": "passing_tds",
+          "bet_text": null,
+          "result": "waiting",
+          "updated_by": null,
+          "updated_at": null
+        },
+        {
+          "manager_id": "brian",
+          "display_name": "Brian",
+          "player_name": "Derrick Henry",
+          "player_pos": "RB",
+          "stat_count": 85.0,
+          "stat_op": "over",
+          "stat_type": "rushing_yards",
+          "bet_text": null,
+          "result": "waiting",
+          "updated_by": null,
+          "updated_at": null
+        },
+        {
+          "manager_id": "frank",
+          "display_name": "Frank",
+          "player_name": "Ja'Marr Chase",
+          "player_pos": "WR",
+          "stat_count": 75.0,
+          "stat_op": "over",
+          "stat_type": "receiving_yards",
+          "bet_text": null,
+          "result": "waiting",
+          "updated_by": null,
+          "updated_at": null
+        },
+        {
+          "manager_id": "jake",
+          "display_name": "Jake",
+          "player_name": "Sam LaPorta",
+          "player_pos": "TE",
+          "stat_count": 45.0,
+          "stat_op": "over",
+          "stat_type": "receiving_yards",
+          "bet_text": null,
+          "result": "waiting",
+          "updated_by": null,
+          "updated_at": null
+        },
+        {
+          "manager_id": "joey",
+          "display_name": "Joey",
+          "player_name": "Josh Allen",
+          "player_pos": "QB",
+          "stat_count": 250.0,
+          "stat_op": "over",
+          "stat_type": "passing_yards",
+          "bet_text": null,
+          "result": "waiting",
+          "updated_by": null,
+          "updated_at": null
+        },
+        {
+          "manager_id": "jordan",
+          "display_name": "Jordan",
+          "player_name": "Justin Jefferson",
+          "player_pos": "WR",
+          "stat_count": 6.5,
+          "stat_op": "over",
+          "stat_type": "receptions",
+          "bet_text": null,
+          "result": "waiting",
+          "updated_by": null,
+          "updated_at": null
+        },
+        {
+          "manager_id": "kyle",
+          "display_name": "Kyle",
+          "player_name": "Brock Purdy",
+          "player_pos": "QB",
+          "stat_count": 1.5,
+          "stat_op": "over",
+          "stat_type": "passing_tds",
+          "bet_text": null,
+          "result": "waiting",
+          "updated_by": null,
+          "updated_at": null
+        },
+        {
+          "manager_id": "nick",
+          "display_name": "Nick",
+          "player_name": "Amon-Ra St. Brown",
+          "player_pos": "WR",
+          "stat_count": 55.0,
+          "stat_op": "over",
+          "stat_type": "receiving_yards",
+          "bet_text": null,
+          "result": "waiting",
+          "updated_by": null,
+          "updated_at": null
+        },
+        {
+          "manager_id": "rob",
+          "display_name": "Rob",
+          "player_name": null,
+          "player_pos": null,
+          "stat_count": null,
+          "stat_op": null,
+          "stat_type": null,
+          "bet_text": null,
+          "result": "no_leg",
+          "updated_by": "frank",
+          "updated_at": "2026-07-16T00:39:26.936900+00:00"
+        },
+        {
+          "manager_id": "zef",
+          "display_name": "Zef",
+          "player_name": "Detroit Lions",
+          "player_pos": "DEF",
+          "stat_count": 1.5,
+          "stat_op": "over",
+          "stat_type": "sacks",
+          "bet_text": null,
+          "result": "waiting",
+          "updated_by": null,
+          "updated_at": null
+        }
+      ]
+    }
   }
 }
