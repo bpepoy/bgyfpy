@@ -28,131 +28,32 @@ ADMIN_ROLES        = {"app_owner", "commissioner"}
 VOTE_THRESHOLD     = 6   # majority of 10
 
 
-def _commit(path, message):
-    """Commit a file to GitHub — fully inlined."""
-    import base64
-    import httpx as _httpx
-
-    token  = os.environ.get("GITHUB_TOKEN", "")
-    repo   = os.environ.get("GITHUB_REPO", "bpepoy/bgyfpy")
-    branch = os.environ.get("GITHUB_BRANCH", "main")
-    api    = "https://api.github.com"
-
-    if not token:
-        return {"status": "error", "detail": "GITHUB_TOKEN not set"}
-
-    _here    = os.path.dirname(os.path.abspath(__file__))
-    _root    = os.path.abspath(os.path.join(_here, "..", ".."))
-    abs_path = os.path.join(_root, path.lstrip("/"))
-
-    print("[_commit] abs_path=" + abs_path)
-    print("[_commit] exists=" + str(os.path.exists(abs_path)))
-
-    if not os.path.exists(abs_path):
-        return {"status": "error", "detail": "File not found: " + abs_path}
-
-    with open(abs_path, "rb") as f:
-        content_b64 = base64.b64encode(f.read()).decode()
-
-    headers = {
-        "Authorization": "Bearer " + token,
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    url  = api + "/repos/" + repo + "/contents/" + path.lstrip("/")
-    resp = _httpx.get(url, headers=headers, params={"ref": branch})
-    sha  = resp.json().get("sha") if resp.status_code == 200 else None
-
-    print("[_commit] sha=" + str(sha))
-
-    payload = {"message": message, "content": content_b64, "branch": branch}
-    if sha:
-        payload["sha"] = sha
-
-    resp = _httpx.put(url, headers=headers, json=payload)
-    print("[_commit] status=" + str(resp.status_code))
-
-    if resp.status_code in (200, 201):
-        return {
-            "status": "committed",
-            "path":   path,
-            "url":    "https://github.com/" + repo + "/blob/" + branch + "/" + path,
-        }
-    return {
-        "status": "error",
-        "detail": resp.json().get("message", "GitHub API error"),
-        "code":   resp.status_code,
-    }
+def _commit(path: str, message: str) -> None:
+    """Commit a file to GitHub. Fails silently if unavailable."""
+    try:
+        import sys
+        _here = os.path.dirname(os.path.abspath(__file__))
+        _root = os.path.abspath(os.path.join(_here, "..", ".."))
+        if _root not in sys.path:
+            sys.path.insert(0, _root)
+        from github_sync import commit_file
+        _commit(path, message)
+    except Exception as e:
+        print(f"[github_sync] commit failed: {e}")
 
 
-def _commit_tree(files, message):
-    """Commit multiple files atomically — fully inlined."""
-    import base64
-    import httpx as _httpx
-
-    token  = os.environ.get("GITHUB_TOKEN", "")
-    repo   = os.environ.get("GITHUB_REPO", "bpepoy/bgyfpy")
-    branch = os.environ.get("GITHUB_BRANCH", "main")
-    api    = "https://api.github.com"
-
-    if not token:
-        return {"status": "error", "detail": "GITHUB_TOKEN not set"}
-
-    _here = os.path.dirname(os.path.abspath(__file__))
-    _root = os.path.abspath(os.path.join(_here, "..", ".."))
-
-    headers = {
-        "Authorization": "Bearer " + token,
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    base = api + "/repos/" + repo
-
-    ref_resp = _httpx.get(base + "/git/ref/heads/" + branch, headers=headers)
-    if ref_resp.status_code != 200:
-        return {"status": "error", "detail": "Could not get branch ref"}
-    base_sha = ref_resp.json()["object"]["sha"]
-
-    commit_resp   = _httpx.get(base + "/git/commits/" + base_sha, headers=headers)
-    base_tree_sha = commit_resp.json()["tree"]["sha"]
-
-    tree_items = []
-    for path in files:
-        abs_path = os.path.join(_root, path.lstrip("/"))
-        if not os.path.exists(abs_path):
-            continue
-        with open(abs_path, "rb") as f:
-            content_b64 = base64.b64encode(f.read()).decode()
-        blob_resp = _httpx.post(base + "/git/blobs", headers=headers,
-                                json={"content": content_b64, "encoding": "base64"})
-        blob_sha = blob_resp.json().get("sha")
-        if blob_sha:
-            tree_items.append({
-                "path": path.lstrip("/"),
-                "mode": "100644",
-                "type": "blob",
-                "sha":  blob_sha,
-            })
-
-    if not tree_items:
-        return {"status": "error", "detail": "No files found to commit"}
-
-    tree_resp      = _httpx.post(base + "/git/trees", headers=headers,
-                                  json={"base_tree": base_tree_sha, "tree": tree_items})
-    new_tree_sha   = tree_resp.json().get("sha")
-    new_commit     = _httpx.post(base + "/git/commits", headers=headers,
-                                  json={"message": message, "tree": new_tree_sha,
-                                        "parents": [base_sha]})
-    new_commit_sha = new_commit.json().get("sha")
-    _httpx.patch(base + "/git/refs/heads/" + branch, headers=headers,
-                 json={"sha": new_commit_sha})
-
-    return {
-        "status": "committed",
-        "files":  len(tree_items),
-        "commit": new_commit_sha,
-        "url":    "https://github.com/" + repo + "/commit/" + new_commit_sha,
-    }
+def _commit_tree(files: list, message: str) -> dict:
+    """Commit multiple files atomically. Returns result dict."""
+    try:
+        import sys
+        _here = os.path.dirname(os.path.abspath(__file__))
+        _root = os.path.abspath(os.path.join(_here, "..", ".."))
+        if _root not in sys.path:
+            sys.path.insert(0, _root)
+        from github_sync import commit_tree
+        return commit_tree(files, message)
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
 
 # ── Supabase client ───────────────────────────────────────────────────────────
 
@@ -261,12 +162,12 @@ def update_profile(body: ProfileUpdate):
         raise HTTPException(status_code=400,
             detail=f"'{body.manager_id}' is not an active member.")
 
-    updates: dict = {"updated_at": "now()"}
+    updates: dict = {}
     if body.nickname   is not None: updates["nickname"]      = body.nickname
     if body.photo_url  is not None: updates["photo_url"]     = body.photo_url
     if body.cloudinary_id is not None: updates["cloudinary_id"] = body.cloudinary_id
 
-    if len(updates) == 1:
+    if len(updates) == 0:
         raise HTTPException(status_code=400,
             detail="No fields to update. Provide nickname and/or photo_url.")
 
