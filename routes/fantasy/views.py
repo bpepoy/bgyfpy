@@ -119,19 +119,24 @@ def _display_name(manager_id: str, results: dict) -> str:
 def teams_overview():
     """
     All-managers career overview table.
-
-    Returns every manager who has ever played, with career stats:
-      - Total seasons played
-      - Regular season W-L-T record
-      - Championships, last place finishes
-      - Playoff appearances and playoff W-L-T record
-      - Profile photo URL placeholder (populated from settings/profile)
     """
     results  = _year_keyed(_load("results.json"))
     managers_json = _load("managers.json")
 
     if not results:
         raise HTTPException(status_code=404, detail="results.json not found.")
+
+    # Fetch photo URLs from Supabase
+    photo_map = {}
+    try:
+        from utils.supabase_client import get_supabase
+        sb = get_supabase()
+        rows = sb.table("users").select("manager_id,photo_url").execute()
+        for row in (rows.data or []):
+            if row.get("photo_url"):
+                photo_map[row["manager_id"]] = row["photo_url"]
+    except Exception:
+        pass  # silently fall back to null photos
 
     finished     = _finished_seasons(results)
     all_managers = _all_manager_ids(results)
@@ -142,7 +147,7 @@ def teams_overview():
         stats[mid] = {
             "manager_id":    mid,
             "display_name":  _display_name(mid, results),
-            "photo_url":     None,   # populated from settings/profile when built
+            "photo_url":     photo_map.get(mid),
             "seasons":       0,
             "rs_wins":       0,
             "rs_losses":     0,
@@ -191,7 +196,6 @@ def teams_overview():
     return {
         "total_managers": len(overview),
         "managers":       overview,
-        "_note": "photo_url will be populated once settings/profile is built",
     }
 
 
@@ -686,7 +690,15 @@ def manager_overview(name: str):
 
     # ── profile identity ──────────────────────────────────────────────────────
     display_name = _display_name(matched_id, results)
-    photo_url    = None   # populated from settings/profile when built
+    # Fetch photo from Supabase
+    photo_url = None
+    try:
+        from utils.supabase_client import get_supabase
+        sb = get_supabase()
+        row = sb.table("users").select("photo_url").eq("manager_id", name).single().execute()
+        photo_url = (row.data or {}).get("photo_url")
+    except Exception:
+        pass
 
     # Pull most recent team name
     recent_yr      = sorted(finished.keys(), reverse=True)[0] if finished else None
