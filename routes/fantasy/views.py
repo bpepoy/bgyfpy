@@ -129,12 +129,16 @@ def teams_overview():
     # Fetch photo URLs from Supabase
     photo_map = {}
     try:
-        from utils.supabase_client import get_supabase
-        sb = get_supabase()
-        rows = sb.table("users").select("manager_id,photo_url").execute()
-        for row in (rows.data or []):
-            if row.get("photo_url"):
-                photo_map[row["manager_id"]] = row["photo_url"]
+        import os
+        from supabase import create_client
+        _sb_url = os.environ.get("SUPABASE_URL", "")
+        _sb_key = os.environ.get("SUPABASE_SERVICE_KEY", "")
+        if _sb_url and _sb_key:
+            sb = create_client(_sb_url, _sb_key)
+            rows = sb.table("users").select("manager_id,photo_url").execute()
+            for row in (rows.data or []):
+                if row.get("photo_url"):
+                    photo_map[row["manager_id"]] = row["photo_url"]
     except Exception:
         pass  # silently fall back to null photos
 
@@ -693,10 +697,14 @@ def manager_overview(name: str):
     # Fetch photo from Supabase
     photo_url = None
     try:
-        from utils.supabase_client import get_supabase
-        sb = get_supabase()
-        row = sb.table("users").select("photo_url").eq("manager_id", name).single().execute()
-        photo_url = (row.data or {}).get("photo_url")
+        import os
+        from supabase import create_client
+        _sb_url = os.environ.get("SUPABASE_URL", "")
+        _sb_key = os.environ.get("SUPABASE_SERVICE_KEY", "")
+        if _sb_url and _sb_key:
+            sb = create_client(_sb_url, _sb_key)
+            row = sb.table("users").select("photo_url").eq("manager_id", name).single().execute()
+            photo_url = (row.data or {}).get("photo_url")
     except Exception:
         pass
 
