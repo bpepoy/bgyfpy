@@ -24,6 +24,7 @@ app = FastAPI(
 origins = [
     "http://localhost:3000",
     "http://localhost:5173",
+    "https://bgyfpy-frontend.onrender.com/",
     os.getenv("FRONTEND_URL", ""),
 ]
 origins = [o for o in origins if o]
