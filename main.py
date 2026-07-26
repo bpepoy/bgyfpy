@@ -9,7 +9,7 @@ from routes.fantasy.yahoo import router as yahoo_router
 from routes.fantasy.views import router as fantasy_views_router
 from routes.explore import router as explore_router
 from routes.basketball.league import router as basketball_league_router
-from routes.betting.views import router as betting_router
+from routes.betting.views_betting import router as betting_router
 from routes.settings.views import router as settings_router
 from routes.media.views import router as media_router
 from routes.auth.views import router as auth_views_router
@@ -24,14 +24,14 @@ app = FastAPI(
 origins = [
     "http://localhost:3000",
     "http://localhost:5173",
-    "https://bgyfpy-frontend.onrender.com/",
+    "https://bgyfpy-frontend.onrender.com",
     os.getenv("FRONTEND_URL", ""),
 ]
 origins = [o for o in origins if o]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins if origins else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
