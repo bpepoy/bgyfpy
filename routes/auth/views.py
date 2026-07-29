@@ -26,7 +26,7 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 
 GOOGLE_TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo"
 JWT_SECRET            = os.environ.get("JWT_SECRET_KEY", "")
-JWT_EXPIRE_DAYS       = 30
+JWT_EXPIRE_DAYS       = 365
 
 
 # ── helpers ───────────────────────────────────────────────────────────────────

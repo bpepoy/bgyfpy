@@ -608,3 +608,42 @@ def refresh_data(manager_id: str = Query(...)):
         "github_commit": github_result,
         "triggered_by":  manager_id,
     }
+
+
+# ── Punishment text ────────────────────────────────────────────────────────────
+
+class PunishmentBody(BaseModel):
+    manager_id: str
+    year:       int
+    punishment: str
+
+@router.post("/punishment")
+async def save_punishment(body: PunishmentBody):
+    """Save or update a season punishment text to punishment.json."""
+    ALLOWED = ["brian", "zef"]
+    if body.manager_id not in ALLOWED:
+        raise HTTPException(status_code=403, detail="Not authorized to edit punishments.")
+
+    punishment_path = _data_path("punishment.json")
+    data = {}
+    if os.path.exists(punishment_path):
+        with open(punishment_path) as f:
+            data = json.load(f)
+
+    # Ensure data structure
+    if "data" not in data:
+        data["data"] = {}
+
+    year_str = str(body.year)
+    data["data"][year_str] = {
+        "year":       body.year,
+        "punishment": body.punishment.strip(),
+    }
+
+    with open(punishment_path, "w") as f:
+        json.dump(data, f, indent=2)
+
+    # Commit to GitHub
+    _commit("data/punishment.json", f"Update {body.year} punishment")
+
+    return {"status": "saved", "year": body.year, "punishment": body.punishment}

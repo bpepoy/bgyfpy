@@ -71,6 +71,37 @@ def _finished_seasons(results: dict) -> dict:
 
 
 # ===========================================================================
+# Home stat helpers
+# ===========================================================================
+
+def _calc_total_games(results: dict) -> int:
+    """Sum of all regular season games played across all seasons."""
+    total = 0
+    for yr, season in results.items():
+        managers = season.get("managers", {})
+        for mid, m in managers.items():
+            rs = m.get("regular_season", {})
+            w  = rs.get("wins",  0) or 0
+            l  = rs.get("losses", 0) or 0
+            t  = rs.get("ties",   0) or 0
+            total += w + l + t
+    # Each game involves 2 managers so divide by 2
+    return total // 2
+
+
+def _calc_total_points(results: dict) -> float:
+    """Sum of all regular season points scored across all seasons."""
+    total = 0.0
+    for yr, season in results.items():
+        managers = season.get("managers", {})
+        for mid, m in managers.items():
+            rs = m.get("regular_season", {})
+            pf = rs.get("points_for", 0) or 0
+            total += float(pf)
+    return round(total, 1)
+
+
+# ===========================================================================
 # GET /home
 # ===========================================================================
 
@@ -285,7 +316,8 @@ def app_home():
         "stat_tiles": {
             "total_seasons":    len(finished),
             "years_active":     f"{all_years[0]}–{all_years[-1]}",
-            "active_members":   len(active_mids),
+            "total_games":      _calc_total_games(results),
+            "total_points":     _calc_total_points(results),
             "unique_champions": len(champ_counts),
             "num_teams":        num_teams,
         },
