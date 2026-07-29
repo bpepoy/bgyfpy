@@ -647,3 +647,39 @@ async def save_punishment(body: PunishmentBody):
     _commit("data/punishment.json", f"Update {body.year} punishment")
 
     return {"status": "saved", "year": body.year, "punishment": body.punishment}
+
+
+# ── Pending vote count ─────────────────────────────────────────────────────────
+
+@router.get("/proposals/pending-count")
+async def proposals_pending_count(manager_id: str):
+    """
+    Returns count of open proposals the manager has not yet voted on.
+    Used to show notification badge on Voting settings item.
+    """
+    sb  = _get_supabase()
+    try:
+        # Get all open proposals
+        open_resp = sb.table("proposals") \
+            .select("id") \
+            .eq("status", "open") \
+            .execute()
+        open_ids = [r["id"] for r in (open_resp.data or [])]
+
+        if not open_ids:
+            return {"count": 0}
+
+        # Get proposals this manager has already voted on
+        voted_resp = sb.table("votes") \
+            .select("proposal_id") \
+            .eq("manager_id", manager_id) \
+            .in_("proposal_id", open_ids) \
+            .execute()
+        voted_ids = {r["proposal_id"] for r in (voted_resp.data or [])}
+
+        # Count proposals not yet voted on
+        pending = len([id for id in open_ids if id not in voted_ids])
+        return {"count": pending}
+
+    except Exception as e:
+        return {"count": 0}
