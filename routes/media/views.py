@@ -71,7 +71,7 @@ def get_content(
     if uploaded_by:
         query = query.eq("uploaded_by", uploaded_by)
 
-    resp = query.order("uploaded_at", desc=desc).execute()
+    resp = query.order("media_date", desc=desc).execute()
     items = resp.data or []
 
     return {
@@ -110,7 +110,7 @@ def get_ice_videos(
     if uploaded_by:
         query = query.eq("uploaded_by", uploaded_by)
 
-    resp  = query.order("uploaded_at", desc=desc).execute()
+    resp  = query.order("media_date", desc=desc).execute()
     items = resp.data or []
 
     return {
@@ -147,7 +147,7 @@ def get_punishment(
     if uploaded_by:
         query = query.eq("uploaded_by", uploaded_by)
 
-    resp  = query.order("uploaded_at", desc=desc).execute()
+    resp  = query.order("media_date", desc=desc).execute()
     items = resp.data or []
 
     return {
@@ -196,7 +196,7 @@ def get_food_reviews(
     if max_rating is not None:
         query = query.lte("rating", max_rating)
 
-    resp  = query.order("uploaded_at", desc=desc).execute()
+    resp  = query.order("media_date", desc=desc).execute()
     items = resp.data or []
 
     # Available restaurants for filter dropdown
@@ -248,7 +248,7 @@ def get_all_media(
     if uploaded_by:
         query = query.eq("uploaded_by", uploaded_by)
 
-    resp  = query.order("uploaded_at", desc=desc).execute()
+    resp  = query.order("media_date", desc=desc).execute()
     items = resp.data or []
 
     # Summary counts by category
