@@ -657,7 +657,7 @@ async def proposals_pending_count(manager_id: str):
     Returns count of open proposals the manager has not yet voted on.
     Used to show notification badge on Voting settings item.
     """
-    sb  = _get_supabase()
+    sb  = _sb()
     try:
         # Get all open proposals
         open_resp = sb.table("proposals") \
