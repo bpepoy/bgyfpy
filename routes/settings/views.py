@@ -669,13 +669,14 @@ async def proposals_pending_count(manager_id: str):
         if not open_ids:
             return {"count": 0}
 
-        # Get proposals this manager has already voted on
+        # Get all votes by this manager
         voted_resp = sb.table("votes") \
             .select("proposal_id") \
             .eq("manager_id", manager_id) \
-            .in_("proposal_id", open_ids) \
             .execute()
-        voted_ids = {r["proposal_id"] for r in (voted_resp.data or [])}
+        all_voted = {r["proposal_id"] for r in (voted_resp.data or [])}
+        # Filter to only open proposal votes
+        voted_ids = {vid for vid in all_voted if vid in set(open_ids)}
 
         # Count proposals not yet voted on
         pending = len([id for id in open_ids if id not in voted_ids])
