@@ -262,7 +262,7 @@ class WaterBetResult(BaseModel):
 
 PLAYER_POSITIONS = [
     "QB", "RB", "WR", "TE", "K", "DEF",
-    "DB", "LB", "DL", "OL", "LS",
+    "DB", "LB", "DL",
 ]
 
 STAT_OPERATIONS = [
@@ -276,21 +276,17 @@ STAT_TYPES = [
     {"value": "passing_yards",       "label": "Passing Yards",       "group": "Passing"},
     {"value": "passing_tds",         "label": "Passing TDs",         "group": "Passing"},
     {"value": "completions",         "label": "Completions",         "group": "Passing"},
-    {"value": "attempts",            "label": "Attempts",            "group": "Passing"},
     {"value": "interceptions_thrown","label": "Interceptions Thrown","group": "Passing"},
     # Rushing
     {"value": "rushing_yards",       "label": "Rushing Yards",       "group": "Rushing"},
     {"value": "rushing_tds",         "label": "Rushing TDs",         "group": "Rushing"},
-    {"value": "carries",             "label": "Carries",             "group": "Rushing"},
     # Receiving
     {"value": "receiving_yards",     "label": "Receiving Yards",     "group": "Receiving"},
     {"value": "receiving_tds",       "label": "Receiving TDs",       "group": "Receiving"},
     {"value": "receptions",          "label": "Receptions",          "group": "Receiving"},
-    {"value": "targets",             "label": "Targets",             "group": "Receiving"},
     # Combined
     {"value": "total_yards",         "label": "Total Yards",         "group": "Combined"},
     {"value": "total_tds",           "label": "Total TDs",           "group": "Combined"},
-    {"value": "fantasy_points",      "label": "Fantasy Points",      "group": "Combined"},
     # Defense / Special
     {"value": "sacks",               "label": "Sacks",               "group": "Defense"},
     {"value": "interceptions",       "label": "Interceptions",       "group": "Defense"},
@@ -298,7 +294,6 @@ STAT_TYPES = [
     {"value": "forced_fumbles",      "label": "Forced Fumbles",      "group": "Defense"},
     {"value": "defensive_tds",       "label": "Defensive TDs",       "group": "Defense"},
     {"value": "field_goals_made",    "label": "Field Goals Made",    "group": "Kicking"},
-    {"value": "field_goal_pct",      "label": "Field Goal %",        "group": "Kicking"},
     {"value": "longest_fg",          "label": "Longest FG",          "group": "Kicking"},
 ]
 
