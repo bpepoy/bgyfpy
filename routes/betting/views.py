@@ -710,19 +710,26 @@ def _betting_season_inner(season: int) -> dict:
     # ── parlay stats ──────────────────────────────────────────────────────────
     mgr_parlay: dict = {
         m["manager_id"]: {
-            "manager_id":    m["manager_id"],
-            "display_name":  m["display_name"],
-            "total_hit":     0,
-            "total_miss":    0,
-            "total_no_leg":  0,
-            "total_waiting": 0,
-            "total_weeks":   0,
-            "solo_hit":      0,
-            "solo_miss":     0,
-            "_streak_results": [],   # for streak calc, newest-first
+            "manager_id":      m["manager_id"],
+            "display_name":    m["display_name"],
+            "total_hit":       0,
+            "total_miss":      0,
+            "total_no_leg":    0,
+            "total_waiting":   0,
+            "total_weeks":     0,
+            "solo_miss":       0,
+            "total_wager":     0.0,
+            "total_payout":    0.0,
+            "total_winnings":  0.0,
+            "_streak_results": [],
         }
         for m in ACTIVE_MEMBERS
     }
+
+    # Season-level payment totals
+    season_total_wager          = 0.0
+    season_total_potential_payout = 0.0
+    season_total_actual_payout  = 0.0
 
     # Process weeks newest-first for streak
     sorted_weeks = sorted(
@@ -734,24 +741,73 @@ def _betting_season_inner(season: int) -> dict:
     for wk_key in sorted_weeks:
         wk_data = yr_parlays[wk_key]
         legs    = wk_data.get("legs", [])
-        wr      = _week_result(legs)
+        wager   = wk_data.get("wager")  or 0
+        payout  = wk_data.get("payout") or 0
+
+        # Only process weeks where ALL active legs are resolved (no waiting/null)
+        active_legs = [l for l in legs if l.get("result") not in (None, "no_leg")]
+        has_waiting = any(l.get("result") in (None, "waiting") for l in legs)
+        if has_waiting:
+            # Week not yet complete — skip for financials, still count streaks
+            for leg in legs:
+                mid = leg.get("manager_id")
+                if mid not in mgr_parlay: continue
+                result = leg.get("result")
+                if result == "no_leg":
+                    mgr_parlay[mid]["total_no_leg"] += 1
+                    mgr_parlay[mid]["_streak_results"].append("no_leg")
+                elif result in (None, "waiting"):
+                    mgr_parlay[mid]["total_waiting"] += 1
+                    mgr_parlay[mid]["_streak_results"].append("waiting")
+            continue
+
+        wr = _week_result(legs)
+
+        # Participating managers (not no_leg, not null)
+        participating = [l for l in legs if l.get("result") not in (None, "no_leg")]
+        n_participating = len(participating)
+
+        # Week won = all participating legs are hit
+        week_won = n_participating > 0 and all(
+            l.get("result") == "hit" for l in participating
+        )
+
+        # Individual wager share
+        indiv_wager = (wager / n_participating) if n_participating > 0 else 0
+
+        # Individual payout share — only for hit legs on a won week
+        hit_legs = [l for l in participating if l.get("result") == "hit"]
+        n_hit = len(hit_legs)
+        indiv_payout = (payout / n_hit) if (week_won and n_hit > 0) else 0
+
+        # Season totals
+        if wager > 0:
+            season_total_wager += wager
+        if payout > 0:
+            season_total_potential_payout += payout
+        if week_won and payout > 0:
+            season_total_actual_payout += payout
 
         for leg in legs:
             mid = leg.get("manager_id")
             if mid not in mgr_parlay: continue
-            result = leg.get("result", "waiting")
+            result = leg.get("result")
             m = mgr_parlay[mid]
             m["total_weeks"] += 1
+
             if result == "hit":
                 m["total_hit"] += 1
                 m["_streak_results"].append("hit")
-                if wr["total_hit"] == 1:
-                    m["solo_hit"] += 1
+                if wr["total_hit"] == 1: pass  # solo_hit removed
+                # Payment
+                m["total_wager"]  += indiv_wager
+                m["total_payout"] += indiv_payout
             elif result == "miss":
                 m["total_miss"] += 1
                 m["_streak_results"].append("miss")
                 if wr["total_miss"] == 1:
                     m["solo_miss"] += 1
+                m["total_wager"] += indiv_wager
             elif result == "no_leg":
                 m["total_no_leg"] += 1
                 m["_streak_results"].append("no_leg")
@@ -759,12 +815,14 @@ def _betting_season_inner(season: int) -> dict:
                 m["total_waiting"] += 1
                 m["_streak_results"].append("waiting")
 
-    # Compute streak and hit_pct, clean up temp field
+    # Compute streak, hit_pct, winnings
     for mid, m in mgr_parlay.items():
         active_weeks = m["total_hit"] + m["total_miss"]
         m["hit_pct"] = round(m["total_hit"] / active_weeks * 100, 1) if active_weeks else None
+        m["total_wager"]    = round(m["total_wager"], 2)
+        m["total_payout"]   = round(m["total_payout"], 2)
+        m["total_winnings"] = round(m["total_payout"] - m["total_wager"], 2)
 
-        # Streak: walk newest-first, skip no_leg and waiting
         streak_type  = None
         streak_count = 0
         for r in m["_streak_results"]:
@@ -776,10 +834,7 @@ def _betting_season_inner(season: int) -> dict:
                 streak_count += 1
             else:
                 break
-        m["current_streak"] = {
-            "type":  streak_type,
-            "count": streak_count,
-        }
+        m["current_streak"] = {"type": streak_type, "count": streak_count}
         del m["_streak_results"]
 
     # ── water bet stats ───────────────────────────────────────────────────────
@@ -829,13 +884,19 @@ def _betting_season_inner(season: int) -> dict:
         })
 
     return {
-        "season":           season,
-        "parlay_stats":     list(mgr_parlay.values()),
-        "water_bet_stats":  list(mgr_water.values()),
-        "weeks":            weeks_summary,
-        "water_bets":       sorted(yr_wbets,
-                                   key=lambda x: x.get("submitted_at",""),
-                                   reverse=True),
+        "season":                     season,
+        "parlay_stats":               list(mgr_parlay.values()),
+        "water_bet_stats":            list(mgr_water.values()),
+        "weeks":                      weeks_summary,
+        "water_bets":                 sorted(yr_wbets,
+                                            key=lambda x: x.get("submitted_at",""),
+                                            reverse=True),
+        "payment_summary": {
+            "total_wager":           round(season_total_wager, 2),
+            "total_potential_payout":round(season_total_potential_payout, 2),
+            "total_actual_payout":   round(season_total_actual_payout, 2),
+            "total_winnings":        round(season_total_actual_payout - season_total_wager, 2),
+        },
     }
 
 
@@ -854,18 +915,26 @@ def betting_overall():
 
     mgr_parlay: dict = {
         m["manager_id"]: {
-            "manager_id":    m["manager_id"],
-            "display_name":  m["display_name"],
-            "total_hit":     0,
-            "total_miss":    0,
-            "total_no_leg":  0,
-            "total_waiting": 0,
-            "total_weeks":   0,
-            "solo_hit":      0,
-            "solo_miss":     0,
-            "seasons":       0,
+            "manager_id":     m["manager_id"],
+            "display_name":   m["display_name"],
+            "total_hit":      0,
+            "total_miss":     0,
+            "total_no_leg":   0,
+            "total_waiting":  0,
+            "total_weeks":    0,
+            "solo_miss":      0,
+            "seasons":        0,
+            "total_wager":    0.0,
+            "total_payout":   0.0,
+            "total_winnings": 0.0,
         }
         for m in ACTIVE_MEMBERS
+    }
+
+    overall_payment = {
+        "total_wager":            0.0,
+        "total_potential_payout": 0.0,
+        "total_actual_payout":    0.0,
     }
 
     mgr_water: dict = {
@@ -878,29 +947,59 @@ def betting_overall():
         for m in ACTIVE_MEMBERS
     }
 
-    # Track which seasons each manager participated in parlays
+    # Track which seasons each manager participated (only if they have hit/miss/waiting legs)
     mgr_seasons: dict = {m["manager_id"]: set() for m in ACTIVE_MEMBERS}
+    current_year = datetime.now().year
 
     for yr, yr_parlays in sorted(parlays.items()):
         if not isinstance(yr_parlays, dict): continue
+        if int(yr) > current_year: continue  # skip future seasons
         for wk_key, wk_data in yr_parlays.items():
-            if not wk_key.startswith("week_"): continue  # skip season_bet
-            legs = wk_data.get("legs", [])
-            wr   = _week_result(legs)
+            if not wk_key.startswith("week_"): continue
+            legs   = wk_data.get("legs", [])
+            wager  = wk_data.get("wager")  or 0
+            payout = wk_data.get("payout") or 0
+
+            # Skip incomplete weeks for financials
+            has_waiting = any(l.get("result") in (None, "waiting") for l in legs)
+
+            participating  = [l for l in legs if l.get("result") not in (None, "no_leg")]
+            n_participating = len(participating)
+            week_won = n_participating > 0 and not has_waiting and all(
+                l.get("result") == "hit" for l in participating
+            )
+            hit_legs = [l for l in participating if l.get("result") == "hit"]
+            n_hit = len(hit_legs)
+            indiv_wager  = (wager / n_participating) if (not has_waiting and n_participating > 0) else 0
+            indiv_payout = (payout / n_hit) if (week_won and n_hit > 0) else 0
+
+            if not has_waiting:
+                if wager  > 0: overall_payment["total_wager"]            += wager
+                if payout > 0: overall_payment["total_potential_payout"] += payout
+                if week_won and payout > 0: overall_payment["total_actual_payout"] += payout
+
+            wr = _week_result(legs)
 
             for leg in legs:
                 mid = leg.get("manager_id")
                 if mid not in mgr_parlay: continue
-                result = leg.get("result", "waiting")
+                result = leg.get("result")
                 m = mgr_parlay[mid]
                 m["total_weeks"] += 1
-                mgr_seasons[mid].add(yr)
+
+                if result in ("hit", "miss", "waiting"):
+                    mgr_seasons[mid].add(yr)  # only count season if active
+
                 if result == "hit":
                     m["total_hit"] += 1
-                    if wr["total_hit"] == 1: m["solo_hit"] += 1
+                    if not has_waiting:
+                        m["total_wager"]  += indiv_wager
+                        m["total_payout"] += indiv_payout
                 elif result == "miss":
                     m["total_miss"] += 1
                     if wr["total_miss"] == 1: m["solo_miss"] += 1
+                    if not has_waiting:
+                        m["total_wager"] += indiv_wager
                 elif result == "no_leg":
                     m["total_no_leg"] += 1
                 else:
@@ -929,7 +1028,10 @@ def betting_overall():
     for mid, m in mgr_parlay.items():
         m["seasons"] = len(mgr_seasons[mid])
         active = m["total_hit"] + m["total_miss"]
-        m["hit_pct"] = round(m["total_hit"] / active * 100, 1) if active else None
+        m["hit_pct"]       = round(m["total_hit"] / active * 100, 1) if active else None
+        m["total_wager"]   = round(m["total_wager"], 2)
+        m["total_payout"]  = round(m["total_payout"], 2)
+        m["total_winnings"]= round(m["total_payout"] - m["total_wager"], 2)
 
     # Sort by hit_pct desc
     parlay_sorted = sorted(mgr_parlay.values(),
@@ -949,4 +1051,10 @@ def betting_overall():
         "seasons_tracked":  all_seasons,
         "parlay_stats":     parlay_sorted,
         "water_bet_stats":  water_sorted,
+        "payment_summary": {
+            "total_wager":            round(overall_payment["total_wager"], 2),
+            "total_potential_payout": round(overall_payment["total_potential_payout"], 2),
+            "total_actual_payout":    round(overall_payment["total_actual_payout"], 2),
+            "total_winnings":         round(overall_payment["total_actual_payout"] - overall_payment["total_wager"], 2),
+        },
     }
