@@ -10,23 +10,21 @@ Files used:
 parlays.json structure:
 {
   "2026": {
-    "week_3": {
-      "entered_by": "frank",
-      "entered_at": "2026-10-01T12:00:00",
-      "legs": [
-        {
-          "manager_id": "blake",
-          "display_name": "Blake",
-          "bet_text": "Mahomes over 2.5 TDs",
-          "result": "waiting",      // waiting | hit | miss | no_leg
-          "updated_by": null,
-          "updated_at": null
-        },
-        ... one per active member
-      ]
+    "season_bet": {
+      "entered_by": null, "entered_at": null, "wager": null, "payout": null,
+      "legs": [{ "manager_id": "blake", "bet_text": null, "result": null, ... }]
+    },
+    "week_1": {
+      "entered_by": null, "entered_at": null, "wager": null, "payout": null,
+      "legs": [{
+        "manager_id": "blake", "player_name": null, "position": null,
+        "stat_count": null, "stat_op": null, "stat_type": null,
+        "bet_text": null, "result": null, "updated_by": null, "updated_at": null
+      }, ...]
     }
   }
 }
+result values: null (not entered) | "waiting" | "hit" | "miss" | "no_leg"
 
 water_bets.json structure:
 {
@@ -75,61 +73,18 @@ ACTIVE_MEMBERS = [
 ACTIVE_IDS = {m["manager_id"] for m in ACTIVE_MEMBERS}
 
 
-def _commit(path, message):
-    """Commit a file to GitHub — fully inlined."""
-    import base64
-    import httpx as _httpx
-
-    token  = os.environ.get("GITHUB_TOKEN", "")
-    repo   = os.environ.get("GITHUB_REPO", "bpepoy/bgyfpy")
-    branch = os.environ.get("GITHUB_BRANCH", "main")
-    api    = "https://api.github.com"
-
-    if not token:
-        return {"status": "error", "detail": "GITHUB_TOKEN not set"}
-
-    _here    = os.path.dirname(os.path.abspath(__file__))
-    _root    = os.path.abspath(os.path.join(_here, "..", ".."))
-    abs_path = os.path.join(_root, path.lstrip("/"))
-
-    print("[_commit] abs_path=" + abs_path)
-    print("[_commit] exists=" + str(os.path.exists(abs_path)))
-
-    if not os.path.exists(abs_path):
-        return {"status": "error", "detail": "File not found: " + abs_path}
-
-    with open(abs_path, "rb") as f:
-        content_b64 = base64.b64encode(f.read()).decode()
-
-    headers = {
-        "Authorization": "Bearer " + token,
-        "Accept": "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    url  = api + "/repos/" + repo + "/contents/" + path.lstrip("/")
-    resp = _httpx.get(url, headers=headers, params={"ref": branch})
-    sha  = resp.json().get("sha") if resp.status_code == 200 else None
-
-    print("[_commit] sha=" + str(sha))
-
-    payload = {"message": message, "content": content_b64, "branch": branch}
-    if sha:
-        payload["sha"] = sha
-
-    resp = _httpx.put(url, headers=headers, json=payload)
-    print("[_commit] status=" + str(resp.status_code))
-
-    if resp.status_code in (200, 201):
-        return {
-            "status": "committed",
-            "path":   path,
-            "url":    "https://github.com/" + repo + "/blob/" + branch + "/" + path,
-        }
-    return {
-        "status": "error",
-        "detail": resp.json().get("message", "GitHub API error"),
-        "code":   resp.status_code,
-    }
+def _commit(path: str, message: str) -> None:
+    """Commit a file to GitHub. Fails silently if github_sync unavailable."""
+    try:
+        import sys
+        _here = os.path.dirname(os.path.abspath(__file__))
+        _root = os.path.abspath(os.path.join(_here, "..", ".."))
+        if _root not in sys.path:
+            sys.path.insert(0, _root)
+        from github_sync import commit_file
+        _commit(path, message)
+    except Exception as e:
+        print(f"[github_sync] commit failed: {e}")
 
 # Resolve data/betting relative to project root (works regardless of where
 # this file lives within routes/)
@@ -165,47 +120,60 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def _current_season_week(matchups_path: str) -> tuple:
+def _current_season_week(matchups_path: str = "") -> tuple:
     """
-    Detect current season and upcoming week from matchups.json.
-    Returns (season_int, next_week_int).
+    Find the current season and week from parlays.json.
+    Returns the first week (excluding season_bet) where any leg result is null.
+    Falls back to current year week 1 if nothing found.
     """
     try:
-        data_dir = os.path.join(_PROJECT_ROOT, "data", "fantasy")
-        mu_path  = os.path.join(data_dir, "matchups.json")
-        if not os.path.exists(mu_path):
-            return (datetime.now().year, 1)
-        with open(mu_path) as f:
-            matchups = json.load(f)
-        latest_yr = max((int(k) for k in matchups if k.isdigit()), default=datetime.now().year)
-        yr_data   = matchups.get(str(latest_yr), {})
-        ps        = yr_data.get("playoff_start") or 99
-        completed = [
-            wk["week"] for wk in yr_data.get("weeks", [])
-            if wk.get("week", 0) < ps
-            and all(t.get("points", 0) > 0
-                    for m in wk.get("matchups", [])
-                    for t in m.get("teams", []))
-        ]
-        next_wk = (max(completed) + 1) if completed else 1
-        return (latest_yr, next_wk)
+        parlays = _load("parlays.json")
+        current_year = datetime.now().year
+
+        # Only look at seasons up to current year
+        valid_seasons = sorted(
+            [int(k) for k in parlays if k.isdigit() and int(k) <= current_year],
+            reverse=False
+        )
+
+        for yr in valid_seasons:
+            yr_data = parlays.get(str(yr), {})
+            # Check weekly keys only, sorted ascending
+            week_keys = sorted(
+                [k for k in yr_data if k.startswith("week_")],
+                key=lambda x: int(x.replace("week_", ""))
+            )
+            for wk_key in week_keys:
+                wk_data = yr_data[wk_key]
+                legs = wk_data.get("legs", [])
+                # If any leg has null result, this is the current week
+                if any(l.get("result") is None for l in legs):
+                    return (yr, int(wk_key.replace("week_", "")))
+
+        # All weeks complete — return current year week 1
+        return (current_year, 1)
     except Exception:
         return (datetime.now().year, 1)
 
 
 def _week_result(legs: list) -> dict:
-    """Compute aggregate result from a list of legs."""
-    counts = {"hit": 0, "miss": 0, "waiting": 0, "no_leg": 0}
+    """Compute aggregate result from a list of legs. null result = not yet entered."""
+    counts = {"hit": 0, "miss": 0, "waiting": 0, "no_leg": 0, "null": 0}
     for leg in legs:
-        r = leg.get("result", "waiting")
-        counts[r] = counts.get(r, 0) + 1
-    active = [l for l in legs if l.get("result") != "no_leg"]
+        r = leg.get("result")
+        if r is None:
+            counts["null"] += 1
+        else:
+            counts[r] = counts.get(r, 0) + 1
+    active = [l for l in legs if l.get("result") not in (None, "no_leg")]
     return {
         "total_hit":     counts["hit"],
         "total_miss":    counts["miss"],
         "total_waiting": counts["waiting"],
         "total_no_leg":  counts["no_leg"],
-        "is_complete":   counts["waiting"] == 0,
+        "total_null":    counts["null"],
+        "is_complete":   counts["waiting"] == 0 and counts["null"] == 0,
+        "is_entered":    counts["null"] == 0,
         "hit_pct": round(counts["hit"] / len(active) * 100, 1) if active else None,
     }
 
@@ -224,10 +192,13 @@ class ParlayLeg(BaseModel):
 
 class ParlaySubmit(BaseModel):
     season:           int
-    week:             int
+    week:             int                # use 0 for season_bet
     entered_by:       str
+    wager:            Optional[float] = None
+    payout:           Optional[float] = None
     no_leg_managers:  list[str] = []     # immediately set to no_leg
     legs:             list[ParlayLeg]    # one per participating manager
+    is_season_bet:    bool = False
 
 
 class LegUpdate(BaseModel):
@@ -262,7 +233,7 @@ class WaterBetResult(BaseModel):
 
 PLAYER_POSITIONS = [
     "QB", "RB", "WR", "TE", "K", "DEF",
-    "DB", "LB", "DL",
+    "DB", "LB", "DL", "OL", "LS",
 ]
 
 STAT_OPERATIONS = [
@@ -276,17 +247,21 @@ STAT_TYPES = [
     {"value": "passing_yards",       "label": "Passing Yards",       "group": "Passing"},
     {"value": "passing_tds",         "label": "Passing TDs",         "group": "Passing"},
     {"value": "completions",         "label": "Completions",         "group": "Passing"},
+    {"value": "attempts",            "label": "Attempts",            "group": "Passing"},
     {"value": "interceptions_thrown","label": "Interceptions Thrown","group": "Passing"},
     # Rushing
     {"value": "rushing_yards",       "label": "Rushing Yards",       "group": "Rushing"},
     {"value": "rushing_tds",         "label": "Rushing TDs",         "group": "Rushing"},
+    {"value": "carries",             "label": "Carries",             "group": "Rushing"},
     # Receiving
     {"value": "receiving_yards",     "label": "Receiving Yards",     "group": "Receiving"},
     {"value": "receiving_tds",       "label": "Receiving TDs",       "group": "Receiving"},
     {"value": "receptions",          "label": "Receptions",          "group": "Receiving"},
+    {"value": "targets",             "label": "Targets",             "group": "Receiving"},
     # Combined
     {"value": "total_yards",         "label": "Total Yards",         "group": "Combined"},
     {"value": "total_tds",           "label": "Total TDs",           "group": "Combined"},
+    {"value": "fantasy_points",      "label": "Fantasy Points",      "group": "Combined"},
     # Defense / Special
     {"value": "sacks",               "label": "Sacks",               "group": "Defense"},
     {"value": "interceptions",       "label": "Interceptions",       "group": "Defense"},
@@ -294,6 +269,7 @@ STAT_TYPES = [
     {"value": "forced_fumbles",      "label": "Forced Fumbles",      "group": "Defense"},
     {"value": "defensive_tds",       "label": "Defensive TDs",       "group": "Defense"},
     {"value": "field_goals_made",    "label": "Field Goals Made",    "group": "Kicking"},
+    {"value": "field_goal_pct",      "label": "Field Goal %",        "group": "Kicking"},
     {"value": "longest_fg",          "label": "Longest FG",          "group": "Kicking"},
 ]
 
@@ -318,52 +294,61 @@ def get_parlay_options():
 
 @router.get("/parlays")
 def get_parlays(
-    season: Optional[int] = Query(default=None),
-    week:   Optional[int] = Query(default=None),
+    season:        Optional[int]  = Query(default=None),
+    week:          Optional[int]  = Query(default=None),
+    is_season_bet: Optional[bool] = Query(default=False),
 ):
     import traceback
     try:
-        return _get_parlays_inner(season, week)
+        return _get_parlays_inner(season, week, is_season_bet=is_season_bet or False)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"{str(e)}\n{traceback.format_exc()[:800]}")
 
 
-def _get_parlays_inner(season, week):
+def _get_parlays_inner(season, week, is_season_bet=False):
     """
     Returns parlay data.
-
-    No params → current season, upcoming week (auto-detected).
+    No params → auto-detect current season/week (first with null results).
     ?season=2026&week=3 → specific week.
-
-    Response includes:
-      - active_members list (for enter-parlay UI)
-      - current week's legs with results
-      - is_complete flag
+    ?season=2026&week=0 → season_bet.
     """
     parlays = _load("parlays.json")
 
     if season is None or week is None:
-        detected_season, detected_week = _current_season_week("")
-        season = season or detected_season
-        week   = week   or detected_week
+        detected_season, detected_week = _current_season_week()
+        season = season if season is not None else detected_season
+        week   = week   if week   is not None else detected_week
 
     yr_key = str(season)
-    wk_key = f"week_{week}"
+
+    # week=0 means season_bet
+    if week == 0 or is_season_bet:
+        wk_key = "season_bet"
+    else:
+        wk_key = f"week_{week}"
 
     yr_data = parlays.get(yr_key, {})
     wk_data = yr_data.get(wk_key)
 
-    # Build available weeks for navigation
+    # Build available weeks — only seasons up to current year, skip all-future
+    current_year = datetime.now().year
     available = []
     for yr, wks in sorted(parlays.items(), reverse=True):
-        if not isinstance(wks, dict): continue   # skip _note, _results keys
-        for wk_k in sorted(wks.keys(), reverse=True):
+        if not isinstance(wks, dict): continue
+        if int(yr) > current_year: continue
+        for wk_k in sorted(
+            [k for k in wks if k.startswith("week_")],
+            key=lambda x: int(x.replace("week_","")),
+            reverse=True
+        ):
             wk_n = int(wk_k.replace("week_", ""))
             wk_d = wks[wk_k]
+            wr   = _week_result(wk_d.get("legs", []))
             available.append({
                 "season":      int(yr),
                 "week":        wk_n,
-                "is_complete": _week_result(wk_d.get("legs", [])).get("is_complete", False),
+                "is_complete": wr.get("is_complete", False),
+                "is_entered":  wr.get("is_entered",  False),
             })
 
     return {
@@ -373,13 +358,16 @@ def _get_parlays_inner(season, week):
         "parlay":         {
             "entered_by":  wk_data.get("entered_by")  if wk_data else None,
             "entered_at":  wk_data.get("entered_at")  if wk_data else None,
-            "legs":        wk_data.get("legs", [])    if wk_data else [],
+            "wager":       wk_data.get("wager")        if wk_data else None,
+            "payout":      wk_data.get("payout")       if wk_data else None,
+            "legs":        wk_data.get("legs", [])     if wk_data else [],
             "week_result": _week_result(wk_data.get("legs", [])) if wk_data else None,
             "no_leg_managers": [
                 l["manager_id"] for l in (wk_data.get("legs", []) if wk_data else [])
                 if l.get("result") == "no_leg"
             ],
             "exists":      wk_data is not None,
+            "is_season_bet": wk_key == "season_bet",
         },
         "available_weeks": available,
     }
@@ -392,62 +380,73 @@ def _get_parlays_inner(season, week):
 @router.post("/parlays/submit")
 def submit_parlay(body: ParlaySubmit):
     """
-    Enter a new parlay week. One leg per active member max.
-    Honor system — entered_by field identifies who submitted.
-
-    legs format: [{manager_id: "blake", bet_text: "..."}]
-    Members not included get a blank "waiting" leg with no bet_text.
+    Enter or update a parlay week. Weeks are pre-populated with null values
+    in the JSON so this always updates existing entries rather than creating new ones.
+    week=0 means season_bet.
     """
     parlays = _load("parlays.json")
     yr_key  = str(body.season)
-    wk_key  = f"week_{body.week}"
+    wk_key  = "season_bet" if (body.week == 0 or body.is_season_bet) else f"week_{body.week}"
 
     if yr_key not in parlays:
         parlays[yr_key] = {}
-    if wk_key in parlays[yr_key]:
-        raise HTTPException(status_code=409,
-            detail=f"Parlay for {body.season} week {body.week} already exists. "
-                   f"Use update-leg to change individual legs.")
 
     now = _now()
-
-    # Build leg map from submitted legs
     leg_map = {l.manager_id: l for l in body.legs if l.manager_id in ACTIVE_IDS}
+
+    # Build legs — preserve existing data for fields not provided
+    existing_legs = parlays[yr_key].get(wk_key, {}).get("legs", [])
+    existing_map  = {l["manager_id"]: l for l in existing_legs}
 
     legs = []
     for m in ACTIVE_MEMBERS:
-        mid = m["manager_id"]
+        mid      = m["manager_id"]
+        existing = existing_map.get(mid, {})
+        new_data = leg_map.get(mid)
         is_no_leg = mid in body.no_leg_managers
-        leg_data  = leg_map.get(mid)
-        legs.append({
-            "manager_id":   mid,
-            "display_name": m["display_name"],
-            "player_name":  leg_data.player_name if leg_data else None,
-            "player_pos":   leg_data.player_pos  if leg_data else None,
-            "stat_count":   leg_data.stat_count  if leg_data else None,
-            "stat_op":      leg_data.stat_op     if leg_data else None,
-            "stat_type":    leg_data.stat_type   if leg_data else None,
-            "bet_text":     leg_data.bet_text    if leg_data else None,
-            "result":       "no_leg" if is_no_leg else "waiting",
-            "updated_by":   body.entered_by if is_no_leg else None,
-            "updated_at":   now if is_no_leg else None,
-        })
+
+        if wk_key == "season_bet":
+            # Season bet legs only have bet_text and result
+            legs.append({
+                "manager_id":   mid,
+                "display_name": m["display_name"],
+                "bet_text":     new_data.bet_text if new_data else existing.get("bet_text"),
+                "result":       "no_leg" if is_no_leg else (existing.get("result") or "waiting"),
+                "updated_by":   body.entered_by if is_no_leg else existing.get("updated_by"),
+                "updated_at":   now if is_no_leg else existing.get("updated_at"),
+            })
+        else:
+            legs.append({
+                "manager_id":   mid,
+                "display_name": m["display_name"],
+                "player_name":  new_data.player_name if new_data else existing.get("player_name"),
+                "position":     new_data.player_pos  if new_data else existing.get("position"),
+                "stat_count":   new_data.stat_count  if new_data else existing.get("stat_count"),
+                "stat_op":      new_data.stat_op     if new_data else existing.get("stat_op"),
+                "stat_type":    new_data.stat_type   if new_data else existing.get("stat_type"),
+                "bet_text":     new_data.bet_text    if new_data else existing.get("bet_text"),
+                "result":       "no_leg" if is_no_leg else (existing.get("result") or "waiting"),
+                "updated_by":   body.entered_by if is_no_leg else existing.get("updated_by"),
+                "updated_at":   now if is_no_leg else existing.get("updated_at"),
+            })
 
     parlays[yr_key][wk_key] = {
         "entered_by": body.entered_by,
-        "entered_at": _now(),
+        "entered_at": now,
+        "wager":      body.wager,
+        "payout":     body.payout,
         "legs":       legs,
     }
 
     _save("parlays.json", parlays)
-    github = _commit("data/betting/parlays.json",
-                f"Parlay entered: {body.season} week {body.week} by {body.entered_by}")
+    label = "season bet" if wk_key == "season_bet" else f"week {body.week}"
+    _commit("data/betting/parlays.json",
+            f"Parlay entered: {body.season} {label} by {body.entered_by}")
     return {
-        "status":       "created",
-        "season":       body.season,
-        "week":         body.week,
-        "legs":         len(legs),
-        "github_sync":  github,
+        "status":  "updated",
+        "season":  body.season,
+        "week":    body.week,
+        "legs":    len(legs),
     }
 
 
@@ -726,9 +725,11 @@ def _betting_season_inner(season: int) -> dict:
     }
 
     # Process weeks newest-first for streak
-    sorted_weeks = sorted(yr_parlays.keys(),
-                          key=lambda x: int(x.replace("week_","")),
-                          reverse=True)
+    sorted_weeks = sorted(
+        [k for k in yr_parlays if k.startswith("week_")],
+        key=lambda x: int(x.replace("week_","")),
+        reverse=True
+    )
 
     for wk_key in sorted_weeks:
         wk_data = yr_parlays[wk_key]
@@ -813,8 +814,10 @@ def _betting_season_inner(season: int) -> dict:
 
     # ── week-by-week parlay summary ───────────────────────────────────────────
     weeks_summary = []
-    for wk_key in sorted(yr_parlays.keys(),
-                          key=lambda x: int(x.replace("week_",""))):
+    for wk_key in sorted(
+        [k for k in yr_parlays if k.startswith("week_")],
+        key=lambda x: int(x.replace("week_",""))
+    ):
         wk_num  = int(wk_key.replace("week_",""))
         wk_data = yr_parlays[wk_key]
         wr      = _week_result(wk_data.get("legs", []))
@@ -881,6 +884,7 @@ def betting_overall():
     for yr, yr_parlays in sorted(parlays.items()):
         if not isinstance(yr_parlays, dict): continue
         for wk_key, wk_data in yr_parlays.items():
+            if not wk_key.startswith("week_"): continue  # skip season_bet
             legs = wk_data.get("legs", [])
             wr   = _week_result(legs)
 
