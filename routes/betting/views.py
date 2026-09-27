@@ -744,22 +744,13 @@ def _betting_season_inner(season: int) -> dict:
         wager   = wk_data.get("wager")  or 0
         payout  = wk_data.get("payout") or 0
 
-        # Only process weeks where ALL active legs are resolved (no waiting/null)
-        active_legs = [l for l in legs if l.get("result") not in (None, "no_leg")]
-        has_waiting = any(l.get("result") in (None, "waiting") for l in legs)
-        if has_waiting:
-            # Week not yet complete — skip for financials, still count streaks
-            for leg in legs:
-                mid = leg.get("manager_id")
-                if mid not in mgr_parlay: continue
-                result = leg.get("result")
-                if result == "no_leg":
-                    mgr_parlay[mid]["total_no_leg"] += 1
-                    mgr_parlay[mid]["_streak_results"].append("no_leg")
-                elif result in (None, "waiting"):
-                    mgr_parlay[mid]["total_waiting"] += 1
-                    mgr_parlay[mid]["_streak_results"].append("waiting")
-            continue
+        # Skip weeks where ANY leg is null (Frank hasn't entered bets yet)
+        has_null    = any(l.get("result") is None for l in legs)
+        if has_null:
+            continue  # week not entered yet — skip entirely
+
+        # Week entered but may have unresolved results
+        has_waiting = any(l.get("result") == "waiting" for l in legs)
 
         wr = _week_result(legs)
 
@@ -960,8 +951,13 @@ def betting_overall():
             wager  = wk_data.get("wager")  or 0
             payout = wk_data.get("payout") or 0
 
-            # Skip incomplete weeks for financials
-            has_waiting = any(l.get("result") in (None, "waiting") for l in legs)
+            # Skip weeks where ANY leg is null (not yet entered)
+            has_null = any(l.get("result") is None for l in legs)
+            if has_null:
+                continue
+
+            # Week entered but may have unresolved results
+            has_waiting = any(l.get("result") == "waiting" for l in legs)
 
             participating  = [l for l in legs if l.get("result") not in (None, "no_leg")]
             n_participating = len(participating)
